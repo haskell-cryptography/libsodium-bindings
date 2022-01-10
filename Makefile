@@ -8,7 +8,10 @@ clean: ## Remove compilation artifacts
 	@cabal clean
 
 repl: ## Start a REPL
-	@cabal repl
+	@cabal repl --repl-options="-fno-code"
+
+ghcid: ## Start ghcid
+	@ghcid --command='make repl'
 
 test: ## Run the test suite
 	@cabal test

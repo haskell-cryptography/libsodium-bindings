@@ -21,5 +21,17 @@ Open a thread in the [Questions][Questions board] discussion board. You'll get h
 
 Open a [Ticket][Ticket] and tell us what you can about your problem.
 
+## Code style
+
+### C FFI
+
+* The [CApiFFI convention](https://www.haskell.org/ghc/blog/20210709-capi-usage.html) must be used at all times.
+* The datatypes from [`Foreign`](https://hackage.haskell.org/package/base/docs/Foreign.html) must be used when
+getting results from C, like `CInt` in favour of `Int`.
+  Example: 
+  - ❌ `foreign export ccall sodium_init :: IO Int`
+
+  - ✅ `foreign import capi "sodium.h sodium_init"  c_sodium_init :: IO CInt`
+
 [CoC]: https://github.com/haskell-cryptography/cryptography-libsodium/blob/master/CODE_OF_CONDUCT.md
 [Ticket]: https://github.com/haskell-cryptography/cryptography-libsodium/issues/new

@@ -1,0 +1,18 @@
+cradle:
+  multi:
+    - path: "./"
+      config:
+        cradle:
+          cabal:
+            - path: "src"
+              component: "lib:cryptography-libsodium"
+
+    - path: ./Setup.hs
+      config:
+        cradle:
+          direct:
+            arguments:
+              - "-package Cabal"
+              - "-package base"
+              - "-package system"
+              - "-package directory"

@@ -13,10 +13,11 @@ bug-reports:
   https://github.com/haskell-cryptography/cryptography-libsodium/issues
 
 author:             Hécate Moonlight
-maintainer:         Hécate Moonlight
+maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
 build-type:         Custom
 tested-with:        GHC ==8.10.7 || ==9.0.1 || ==9.2.1
+-- build-tool-depends: c2hs == 0.28.8
 extra-source-files:
   CHANGELOG.md
   LICENSE
@@ -28,33 +29,61 @@ source-repository head
     https://github.com/haskell-cryptography/cryptography-libsodium
 
 common common-extensions
-  default-language: Haskell2010
+  default-extensions:
+    NoMonomorphismRestriction
+    NoStarIsType
+    DataKinds
+    DerivingVia
+    FlexibleContexts
+    FlexibleInstances
+    InstanceSigs
+    LambdaCase
+    OverloadedStrings
+    ScopedTypeVariables
+    StandaloneDeriving
+    TypeApplications
+
+  default-language:   Haskell2010
 
 common common-ghc-options
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
-    -fhide-source-paths -Wno-unused-do-bind -fwrite-ide-info
-    -hiedir=.hie -haddock
+    -fhide-source-paths -Wno-unused-do-bind -haddock
 
-common common-rts-optionsb
+  include-dirs:       ./cbits/libsodium-stable/src/libsodium/include/
+  includes:
+    sodium/crypto_generichash_blake2b.h
+    sodium/crypto_hash_sha256.h
+    sodium/crypto_hash_sha512.h
+    sodium.h
+
+  build-tool-depends: c2hs:c2hs -any
+
+common common-rts-options
   ghc-options: -rtsopts -threaded -with-rtsopts=-N
 
 custom-setup
   setup-depends:
-    , base        >=3    && <5
-    , Cabal       >=2.0
-    , filepath
+    , base       >=3   && <5
+    , Cabal      >=2.0
     , directory
+    , filepath
     , process
 
 library
-  import:          common-extensions
-  import:          common-ghc-options
+  import:                  common-extensions
+  import:                  common-ghc-options
   extra-bundled-libraries: sodium
-  hs-source-dirs:  src
+  hs-source-dirs:          src
   exposed-modules:
-    Cryptography.Sodium
+    Cryptography.LibSodium
+    Cryptography.LibSodium.FFI
+    Cryptography.LibSodium.Hash.Blake2b
+    Cryptography.LibSodium.Hash.Types
+    Cryptography.LibSodium.Orphans
+
   build-depends:
-    , base        >=4.12 && <=5
-    , Cabal
+    , array
+    , base       >=4.12 && <=5
+    , primitive

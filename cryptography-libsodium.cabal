@@ -1,0 +1,58 @@
+cabal-version:      3.0
+name:               cryptography-libsodium
+version:            0.0.1.0
+category:           Cryptography
+synopsis:           FFI bindings to libsodium
+description:
+  !TODO! Describe that it embeds the library instead of relying on system libraries
+
+homepage:
+  https://github.com/haskell-cryptography/cryptography-libsodium#readme
+
+bug-reports:
+  https://github.com/haskell-cryptography/cryptography-libsodium/issues
+
+author:             Hécate Moonlight
+maintainer:         Hécate Moonlight
+license:            MIT
+build-type:         Custom
+tested-with:        GHC ==8.10.7 || ==9.0.1 || ==9.2.1
+extra-source-files:
+  CHANGELOG.md
+  LICENSE
+  README.md
+
+source-repository head
+  type:     git
+  location:
+    https://github.com/haskell-cryptography/cryptography-libsodium
+
+common common-extensions
+  default-language: Haskell2010
+
+common common-ghc-options
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+    -fhide-source-paths -Wno-unused-do-bind -fwrite-ide-info
+    -hiedir=.hie -haddock
+
+common common-rts-optionsb
+  ghc-options: -rtsopts -threaded -with-rtsopts=-N
+
+custom-setup
+  setup-depends:
+    , base        >=3    && <5
+    , Cabal       >=2.0
+    , process
+
+library
+  import:          common-extensions
+  import:          common-ghc-options
+  extra-bundled-libraries: sodium
+  hs-source-dirs:  src
+  exposed-modules:
+    Cryptography.Sodium
+  build-depends:
+    , base        >=4.12 && <=5
+    , Cabal

@@ -7,7 +7,7 @@ import Debug.Trace
 import Distribution.Types.LocalBuildInfo
 import System.Process (system)
 import System.FilePath ((</>), (<.>))
-import System.Directory (copyFile)
+import System.Directory (copyFile, doesFileExist, withCurrentDirectory)
 
 main = defaultMainWithHooks $
   simpleUserHooks
@@ -35,7 +35,16 @@ main = defaultMainWithHooks $
             -- this.
             copyFile ("winlibs" </> "libsodium" <.> "lib") destinationPath
           _ -> do
-            -- Everything else is some flavour of POSIX. Because we can expect a
-            -- POSIX shell, we're good to use the Autotools to build in-place.
-            void $ system $ "cd cbits/libsodium-stable/ && ./configure && make -j && cp -v ./src/libsodium/.libs/libsodium.a " <> destinationPath
+            -- Since everything else is some flavour of POSIX, we can use the
+            -- Autotools to build in-place. This current (more involved) setup
+            -- avoids triggering unnecessary rebuilds by checking if configure
+            -- and/or make already ran.
+            let workPath = "cbits" </> "libsodium-stable"
+            let sourcePath = workPath </> "src" </> "libsodium" </> ".libs" </> "libsodium" <.> "a"
+            let makefilePath = workPath </> "Makefile"
+            configureRan <- doesFileExist makefilePath
+            makeRan <- doesFileExist sourcePath
+            unless configureRan (withCurrentDirectory workPath (void . system $ "./configure"))
+            unless makeRan (withCurrentDirectory workPath (void . system $ "make -j"))
+            copyFile sourcePath destinationPath
     }

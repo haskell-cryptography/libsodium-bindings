@@ -44,6 +44,8 @@ custom-setup
   setup-depends:
     , base        >=3    && <5
     , Cabal       >=2.0
+    , filepath
+    , directory
     , process
 
 library

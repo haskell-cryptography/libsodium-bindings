@@ -22,7 +22,7 @@ import Cryptography.LibSodium.Orphans ()
 -- > } crypto_generichash_blake2b_state;
 --
 -- @since 0.0.1.0
-newtype Blake2bState = Blake2bState (StorableArray CSize CUChar)
+newtype Blake2bState = Blake2bState { getBlake2bState :: StorableArray CSize CUChar}
 
 -- @since 0.0.1.0
 instance Storable Blake2bState where
@@ -31,10 +31,11 @@ instance Storable Blake2bState where
   alignment _ = {#alignof crypto_generichash_blake2b_state #}
 
   peek :: Ptr Blake2bState -> IO Blake2bState
-  peek ptr = do
-    let bytePtr :: Ptr Word8 = castPtr ptr
-    xs <- traverse (\i -> peek (plusPtr bytePtr i)) [0..383]
-    Blake2bState <$> newListArray (0, 383) xs
+  peek p = Blake2bState <$> ({#get crypto_generichash_blake2b_state.opaque #} p)
+  -- peek ptr = do
+  --   let bytePtr :: Ptr Word8 = castPtr ptr
+  --   xs <- traverse (\i -> peek (plusPtr bytePtr i)) [0..383]
+  --   Blake2bState <$> newListArray (0, 383) xs
 
   poke :: Ptr Blake2bState -> Blake2bState -> IO ()
   poke ptr (Blake2bState arr) = withStorableArray arr (go bytePtr)
@@ -45,3 +46,5 @@ instance Storable Blake2bState where
     go :: Ptr CUChar -> Ptr CUChar -> IO ()
     go outPtr arrPtr = traverse_
       (\i -> peek @CUChar (plusPtr arrPtr i) >>= poke (plusPtr outPtr i)) [0..383]
+
+{#pointer *crypto_generichash_blake2b_state as Blake2bStatePtr -> Blake2bState#}

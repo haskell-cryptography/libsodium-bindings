@@ -8,6 +8,7 @@ hlint.log
 stdout.log
 tags
 tags.mtime
+.nvimrc
 
 # Libsodium
 *.bc

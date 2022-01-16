@@ -12,8 +12,8 @@ homepage:
 bug-reports:
   https://github.com/haskell-cryptography/cryptography-libsodium/issues
 
-author:             Hécate Moonlight
-maintainer:         Hécate Moonlight
+author:             Hécate Moonlight, Koz Ross
+maintainer:         Hécate Moonlight, Koz Ross
 license:            BSD-3-Clause
 build-type:         Custom
 tested-with:        GHC ==8.10.7 || ==9.0.1 || ==9.2.1
@@ -55,6 +55,7 @@ library
   hs-source-dirs:          src
   exposed-modules:
     Cryptography.Sodium
+    Cryptography.Sodium.Helpers.Direct
     Cryptography.Sodium.XChaCha20
     Cryptography.Sodium.XChaCha20.Direct
 

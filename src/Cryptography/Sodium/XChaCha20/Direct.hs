@@ -1,7 +1,17 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE UnliftedFFITypes #-}
 
-module Cryptography.Sodium.XChaCha20.Direct where
+module Cryptography.Sodium.XChaCha20.Direct
+  ( -- * Constants
+    cryptoStreamXChaCha20KeyBytes,
+    cryptoStreamXChaCha20NonceBytes,
+
+    -- * Functions
+    cryptoStreamXChaCha20,
+    cryptoStreamXChaCha20Xor,
+    cryptoStreamXChaCha20XorIC,
+    cryptoStreamXChaCha20Keygen,
+  )
+where
 
 import Data.Word (Word64)
 import Foreign.C.Types
@@ -54,4 +64,4 @@ foreign import capi "sodium.h value crypto_stream_xchacha20_KEYBYTES"
 
 -- | @since 1.0
 foreign import capi "sodium.h value crypto_stream_xchacha20_NONCEBYTES"
-  cryptStreamXChaCha20NonceBytes :: CSize
+  cryptoStreamXChaCha20NonceBytes :: CSize

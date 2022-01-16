@@ -34,8 +34,8 @@ common common-ghc-options
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
-    -fhide-source-paths -Wno-unused-do-bind -fwrite-ide-info
-    -hiedir=.hie -haddock
+    -Wmissing-export-lists -fhide-source-paths -Wno-unused-do-bind
+    -fwrite-ide-info -hiedir=.hie -haddock
 
 common common-rts-optionsb
   ghc-options: -rtsopts -threaded -with-rtsopts=-N
@@ -55,6 +55,7 @@ library
   hs-source-dirs:          src
   exposed-modules:
     Cryptography.Sodium
+    Cryptography.Sodium.XChaCha20
     Cryptography.Sodium.XChaCha20.Direct
 
   build-depends:

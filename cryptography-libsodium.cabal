@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               cryptography-libsodium
-version:            0.0.1.0
+version:            1.0
 category:           Cryptography
 synopsis:           FFI bindings to libsodium
 description:
@@ -53,7 +53,10 @@ library
   import:                  common-ghc-options
   extra-bundled-libraries: sodium
   hs-source-dirs:          src
-  exposed-modules:         Cryptography.Sodium
+  exposed-modules:
+    Cryptography.Sodium
+    Cryptography.Sodium.XChaCha20.Direct
+
   build-depends:
     , base   >=4.12 && <=5
     , Cabal

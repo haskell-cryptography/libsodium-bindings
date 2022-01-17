@@ -2,4 +2,4 @@
 
 > Native embedded bindings to the libsodium cryptography library 
 
-This library vendors libsodium so that you don't have to.
+This library vendors libsodium so that you don't have to. 

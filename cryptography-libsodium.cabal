@@ -52,5 +52,8 @@ library
   import:                  common
   include-dirs:            include
   extra-bundled-libraries: sodium
+  exposed-modules:
+    Cryptography.Sodium.Comparison
+    Cryptography.Sodium.XChaCha20
+
   hs-source-dirs:          src
-  exposed-modules:         Cryptography.Sodium.Comparison

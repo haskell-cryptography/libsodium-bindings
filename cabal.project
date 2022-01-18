@@ -1,0 +1,4 @@
+packages: ./cryptography-libsodium.cabal
+
+package cryptography-libsodium
+  ghc-options: -Werror

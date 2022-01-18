@@ -42,19 +42,18 @@ common common-rts-optionsb
 
 custom-setup
   setup-depends:
-    , base        >=3    && <5
-    , Cabal       >=2.0
-    , filepath
+    , base       >=3   && <5
+    , Cabal      >=2.0
     , directory
+    , filepath
     , process
 
 library
-  import:          common-extensions
-  import:          common-ghc-options
+  import:                  common-extensions
+  import:                  common-ghc-options
   extra-bundled-libraries: sodium
-  hs-source-dirs:  src
-  exposed-modules:
-    Cryptography.Sodium
+  hs-source-dirs:          src
+  exposed-modules:         Cryptography.Sodium
   build-depends:
-    , base        >=4.12 && <=5
+    , base   >=4.12 && <=5
     , Cabal

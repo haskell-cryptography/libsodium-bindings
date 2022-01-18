@@ -38,6 +38,11 @@ import Foreign.Ptr (Ptr)
 -- key location will be 'cryptoStreamXChaCha20NonceBytes' and
 -- 'cryptoStreamXChaCha20KeyBytes' respectively.
 --
+-- This function theoretically returns 0 on success, and -1 on failure. However,
+-- [this cannot ever
+-- fail](https://github.com/jedisct1/libsodium/discussions/1148#discussioncomment-1979161),
+-- although its documentation does not explain this.
+--
 -- = Corresponds to
 --
 -- [@crypto_stream_xchacha20@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
@@ -53,6 +58,7 @@ foreign import capi "sodium.h crypto_stream_xchacha20"
     Ptr CUChar ->
     -- | Secret key location (see documentation, won't be modified)
     Ptr CUChar ->
+    -- | Always 0 (see documentation)
     IO CInt
 
 -- | Encrypt a message of the given length, using a nonce and a secret key. The
@@ -62,6 +68,11 @@ foreign import capi "sodium.h crypto_stream_xchacha20"
 --
 -- The resulting ciphertext does /not/ include an authentication tag. It will be
 -- combined with the output of the stream cipher using the XOR operation.
+--
+-- This function theoretically returns 0 on success, and -1 on failure. However,
+-- [this cannot ever
+-- fail](https://github.com/jedisct1/libsodium/discussions/1148#discussioncomment-1979161),
+-- although its documentation does not explain this.
 --
 -- = Important note
 --
@@ -86,6 +97,7 @@ foreign import capi "sodium.h crypto_stream_xchacha20_xor"
     Ptr CUChar ->
     -- | Secret key location (see documentation, won't be modified)
     Ptr CUChar ->
+    -- | Always 0 (see documentation)
     IO CInt
 
 -- | As 'cryptoStreamXChaCha20Xor', but allows setting the initial value of the
@@ -114,6 +126,7 @@ foreign import capi "sodium.h crypto_stream_xchacha20_xor_ic"
     Word64 ->
     -- | Secret key location (see documentation, won't be modified)
     Ptr CUChar ->
+    -- | Always 0 (see documentation)
     IO CInt
 
 -- | Generate a random XChaCha20 secret key. This will always write

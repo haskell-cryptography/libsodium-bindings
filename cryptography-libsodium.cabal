@@ -50,7 +50,7 @@ custom-setup
 
 library
   import:                  common
-  include-dirs:            cbits/libsodium-stable/src/libsodium/include
+  include-dirs:            include
   extra-bundled-libraries: sodium
   hs-source-dirs:          src
   exposed-modules:         Cryptography.Sodium.Comparison

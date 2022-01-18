@@ -1,83 +1,144 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.XChaCha20
--- Description: Thin Haskell wrappers for XChaCha20 primitives
+-- Module: Cryptography.Sodium.XChaCha20.Direct
+-- Description: Direct bindings to XChaCha20 primitives
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
 -- Maintainer: koz.ross@retro-freedom.nz
--- Stability: Experimental
+-- Stability: Stable
 -- Portability: GHC only
 --
--- Thin Haskell wrappers around XChaCha20 primitives. These are designed to be
--- friendlier and easier to use than the direct C bindings. If you need full
--- control, or want to use the direct close-to-C bindings, use
--- 'Cryptography.Sodium.XChaCha20.Direct'.
+-- Direct bindings to XChaCha20 primitives.
 module Cryptography.Sodium.XChaCha20
-  ( -- * Data types
-    XChaCha20Key,
+  ( -- * Constants
+    cryptoStreamXChaCha20KeyBytes,
+    cryptoStreamXChaCha20NonceBytes,
 
-    -- * Sizes
-    xChaCha20KeySize,
-    xChaCha20NonceSize,
+    -- * Functions
+    cryptoStreamXChaCha20,
+    cryptoStreamXChaCha20Xor,
+    cryptoStreamXChaCha20XorIC,
+    cryptoStreamXChaCha20Keygen,
   )
 where
 
-import qualified Cryptography.Sodium.Helpers.Direct as Helpers
-import qualified Cryptography.Sodium.XChaCha20.Direct as Direct
-import Foreign.C.String (peekCString)
-import Foreign.C.Types (CUChar)
-import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
-import Foreign.Marshal.Alloc (free, mallocBytes)
+import Data.Word (Word64)
+import Foreign.C.Types
+  ( CInt (CInt),
+    CSize (CSize),
+    CUChar,
+    CULLong (CULLong),
+  )
 import Foreign.Ptr (Ptr)
-import System.IO.Unsafe (unsafePerformIO)
 
--- | An XChaCha20 secret key. This is an \'opaque newtype\' providing some
--- Haskell conveniences; underneath, it's an array of bytes in C.
+-- | Generate and store a given number of pseudorandom bytes, using a nonce
+-- and a secret key. The amount of data read from the nonce location and secret
+-- key location will be 'cryptoStreamXChaCha20NonceBytes' and
+-- 'cryptoStreamXChaCha20KeyBytes' respectively.
+--
+-- = Corresponds to
+--
+-- [@crypto_stream_xchacha20@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 1.0
-newtype XChaCha20Key = XCC20K (ForeignPtr CUChar)
+foreign import capi "sodium.h crypto_stream_xchacha20"
+  cryptoStreamXChaCha20 ::
+    -- | Out-parameter where pseudorandom bytes will be stored
+    Ptr CUChar ->
+    -- | How many bytes to write
+    CULLong ->
+    -- | Nonce location (see documentation, won't be modified)
+    Ptr CUChar ->
+    -- | Secret key location (see documentation, won't be modified)
+    Ptr CUChar ->
+    IO CInt
 
--- | Guaranteed constant-time.
+-- | Encrypt a message of the given length, using a nonce and a secret key. The
+-- amount of data read from the nonce location and secret key location will be
+-- 'cryptoStreamXChaCha20NonceBytes' and 'cryptoStreamXChaCha20KeyBytes'
+-- respectively.
+--
+-- The resulting ciphertext does /not/ include an authentication tag. It will be
+-- combined with the output of the stream cipher using the XOR operation.
+--
+-- = Important note
+--
+-- The message location and ciphertext location can be the same: this will
+-- produce in-place encryption. However, if they are /not/ the same, they must
+-- be non-overlapping.
+--
+-- = Corresponds to
+--
+-- [@crypto_stream_xchacha20_xor@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 1.0
-instance Eq XChaCha20Key where
-  {-# NOINLINE (==) #-}
-  XCC20K fp == XCC20K fp' =
-    unsafePerformIO
-      . withForeignPtr fp
-      $ \p -> withForeignPtr fp' $ pure . go p
-    where
-      go :: Ptr CUChar -> Ptr CUChar -> Bool
-      go p p' =
-        let !res = Helpers.sodiumMemcmp p p' Direct.cryptoStreamXChaCha20KeyBytes
-         in res == 0
+foreign import capi "sodium.h crypto_stream_xchacha20_xor"
+  cryptoStreamXChaCha20Xor ::
+    -- | Out-parameter where the ciphertext will be stored
+    Ptr CUChar ->
+    -- | Message location (won't be modified)
+    Ptr CUChar ->
+    -- | Message length
+    CULLong ->
+    -- | Nonce location (see documentation, won't be modified)
+    Ptr CUChar ->
+    -- | Secret key location (see documentation, won't be modified)
+    Ptr CUChar ->
+    IO CInt
 
--- | Displays the key in hex. Guaranteed constant-time.
+-- | As 'cryptoStreamXChaCha20Xor', but allows setting the initial value of the
+-- block counter to a non-zero value. This permits direct access to any block
+-- without having to compute previous ones.
+--
+-- See the documentation of 'cryptoStreamXChaCha20Xor' for caveats on the use of
+-- this function.
+--
+-- = Corresponds to
+--
+-- [@crypto_stream_xchacha20_xor_ic@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 1.0
-instance Show XChaCha20Key where
-  {-# NOINLINE show #-}
-  show (XCC20K fp) = unsafePerformIO . withForeignPtr fp $ go
-    where
-      go :: Ptr CUChar -> IO String
-      go p = do
-        let !binLen = Direct.cryptoStreamXChaCha20KeyBytes
-        let !hexLen = binLen * 2 + 1
-        outParam <- mallocBytes . fromIntegral $ hexLen
-        _ <- Helpers.sodiumBinToHex outParam hexLen p binLen
-        s <- peekCString outParam
-        free outParam
-        pure $ "XChacha20Key: " <> s
+foreign import capi "sodium.h crypto_stream_xchacha20_xor_ic"
+  cryptoStreamXChaCha20XorIC ::
+    -- | Out-parameter where the ciphertext will be stored
+    Ptr CUChar ->
+    -- | Message location (won't be modified)
+    Ptr CUChar ->
+    -- | Message length
+    CULLong ->
+    -- | Nonce location (see documentation, won't be modified)
+    Ptr CUChar ->
+    -- | Value of block counter (see documentation)
+    Word64 ->
+    -- | Secret key location (see documentation, won't be modified)
+    Ptr CUChar ->
+    IO CInt
 
--- | The size of an XChaCha20 key, in bytes.
+-- | Generate a random XChaCha20 secret key. This will always write
+-- 'cryptoStreamXChaCha20KeyBytes' to the out-parameter.
+--
+-- = Corresponds to
+--
+-- [@crypto_stream_xchacha20_keygen@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 1.0
-xChaCha20KeySize :: Int
-xChaCha20KeySize = fromIntegral Direct.cryptoStreamXChaCha20KeyBytes
+foreign import capi "sodium.h crypto_stream_xchacha20_keygen"
+  cryptoStreamXChaCha20Keygen ::
+    -- | Out-parameter where the key will be stored
+    Ptr CUChar ->
+    -- | Doesn't return anything meaningful
+    IO ()
 
--- | The size of an XChaCha20 nonce, in bytes.
+-- | The number of bytes in an XChaCha20 secret key.
 --
 -- @since 1.0
-xChaCha20NonceSize :: Int
-xChaCha20NonceSize = fromIntegral Direct.cryptoStreamXChaCha20NonceBytes
+foreign import capi "sodium.h value crypto_stream_xchacha20_KEYBYTES"
+  cryptoStreamXChaCha20KeyBytes :: CSize
+
+-- | The number of bytes in an XChaCha20 nonce.
+--
+-- @since 1.0
+foreign import capi "sodium.h value crypto_stream_xchacha20_NONCEBYTES"
+  cryptoStreamXChaCha20NonceBytes :: CSize

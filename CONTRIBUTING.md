@@ -11,21 +11,26 @@ We need you to read, acknowledge, and abide by our [Code of Conduct][CoC].
 When making a PR, ensure that you have a Github issue that explains the context
 for your changes.
 
-### Formatting
+### Formatting and linting
 
-We have a git hook in place to ensure the following formatting rules are
-followed:
+We have a git hook in place to ensure the following formatting and linting tools
+are being used:
 
-* All Haskell source files must be formatted with
+* All Haskell source files are formatted with
   [`ormolu`](https://hackage.haskell.org/package/ormolu);
-* The Cabal file must be formatted with
+* All Haskell source files are linted with 
+  [HLint](https://hackage.haskell.org/package/hlint), as per the `.hlint.yaml` 
+  configuration file.
+* The Cabal file is formatted with
   [`cabal-fmt`](https://github.com/phadej/cabal-fmt)
 
-### Linting
+To ensure that you are using the git hook, run the following, once:
 
-We have a git hook in place to ensure that all Haskell source files are linted
-according to [HLint](https://hackage.haskell.org/package/hlint), as per the
-`.hlint.yaml` configuration file.
+```
+git config core.hooksPath .githooks
+```
+
+You can also use the provided `Makefile` by running `make init`.
 
 ### Questions 
 

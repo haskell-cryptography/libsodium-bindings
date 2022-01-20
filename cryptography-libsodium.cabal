@@ -54,6 +54,7 @@ library
   extra-bundled-libraries: sodium
   exposed-modules:
     Cryptography.Sodium.Comparison
+    Cryptography.Sodium.Main
     Cryptography.Sodium.XChaCha20
 
   hs-source-dirs:          src

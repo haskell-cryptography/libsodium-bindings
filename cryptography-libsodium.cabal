@@ -53,6 +53,7 @@ library
   include-dirs:            include
   extra-bundled-libraries: sodium
   exposed-modules:
+    Cryptography.Sodium.Bindings.Random
     Cryptography.Sodium.Comparison
     Cryptography.Sodium.Main
     Cryptography.Sodium.XChaCha20

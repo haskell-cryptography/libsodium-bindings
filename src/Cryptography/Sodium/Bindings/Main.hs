@@ -3,7 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
--- | Module: Cryptography.Sodium.Main
+-- | Module: Cryptography.Sodium.Bindings.Main
 -- Description: Wrappers for initialization
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -20,7 +20,7 @@
 -- If you are using @cryptography-libsodium@ as a dependency for a library, you
 -- are probably not interested in this; it's designed for application authors who
 -- need capabilities provided by @cryptography-libsodium@.
-module Cryptography.Sodium.Main
+module Cryptography.Sodium.Bindings.Main
   ( -- * High-level wrappers
     secureMain,
     secureMainWith,

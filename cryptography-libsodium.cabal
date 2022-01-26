@@ -53,9 +53,9 @@ library
   include-dirs:            include
   extra-bundled-libraries: sodium
   exposed-modules:
+    Cryptography.Sodium.Bindings.Comparison
+    Cryptography.Sodium.Bindings.Main
     Cryptography.Sodium.Bindings.Random
-    Cryptography.Sodium.Comparison
-    Cryptography.Sodium.Main
-    Cryptography.Sodium.XChaCha20
+    Cryptography.Sodium.Bindings.XChaCha20
 
   hs-source-dirs:          src

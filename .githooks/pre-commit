@@ -30,7 +30,7 @@ else
 fi
 
 if which cabal-fmt > /dev/null ; then
-  if ! cabal-fmt -c "cryptography-libsodium.cabal" ; then
+  if ! cabal-fmt -c "cryptography-libsodium-bindings.cabal" ; then
     exit 1
   fi
 else

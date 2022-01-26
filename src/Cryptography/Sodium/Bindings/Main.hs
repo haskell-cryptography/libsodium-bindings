@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE Safe #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module: Cryptography.Sodium.Bindings.Main

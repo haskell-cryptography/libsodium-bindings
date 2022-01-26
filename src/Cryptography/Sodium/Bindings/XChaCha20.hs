@@ -2,7 +2,7 @@
 {-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.XChaCha20.Direct
+-- Module: Cryptography.Sodium.Bindings.XChaCha20
 -- Description: Direct bindings to XChaCha20 primitives
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -11,7 +11,7 @@
 -- Portability: GHC only
 --
 -- Direct bindings to XChaCha20 primitives.
-module Cryptography.Sodium.XChaCha20
+module Cryptography.Sodium.Bindings.XChaCha20
   ( -- * Constants
     cryptoStreamXChaCha20KeyBytes,
     cryptoStreamXChaCha20NonceBytes,

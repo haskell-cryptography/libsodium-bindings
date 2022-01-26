@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
 
--- | Module: Cryptography.Sodium.Comparison
+-- | Module: Cryptography.Sodium.Bindings.Comparison
 -- Description: Helper functions for constant-time comparison
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -11,7 +11,7 @@
 --
 -- Secure comparison functions, designed to run in constant time for a given
 -- input length.
-module Cryptography.Sodium.Comparison
+module Cryptography.Sodium.Bindings.Comparison
   ( sodiumMemcmp,
     sodiumIsZero,
   )

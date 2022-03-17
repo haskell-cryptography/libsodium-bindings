@@ -11,6 +11,18 @@ We need you to read, acknowledge, and abide by our [Code of Conduct][CoC].
 When making a PR, ensure that you have a Github issue that explains the context
 for your changes.
 
+## Code Style 
+
+### C FFI
+
+* The [CApiFFI convention](https://www.haskell.org/ghc/blog/20210709-capi-usage.html) must be used at all times.
+* The datatypes from [`Foreign`](https://hackage.haskell.org/package/base/docs/Foreign.html) must be used when
+getting results from C, like `CInt` in favour of `Int`.
+  Example: 
+  - ❌ `foreign export ccall sodium_init :: IO Int`
+
+  - ✅ `foreign import capi "sodium.h sodium_init"  c_sodium_init :: IO CInt`
+
 ### Formatting and linting
 
 We have a git hook in place to ensure the following formatting and linting tools
@@ -41,6 +53,6 @@ you can get help from everyone in the community.
 
 Open an [issue][Ticket] and tell us what you can about your problem.
 
-[CoC]: https://github.com/haskell-cryptography/cryptography-libsodium/blob/master/CODE_OF_CONDUCT.md
+[CoC]: https://github.com/haskell-cryptography/governance/blob/master/CODE_OF_CONDUCT.md
 [Ticket]: https://github.com/haskell-cryptography/cryptography-libsodium/issues/new
 [Questions board]: https://github.com/haskell-cryptography/cryptography-libsodium-bindings/discussions/categories/q-a

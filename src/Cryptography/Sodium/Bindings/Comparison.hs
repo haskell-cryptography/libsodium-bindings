@@ -27,7 +27,7 @@ import Foreign.Ptr (Ptr)
 --
 -- [@sodium_memcmp@](https://libsodium.gitbook.io/doc/helpers#constant-time-test-for-equality)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memcmp"
   sodiumMemcmp ::
     -- | First location with data to compare
@@ -46,7 +46,7 @@ foreign import capi "sodium.h sodium_memcmp"
 --
 -- [@sodium_is_zero@](https://libsodium.gitbook.io/doc/helpers#testing-for-all-zeros)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_is_zero"
   sodiumIsZero ::
     -- | Location with data to check

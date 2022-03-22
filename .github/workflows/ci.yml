@@ -64,7 +64,7 @@ jobs:
             ./hlint/dist-newstyle
             ./ormolu/dist-newstyle
             ./cabal-fmt/dist-newstyle
-          key: ${{ env.V }}-${{ hashFiles('./hlint/cabal.project.freeze', './ormolu/cabal.project/freeze', './cabal-fmt/cabal.project.freeze') }}
+          key: ${{ env.V }}
           restore-keys: ${{ env.V }}-
       - name: Install HLint
         working-directory: hlint

@@ -2,3 +2,5 @@ packages: ./cryptography-libsodium-bindings.cabal
 
 package cryptography-libsodium-bindings
   ghc-options: -Werror
+
+test-show-details: direct

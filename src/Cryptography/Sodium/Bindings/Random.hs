@@ -32,7 +32,7 @@ import Foreign.Ptr (Ptr)
 --
 -- [@randombytes_random@](https://libsodium.gitbook.io/doc/generating_random_data#usage)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_random"
   randombytesRandom :: IO Word32
 
@@ -44,7 +44,7 @@ foreign import capi "sodium.h randombytes_random"
 --
 -- [@randombytes_uniform@](https://libsodium.gitbook.io/doc/generating_random_data#usage)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_uniform"
   randombytesUniform ::
     -- | upper limit (exclusive)
@@ -57,7 +57,7 @@ foreign import capi "sodium.h randombytes_uniform"
 --
 -- [@randombytes_buf@](https://libsodium.gitbook.io/doc/generating_random_data#usage)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_buf"
   randombytesBuf ::
     -- | Out-parameter to fill

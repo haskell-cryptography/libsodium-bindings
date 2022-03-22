@@ -44,7 +44,7 @@ import System.Exit (die)
 -- > main :: IO ()
 -- > main = secureMain doTheThingIActuallyWant
 --
--- @since 1.0
+-- @since 0.0.1.0
 secureMain :: forall (a :: Type). IO a -> IO a
 secureMain = secureMainWith (die "Could not initialize secure functionality, aborting.")
 
@@ -56,7 +56,7 @@ secureMain = secureMainWith (die "Could not initialize secure functionality, abo
 -- > main :: IO ()
 -- > main = secureMainWith reportErrorWithLogging doTheThingIActuallyWant
 --
--- @since 1.0
+-- @since 0.0.1.0
 secureMainWith :: forall (a :: Type). IO a -> IO a -> IO a
 secureMainWith badPath goodPath = do
   !res <- sodiumInit
@@ -70,7 +70,7 @@ secureMainWith badPath goodPath = do
 --
 -- [@sodium_init@](https://libsodium.gitbook.io/doc/usage)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_init"
   sodiumInit ::
     -- | 0 if successful, -1 on failure, 1 on repeat calls

@@ -19,24 +19,12 @@ jobs:
         with:
           ghc-version: 8.10
           cabal-version: latest
-      - name: Get HLint
-        uses: actions/checkout@v2.3.5
+      - name: Set up HLint
+        uses: haskell/actions/hlint-setup@v1
         with:
-          repository: ndmitchell/hlint
-          path: ./hlint
-          ref: d33b02a6c187f4ca87a434b6c7f111c42da04794
-      - name: Configure HLint
-        working-directory: hlint
-        run: cabal new-configure -w ghc --disable-optimization
+          version: 3.3.6
       - name: Get Ormolu
-        uses: actions/checkout@v2.3.5
-        with:
-          repository: tweag/ormolu
-          path: ./ormolu
-          ref: 807ee05aee2dff2a4222104abc75be3c776ee026
-      - name: Configure Ormolu
-        working-directory: ormolu
-        run: cabal new-configure -w ghc --disable-optimization
+        run: curl -JLO 'https://github.com/tweag/ormolu/releases/download/0.4.0.0/ormolu-Linux.zip' && unzip 'ormolu-Linux.zip'
       - name: Get cabal-fmt
         uses: actions/checkout@v2.3.5
         with:
@@ -48,11 +36,7 @@ jobs:
         run: cabal new-configure -w ghc --disable-optimization
       - name: Freeze
         run: |
-          cd ./hlint
-          cabal new-freeze
-          cd ../ormolu
-          cabal new-freeze
-          cd ../cabal-fmt
+          cd cabal-fmt
           cabal new-freeze
       - name: Cache
         uses: actions/cache@v2.1.3
@@ -61,24 +45,21 @@ jobs:
         with:
           path: |
             ${{ steps.setup-haskell.outputs.cabal-store }}
-            ./hlint/dist-newstyle
-            ./ormolu/dist-newstyle
             ./cabal-fmt/dist-newstyle
-          key: ${{ env.V }}-${{ hashFiles('./hlint/cabal.project.freeze', './ormolu/cabal.project/freeze', './cabal-fmt/cabal.project.freeze') }}
+          key: ${{ env.V }}-${{ hashFiles('./cabal-fmt/cabal.project.freeze') }}
           restore-keys: ${{ env.V }}-
-      - name: Install HLint
-        working-directory: hlint
-        run: cabal new-install --install-method=copy --installdir=${{ runner.temp }} --overwrite-policy=always hlint
-      - name: Install Ormolu
-        working-directory: ormolu
-        run: cabal new-install --install-method=copy --installdir=${{ runner.temp }} --overwrite-policy=always exe:ormolu
       - name: Install cabal-fmt
         working-directory: cabal-fmt
         run: cabal new-install --install-method=copy --installdir=${{ runner.temp }} --overwrite-policy=always cabal-fmt
-      - name: Run all checks
-        run: ./.github/check.sh ${{ runner.temp }}
-  compile:
-    name: ${{ matrix.ghc }} on ${{ matrix.os }}
+      - name: Run HLint
+        uses: haskell/actions/hlint-run@v1
+        with: 
+          path: src/
+          fail-on: 'suggestion'
+      - name: Run other checks
+        run: ./.github/check.sh ./ormolu ${{ runner.temp }}/cabal-fmt
+  native:
+    name: "Native: GHC ${{ matrix.ghc }} on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -104,4 +85,30 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('cabal.project.freeze') }}
           restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
       - name: Build
-        run: cabal build -v
+        run: cabal build
+  emulated:
+    name: "Emulated: GHC ${{ matrix.ghc }} on ${{ matrix.arch }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ['aarch64', 'armv7', 'i386']
+        ghc: ['8.10.7', '9.0.1', '9.2.1']
+    steps:
+      - name : Checkout base repo
+        uses: actions/checkout@v2.3.5
+      - name: Build
+        uses: GarnetOS/run-on-arch-action@v2.1.2
+        with:
+          arch: ${{ matrix.arch }}
+          distro: 'bullseye'
+          githubToken: ${{ github.token }}
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y curl libnuma-dev autotools-dev clang llvm-dev make libgmp-dev libtinfo5
+            curl -JL https://downloads.haskell.org/~ghcup/0.1.17.4/${{ matrix.arch }}-linux-ghcup-0.1.17.4 > ghcup
+            chmod +x ghcup
+            ./ghcup -v install ghc --set ${{ matrix.ghc }}
+            ./ghcup -v install cabal --set
+          run: |
+            ~/.ghcup/bin/cabal update
+            ~/.ghcup/bin/cabal build -w ~/.ghcup/bin/ghc

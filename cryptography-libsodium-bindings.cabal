@@ -68,20 +68,3 @@ library
     Cryptography.Sodium.Bindings.XChaCha20
 
   hs-source-dirs:          src
-
-test-suite libsodium-bindings-test
-  import:         common
-  type:           exitcode-stdio-1.0
-  main-is:        Main.hs
-  hs-source-dirs: test
-  build-depends:
-    , base
-    , containers
-    , cryptography-libsodium-bindings
-    , hedgehog
-    , pretty-simple
-    , tasty
-    , tasty-hunit
-    , text
-
-  other-modules:  HashingTests

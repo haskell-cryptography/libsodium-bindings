@@ -23,18 +23,20 @@ main =
               -- this means that, even though we _could_ have Autotools access in
               -- theory (since GHC needs MinGW, which comes with the Autotools),
               -- we can't use them. Furthermore, we can't be clever and do a
-              -- Visual Studio build, for two reasons:
+              -- Visual Studio build, for three reasons:
               --
               -- 1. It would require our users to have Visual Studio installed,
               --    which is quite onerous.
               -- 2. We would have to detect where Visual Studio put the compiler,
               --    then drive a Visual Studio build, from the command line,
               --    _manually_. This is even _more_ onerous!
+              -- 3. Even if we had 1 and 2, GHC on Windows relies on MinGW, so
+              --    that might not even behave.
               --
               -- Thus, we use a bundled static prebuild. This is not ideal, as it
               -- bloats the distribution, but there's very little we can do about
               -- this.
-              copyFile ("winlibs" </> "libsodium" <.> "lib") destinationPath
+              copyFile ("winlibs" </> "libsodium" <.> "a") destinationPath
             _ -> do
               -- Since everything else is some flavour of POSIX, we can use the
               -- Autotools to build in-place. This current (more involved) setup

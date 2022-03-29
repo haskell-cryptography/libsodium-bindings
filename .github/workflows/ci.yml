@@ -75,7 +75,7 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: 'latest'
       - name: Configure
-        run: cabal new-configure --enable-tests
+        run: cabal new-configure
       - name: Freeze
         run: cabal freeze
       - name: Cache
@@ -86,8 +86,6 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
       - name: Build
         run: cabal build
-      - name: Run tests
-        run: cabal test --test-show-details=direct
   emulated:
     name: "Emulated: GHC ${{ matrix.ghc }} on ${{ matrix.arch }}"
     runs-on: ubuntu-latest
@@ -114,4 +112,3 @@ jobs:
           run: |
             ~/.ghcup/bin/cabal update
             ~/.ghcup/bin/cabal build -w ~/.ghcup/bin/ghc
-            ~/.ghcup/bin/cabal test -w ~/.ghcup/bin/ghc --test-show-details=direct

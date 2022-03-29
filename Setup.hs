@@ -1,12 +1,31 @@
 module Main where
 
-import Control.Monad
-import Debug.Trace
+import Control.Monad (filterM, unless)
+import Data.Functor (void)
+import Data.List (isInfixOf, isSuffixOf)
+import qualified Data.Map.Strict as Map
+import Debug.Trace (traceId)
 import Distribution.Simple
-import Distribution.System (OS (..), buildOS)
-import Distribution.Types.LocalBuildInfo
-import System.Directory (copyFile, doesFileExist, withCurrentDirectory)
-import System.FilePath ((<.>), (</>))
+  ( compilerProperties,
+    defaultMainWithHooks,
+    postConf,
+    simpleUserHooks,
+  )
+import Distribution.System (OS (Windows), buildOS)
+import Distribution.Types.LocalBuildInfo (buildDir, compiler)
+import System.Directory
+  ( canonicalizePath,
+    copyFile,
+    doesFileExist,
+    executable,
+    findExecutable,
+    getPermissions,
+    getSymbolicLinkTarget,
+    listDirectory,
+    pathIsSymbolicLink,
+    withCurrentDirectory,
+  )
+import System.FilePath (getSearchPath, takeDirectory, (<.>), (</>))
 import System.Process (system)
 
 main =
@@ -18,6 +37,16 @@ main =
           let destinationPath = traceId $ buildDir localBuildInfo </> "libsodium" <.> "a"
           case buildOS of
             Windows -> do
+              (chocoPath : _) <- filter (isInfixOf "Chocolatey") <$> getSearchPath
+              (filter (isSuffixOf ".exe") <$> listDirectory chocoPath) >>= print
+              mSh <- findExecutable "bash"
+              mGCC <- findExecutable "gcc"
+              case mSh of
+                Nothing -> error "Cannot find bash on PATH. Aborting."
+                Just shPath -> do
+                  case mGCC of
+                    Nothing -> putStrLn "Did not find GCC."
+                    Just gccPath -> putStrLn gccPath >> putStrLn shPath
               -- We're in a bit of a bind when it comes to Windows. The chief
               -- problem is that the _only_ shell we have access to is CMD.EXE:
               -- this means that, even though we _could_ have Autotools access in

@@ -49,8 +49,9 @@ common common-rts-options
 
 custom-setup
   setup-depends:
-    , base       >=3   && <5
-    , Cabal      >=2.0
+    , base        >=3   && <5
+    , Cabal       >=2.0
+    , containers
     , directory
     , filepath
     , process

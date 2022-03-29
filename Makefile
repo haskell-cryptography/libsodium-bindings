@@ -14,10 +14,10 @@ repl: ## Start a REPL
 	@cabal repl --repl-options -fobject-code
 
 lint: ## Run the code linter (HLint)
-	@find test src -name "*.hs" | parallel -j $(PROCS) -- hlint --refactor-options="-i" --refactor {}
+	@find src -name "*.hs" | parallel -j $(PROCS) -- hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code formatter (ormolu)
-	@find test src -name "*.hs" | parallel -j $(PROCS) -- ormolu -m inplace {}
+	@find src -name "*.hs" | parallel -j $(PROCS) -- ormolu -m inplace {}
 	@cabal-fmt -i *.cabal
 
 help: ## Display this help message

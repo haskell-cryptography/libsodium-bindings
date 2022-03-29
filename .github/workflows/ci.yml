@@ -86,29 +86,3 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
       - name: Build
         run: cabal build
-  emulated:
-    name: "Emulated: GHC ${{ matrix.ghc }} on ${{ matrix.arch }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: ['aarch64', 'armv7', 'i386']
-        ghc: ['8.10.7', '9.0.1', '9.2.1']
-    steps:
-      - name : Checkout base repo
-        uses: actions/checkout@v2.3.5
-      - name: Build
-        uses: GarnetOS/run-on-arch-action@v2.1.2
-        with:
-          arch: ${{ matrix.arch }}
-          distro: 'bullseye'
-          githubToken: ${{ github.token }}
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y curl libnuma-dev autotools-dev clang llvm-dev make libgmp-dev libtinfo5
-            curl -JL https://downloads.haskell.org/~ghcup/0.1.17.4/${{ matrix.arch }}-linux-ghcup-0.1.17.4 > ghcup
-            chmod +x ghcup
-            ./ghcup -v install ghc --set ${{ matrix.ghc }}
-            ./ghcup -v install cabal --set
-          run: |
-            ~/.ghcup/bin/cabal update
-            ~/.ghcup/bin/cabal build -w ~/.ghcup/bin/ghc

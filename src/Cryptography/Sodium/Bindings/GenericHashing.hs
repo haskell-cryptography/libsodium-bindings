@@ -3,14 +3,14 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.Hashing
+-- Module: Cryptography.Sodium.Bindings.GenericHashing
 -- Description: Direct bindings to the generic hashing primitives of Libsodium.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.Hashing
+module Cryptography.Sodium.Bindings.GenericHashing
   ( -- * Introduction
     -- $introduction
 
@@ -56,7 +56,7 @@ import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 
 -- | Opaque tag representing the hash state struct @crypto_generichash_state@ used by the C API.
 --
--- To obtain a 'CryptoGenericHashState', use 'withGenericHashState'.
+-- To use a 'CryptoGenericHashState', use 'withGenericHashState'.
 --
 -- @since 0.0.1.0
 data CryptoGenericHashState

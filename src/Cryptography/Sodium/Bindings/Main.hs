@@ -1,9 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE Safe #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
--- | Module: Cryptography.Sodium.Main
+-- | Module: Cryptography.Sodium.Bindings.Main
 -- Description: Wrappers for initialization
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -20,7 +21,7 @@
 -- If you are using @cryptography-libsodium@ as a dependency for a library, you
 -- are probably not interested in this; it's designed for application authors who
 -- need capabilities provided by @cryptography-libsodium@.
-module Cryptography.Sodium.Main
+module Cryptography.Sodium.Bindings.Main
   ( -- * High-level wrappers
     secureMain,
     secureMainWith,
@@ -43,7 +44,7 @@ import System.Exit (die)
 -- > main :: IO ()
 -- > main = secureMain doTheThingIActuallyWant
 --
--- @since 1.0
+-- @since 0.0.1.0
 secureMain :: forall (a :: Type). IO a -> IO a
 secureMain = secureMainWith (die "Could not initialize secure functionality, aborting.")
 
@@ -55,7 +56,7 @@ secureMain = secureMainWith (die "Could not initialize secure functionality, abo
 -- > main :: IO ()
 -- > main = secureMainWith reportErrorWithLogging doTheThingIActuallyWant
 --
--- @since 1.0
+-- @since 0.0.1.0
 secureMainWith :: forall (a :: Type). IO a -> IO a -> IO a
 secureMainWith badPath goodPath = do
   !res <- sodiumInit
@@ -69,7 +70,7 @@ secureMainWith badPath goodPath = do
 --
 -- [@sodium_init@](https://libsodium.gitbook.io/doc/usage)
 --
--- @since 1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_init"
   sodiumInit ::
     -- | 0 if successful, -1 on failure, 1 on repeat calls

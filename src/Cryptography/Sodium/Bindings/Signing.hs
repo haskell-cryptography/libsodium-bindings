@@ -66,29 +66,29 @@ import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 -------------------------
 
 -- | This function randomly generates a secret key and a corresponding public key.
--- The public key is put into the @pk@ parameter and the secret key into the @sk@ parameter.
+-- The public key is put into the @public key@ and the secret key into the @secret key@.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_keypair"
   cryptoSignKeyPair ::
-    -- | @pk@ parameter. It has a length of 'cryptoSignPublicKeyBytes'.
+    -- | Pointer to the @public key@. It has a length of 'cryptoSignPublicKeyBytes'.
     Ptr CUChar ->
-    -- | @sk@ parameter. It has a length of 'cryptoSignSecretKeyBytes'.
+    -- | Pointer to the @secret key@. It has a length of 'cryptoSignSecretKeyBytes'.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | This function derives a keypair (@sk@ and @pk@) from a seed.
+-- | This function derives a keypair (@secret key@ and @public key@) from a seed.
 -- It is deterministic.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_seed_keypair"
   cryptoSignSeedKeyPair ::
-    -- | @pk@ parameter. It has a length of 'cryptoSignPublicKeyBytes'.
+    -- | Pointer to the @public key@. It has a length of 'cryptoSignPublicKeyBytes'.
     Ptr CUChar ->
-    -- | @sk@ parameter. It has a length of 'cryptoSignSecretKeyBytes'.
+    -- | Pointer to the @secret key@. It has a length of 'cryptoSignSecretKeyBytes'.
     Ptr CUChar ->
-    -- | @seed@ parameter. It has a length of 'cryptoSignSeedBytes'.
+    -- | Pointer to the @seed@. It has a length of 'cryptoSignSeedBytes'.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
@@ -98,10 +98,10 @@ foreign import capi "sodium.h crypto_sign_seed_keypair"
 -------------------
 
 -- | The 'cryptoSign' function prepends a signature to a message @m@, whose length is @mlen@ bytes,
--- using the secret key @sk@.
+-- using the secret key @secret key@.
 --
 -- The signed message, which includes the signature plus an unaltered copy of the message, is put
--- into @sm@ and is 'cryptoSignBytes' + @mlen@ bytes long.
+-- into @signed message@ and is 'cryptoSignBytes' + @mlen@ bytes long.
 --
 -- If @smlen@ is not a 'Foreign.nullPtr', then the actual length of the signed message is stored in
 -- @smlen@.
@@ -109,21 +109,21 @@ foreign import capi "sodium.h crypto_sign_seed_keypair"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign"
   cryptoSign ::
-    -- | @sm@ parameter.
+    -- | Pointer to the @signed message@.
     Ptr CUChar ->
-    -- | @smlen_p@ parameter.
+    -- | Pointer to the length of the @signed message@.
     Ptr CULLong ->
-    -- | @m@ parameter.
+    -- | Pointer to the @message@ to sign.
     Ptr CUChar ->
-    -- | @mlen@ parameter.
+    -- | Length of the @message@.
     CULLong ->
-    -- | @sk@ parameter.
+    -- | Pointer to the @secret key@.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | The 'cryptoSignOpen' function checks that the signed message @sm@,
--- whose length is @smlen@ bytes, has a valid signature for the public key @pk@.
+-- | The 'cryptoSignOpen' function checks that the signed message @signed message@,
+-- whose length is @smlen@ bytes, has a valid signature for the public key @public key@.
 --
 -- On success, it puts the message without the signature into @m@, stores its length in @mlen@
 -- if @mlen@ is not a 'Foreign.nullPtr' pointer.
@@ -131,15 +131,15 @@ foreign import capi "sodium.h crypto_sign"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_open"
   cryptoSignOpen ::
-    -- | @m@ parameter.
+    -- | Pointer to the @message@ you wish to sign.
     Ptr CUChar ->
-    -- | @mlen_p@ parameter
+    -- | Pointer to the length of the @message@.
     Ptr CULLong ->
-    -- | @sm@ parameter.
+    -- | Pointer to the @signed message@.
     Ptr CUChar ->
-    -- | @smlen@ parameter.
+    -- | Length of the signed message.
     CULLong ->
-    -- | @pk@ parameter.
+    -- | Pointer to the @public key@.
     Ptr CUChar ->
     -- | On success, the function returns 0
     -- If the signature isn't valid, then the function returns -1.
@@ -150,7 +150,7 @@ foreign import capi "sodium.h crypto_sign_open"
 -------------------
 
 -- | The 'cryptoSignDetached' function signs the message @m@, whose length is @mlen@ bytes,
--- using the secret key @sk@ and puts the signature into @sig@, which can be up to
+-- using the secret key @secret key@ and puts the signature into @sig@, which can be up to
 -- 'cryptoSignBytes' bytes long.
 -- The actual length of the signature is put into @siglen@ if @siglen@ is not 'Foreign.nullPtr'.
 -- It is safe to ignore @siglen@ and always consider a signature as 'cryptoSignBytes' bytes long;
@@ -159,15 +159,15 @@ foreign import capi "sodium.h crypto_sign_open"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_detached"
   cryptoSignDetached ::
-    -- | @sig@ parameter.
+    -- | Pointer to the @signature@.
     Ptr CUChar ->
-    -- | @siglen_p@.
+    -- | Pointer to the length of the @signature@.
     Ptr CULLong ->
-    -- | @m@ parameter.
+    -- | Pointer to the @message@ to sign.
     Ptr CUChar ->
-    -- | @mlen@ parameter.
+    -- | Length of the @message@.
     CULLong ->
-    -- | @sk@ parameter.
+    -- | Pointer to the @secret key@.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
@@ -224,7 +224,7 @@ foreign import capi "sodium.h crypto_sign_statebytes"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_init"
   cryptoSignInit ::
-    -- | @state@ parameter.
+    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
@@ -238,73 +238,75 @@ foreign import capi "sodium.h crypto_sign_init"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_update"
   cryptoSignUpdate ::
-    -- | @state@ parameter.
+    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
-    -- | @message@ parameter.
+    -- | Pointer to the new chunk to sign.
     Ptr CUChar ->
-    -- | @mlen@ parameter.
+    -- | Length of the new chunk.
     CULLong ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | Compute a signature for the previously supplied message using the secret key @sk@
--- and puts it into the @sig@ parameter.
+-- | Compute a signature for the previously supplied message
+-- using the @secret key@ and put it into the @signature@ buffer.
 --
--- If @siglen_p@ is not a 'Foreign.nullPtr', then the length of the signature is stored at this address.
--- It is safe to ignore @siglen@ and always consider a signature as 'cryptoSignBytes' bytes long;
+-- If the pointer to the length of the signature is not a 'Foreign.nullPtr',
+-- then the length of the signature is stored at this address.
+-- It is safe to ignore the length of the signature and always consider
+-- a signature as 'cryptoSignBytes' bytes long;
 -- shorter signatures will be transparently padded with zeros if necessary.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_final_create"
   cryptoSignFinalCreate ::
-    -- | @state@ parameter.
+    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
-    -- | @sig@ parameter.
+    -- | Pointer to the @signature@.
     Ptr CUChar ->
-    -- | @siglen_p@ parameter.
+    -- | Pointer to the length of the @signature@. Can be 'Foreign.nullPtr'.
     Ptr CULLong ->
-    -- | @sk@ parameter.
+    -- | Pointer to the @secret key@.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | Verify that the @sig@ parameter is a valid signature using the public key @pk@
+-- | Verify that the @signature@ is valid using the @public key@
 -- for the message whose content has been previously supplied using 'cryptoSignUpdate'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_final_verify"
   cryptoSignFinalVerify ::
-    -- | @state@ parameter.
+    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
-    -- | @sig@ parameter.
+    -- | Pointer to the @signature@.
     Ptr CUChar ->
-    -- | @pk@ parameter.
+    -- | Pointer to the @public key@.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
 -- | This function extracts the seed from the
--- secret key @sk@ and copies it into the @seed@ parameter.
--- The size of the @seed@ parameter will be equal to 'cryptoSignSeedBytes'.
+-- secret key @secret key@ and copies it into the buffer holding the @seed@.
+-- The size of the @seed@ will be equal to 'cryptoSignSeedBytes'.
 foreign import capi "sodium.h crypto_sign_ed25519_sk_to_seed"
   cryptoSignED25519SkToSeed ::
-    -- | @seed@ parameter.
+    -- | Pointer to the @seed@.
     Ptr CUChar ->
-    -- | @sk@ parameter.
+    -- | Pointer to the @secret key@.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | This function extracts the public key from the secret key @sk@
--- and copies it into @pk@.
--- The size of @pk@ will be equal to 'cryptoSignPublicKeyBytes'.
+-- | This function extracts the public key from the secret key @secret key@
+-- and copies it into @public key@.
+-- The size of @public key@ will be equal to 'cryptoSignPublicKeyBytes'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_ed25519_sk_to_pk"
   cryptoSignED25519SkToPk ::
-    -- | @pk@ parameter.
+    -- | Pointer to the @public key@.
     Ptr CUChar ->
-    -- | @sk@ parameter.
+    -- | Pointer to the @secret key@.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt

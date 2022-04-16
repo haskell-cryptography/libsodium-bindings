@@ -27,7 +27,7 @@ module Cryptography.Sodium.Bindings.SHA512
   )
 where
 
-import Foreign (Ptr, Word64, Word8)
+import Foreign (Ptr)
 import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 
 -- $introduction
@@ -43,45 +43,39 @@ import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 -- streaming API is also available to process a message as a sequence of multiple chunks.
 
 
--- | Hash the content of the @in@ buffer and put the result in the @out@ buffer.
--- The @inlen@ parameter is the size of what is in the @in@ buffer.
+-- | Hash the content of the second buffer and put the result in the first buffer.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512"
   cryptoHashSHA512 ::
-    -- | @out@ parameter. This is a pointer to the hash of your data.
+    -- | A pointer to the hash of your data.
     Ptr CUChar ->
-    -- | @in@ parameter. This is a pointer to the data you want to hash.
+    -- | A pointer to the data you want to hash.
     Ptr CUChar ->
-    -- | @inlen@ parameter. This is the length of the data you want to hash.
+    -- | The length of the data you want to hash.
     CULLong ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | This is the state held and used by the various functions of this
+-- | This is the opaque state held and used by the various functions of this
 -- module.
 --
 -- @since 0.0.1.0
 data CryptoHashSHA512State = CryptoHashSHA512State
-  { state :: Word64,
-    count :: Word64,
-    buf :: Word8
-  }
 
 -- | This function initializes the 'CryptoHashSHA512State' state.
 --
--- It must imperatively be called before the first 'cryptoHashSHA512Update' call.
+-- It must be called before the first 'cryptoHashSHA512Update' call.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_init"
   cryptoHashSHA512Init ::
-    -- | @state@ parameter. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to the 'CryptoHashSHA512State'. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | Add a new chunk, stored in the @in@ buffer and of length @inlen@
--- to the message that will eventually be hashed.
+-- | Add a new chunk to the message that will eventually be hashed.
 --
 -- After all parts have been supplied, 'cryptoHashSHA512Final' can be used to finalise the operation
 -- and get the final hash.
@@ -89,24 +83,27 @@ foreign import capi "sodium.h crypto_hash_sha512_init"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_update"
   cryptoHashSHA512Update ::
-    -- | @state@ parameter. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to the 'CryptoHashSHA512State'. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
-    -- | @in@ parameter.
+    -- | A pointer to the new message chunk to process.
     Ptr CUChar ->
-    -- | @inlen@ parameter
+    -- | The length in bytes of the chunk.
     CULLong ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
--- then put in the @out@ buffer, whilst the @state@ buffer is emptied.
+-- then put in a buffer.
+--
+-- After this operation, the buffer containing the 'CryptoHashSHA512State' is emptied and
+-- cannot be relied upon.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_final"
   cryptoHashSHA512Final ::
-    -- | @state@ parameter. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to the 'CryptoHashSHA512State'. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
-    -- | @out@ parameter.
+    -- | The buffer in which the final hash is stored.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt

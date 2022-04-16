@@ -219,7 +219,7 @@ foreign import capi "sodium.h crypto_sign_statebytes"
 
 -- | This function initializes the 'CryptoSignState' state.
 --
--- It must imperatively be called before the first 'cryptoSignUpdate' call.
+-- It must be called before the first 'cryptoSignUpdate' call.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_init"

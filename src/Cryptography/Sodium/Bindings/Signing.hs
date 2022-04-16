@@ -177,7 +177,8 @@ foreign import capi "sodium.h crypto_sign_detached"
 -------------------------
 
 -- $mpm
--- If the message you're trying to sign doesn't fit in memory, then it can be provided as a sequence of arbitrarily-sized
+-- If the message you're trying to sign doesn't fit in memory, then it can be provided as a sequence
+-- of arbitrarily-sized
 -- chunks. This uses the @Ed25519ph@ signature system, which pre-hashes the message. In other words,
 -- what gets signed is not the message itself but its image through a hash function. If the message
 -- can fit in memory and be supplied as a single chunk, then the single-part API should be

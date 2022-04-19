@@ -71,9 +71,9 @@ import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_keypair"
   cryptoSignKeyPair ::
-    -- | Pointer to the @public key@. It has a length of 'cryptoSignPublicKeyBytes'.
+    -- | A pointer to an initialized cryptographic state. It has a length of 'cryptoSignPublicKeyBytes' bytes.
     Ptr CUChar ->
-    -- | Pointer to the @secret key@. It has a length of 'cryptoSignSecretKeyBytes'.
+    -- | A pointer to an initialized cryptographic state. It has a length of 'cryptoSignSecretKeyBytes' bytes.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
@@ -84,11 +84,11 @@ foreign import capi "sodium.h crypto_sign_keypair"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_seed_keypair"
   cryptoSignSeedKeyPair ::
-    -- | Pointer to the @public key@. It has a length of 'cryptoSignPublicKeyBytes'.
+    -- | A pointer to an initialized cryptographic state. It has a length of 'cryptoSignPublicKeyBytes'.
     Ptr CUChar ->
-    -- | Pointer to the @secret key@. It has a length of 'cryptoSignSecretKeyBytes'.
+    -- | A pointer to an initialized cryptographic state. It has a length of 'cryptoSignSecretKeyBytes'.
     Ptr CUChar ->
-    -- | Pointer to the @seed@. It has a length of 'cryptoSignSeedBytes'.
+    -- | A pointer to an initialized cryptographic state. It has a length of 'cryptoSignSeedBytes'.
     Ptr CUChar ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
@@ -103,8 +103,8 @@ foreign import capi "sodium.h crypto_sign_seed_keypair"
 -- The signed message, which includes the signature plus an unaltered copy of the message, is put
 -- into @signed message@ and is 'cryptoSignBytes' + @mlen@ bytes long.
 --
--- If @smlen@ is not a 'Foreign.nullPtr', then the actual length of the signed message is stored in
--- @smlen@.
+-- If the pointer to the length of the signed message is not a 'Foreign.nullPtr',
+-- then the actual length of the signed message is stored in it.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign"
@@ -208,14 +208,14 @@ data CryptoSignState
 -- @since 0.0.1.0
 withSignState :: (Ptr CryptoSignState -> IO a) -> IO a
 withSignState action = do
-  let size = fromIntegral cryptoSignStateBytes
+  size <- fromIntegral <$> cryptoSignStateBytes
   allocaBytes size action
 
 -- | The amount of memory needed to store a 'CryptoSignState'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_statebytes"
-  cryptoSignStateBytes :: CSize
+  cryptoSignStateBytes :: IO CSize
 
 -- | This function initializes the 'CryptoSignState' state.
 --
@@ -224,13 +224,12 @@ foreign import capi "sodium.h crypto_sign_statebytes"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_init"
   cryptoSignInit ::
-    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialized cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- | Add a new chunk @m@ of length @mlen@ bytes
--- to the message that will eventually be signed.
+-- | Add a new chunk to the message that will eventually be signed.
 --
 -- After all parts have been supplied, 'cryptoSignFinalCreate' or 'cryptoSignFinalVerify'
 -- can be used.
@@ -238,7 +237,7 @@ foreign import capi "sodium.h crypto_sign_init"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_update"
   cryptoSignUpdate ::
-    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialized cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
     -- | Pointer to the new chunk to sign.
     Ptr CUChar ->
@@ -259,11 +258,11 @@ foreign import capi "sodium.h crypto_sign_update"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_final_create"
   cryptoSignFinalCreate ::
-    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialized cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
     -- | Pointer to the @signature@.
     Ptr CUChar ->
-    -- | Pointer to the length of the @signature@. Can be 'Foreign.nullPtr'.
+    -- | A pointer to an initialized cryptographic state. Can be 'Foreign.nullPtr'.
     Ptr CULLong ->
     -- | Pointer to the @secret key@.
     Ptr CUChar ->
@@ -276,7 +275,7 @@ foreign import capi "sodium.h crypto_sign_final_create"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_final_verify"
   cryptoSignFinalVerify ::
-    -- | Pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialized cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
     -- | Pointer to the @signature@.
     Ptr CUChar ->

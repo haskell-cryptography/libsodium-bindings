@@ -65,7 +65,7 @@ library
     Cryptography.Sodium.Bindings.Main
     Cryptography.Sodium.Bindings.PasswordHashing
     Cryptography.Sodium.Bindings.Random
-    Cryptography.Sodium.Bindings.SHA512
+    Cryptography.Sodium.Bindings.SHA2
     Cryptography.Sodium.Bindings.Signing
     Cryptography.Sodium.Bindings.XChaCha20
 

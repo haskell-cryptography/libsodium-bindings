@@ -19,6 +19,7 @@ module Cryptography.Sodium.Bindings.SHA2
     cryptoHashSHA256,
     -- ** Multi-part messages
     CryptoHashSHA256State,
+    cryptoHashSHA256StateBytes,
     cryptoHashSHA256Init,
     cryptoHashSHA256Update,
     cryptoHashSHA256Final,
@@ -29,6 +30,7 @@ module Cryptography.Sodium.Bindings.SHA2
 
     -- ** Multi-part messages
     CryptoHashSHA512State,
+    cryptoHashSHA512StateBytes,
     cryptoHashSHA512Init,
     cryptoHashSHA512Update,
     cryptoHashSHA512Final,
@@ -72,12 +74,18 @@ foreign import capi "sodium.h crypto_hash_sha256"
 
 -- | This is the opaque state held and used by the SHA-256 functions.
 --
--- Its size is 'cryptoHashSHA256Bytes'.
+-- Its size is 'cryptoHashSHA256StateBytes'.
 --
 -- /See also:/ [crypto_hash_sha256_state](https://doc.libsodium.org/advanced/sha-2_hash_function#data-types)
 --
 -- @since 0.0.1.0
 data CryptoHashSHA256State
+
+-- | The size of a 'CryptoHashSHA256State'
+--
+-- @since 0.0.1.0
+foreign import capi "sodium.h crypto_hash_sha256_statebytes"
+  cryptoHashSHA256StateBytes :: CSize
 
 -- | This function initializes the 'CryptoHashSHA256State' state.
 --
@@ -155,6 +163,12 @@ foreign import capi "sodium.h crypto_hash_sha512"
 --
 -- @since 0.0.1.0
 data CryptoHashSHA512State
+
+-- | The size of a 'CryptoHashSHA512State'
+--
+-- @since 0.0.1.0
+foreign import capi "sodium.h crypto_hash_sha512_statebytes"
+  cryptoHashSHA512StateBytes :: CSize
 
 -- | This function initializes the 'CryptoHashSHA512State' state.
 --

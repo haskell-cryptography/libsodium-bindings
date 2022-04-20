@@ -19,7 +19,6 @@ module Cryptography.Sodium.Bindings.SHA2
     cryptoHashSHA256,
     -- ** Multi-part messages
     CryptoHashSHA256State,
-    cryptoHashSHA256StateBytes,
     cryptoHashSHA256Init,
     cryptoHashSHA256Update,
     cryptoHashSHA256Final,
@@ -30,13 +29,14 @@ module Cryptography.Sodium.Bindings.SHA2
 
     -- ** Multi-part messages
     CryptoHashSHA512State,
-    cryptoHashSHA512StateBytes,
     cryptoHashSHA512Init,
     cryptoHashSHA512Update,
     cryptoHashSHA512Final,
     -- * Constants
     cryptoHashSHA256Bytes,
+    cryptoHashSHA256StateBytes,
     cryptoHashSHA512Bytes,
+    cryptoHashSHA512StateBytes,
   )
 where
 
@@ -80,12 +80,6 @@ foreign import capi "sodium.h crypto_hash_sha256"
 --
 -- @since 0.0.1.0
 data CryptoHashSHA256State
-
--- | The size of a 'CryptoHashSHA256State'
---
--- @since 0.0.1.0
-foreign import capi "sodium.h crypto_hash_sha256_statebytes"
-  cryptoHashSHA256StateBytes :: CSize
 
 -- | This function initializes the 'CryptoHashSHA256State' state.
 --
@@ -157,18 +151,13 @@ foreign import capi "sodium.h crypto_hash_sha512"
 
 -- | This is the opaque state held and used by the SHA-512 functions.
 --
--- Its size is 'cryptoHashSHA512Bytes'.
+-- Its size is 'cryptoHashSHA512StateBytes'.
 --
 -- /See also:/ [crypto_hash_sha512_state](https://doc.libsodium.org/advanced/sha-2_hash_function#data-types)
 --
 -- @since 0.0.1.0
 data CryptoHashSHA512State
 
--- | The size of a 'CryptoHashSHA512State'
---
--- @since 0.0.1.0
-foreign import capi "sodium.h crypto_hash_sha512_statebytes"
-  cryptoHashSHA512StateBytes :: CSize
 
 -- | This function initializes the 'CryptoHashSHA512State' state.
 --
@@ -222,11 +211,22 @@ foreign import capi "sodium.h crypto_hash_sha512_final"
     -- | Return code is 0 on success, -1 on error.
     IO CInt
 
--- |
+---------------
+-- Constants --
+---------------
+
+-- | The size of a SHA256-hashed message.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_hash_sha256_BYTES"
   cryptoHashSHA256Bytes :: CSize
+
+-- | The size of a 'CryptoHashSHA256State'.
+--
+-- @since 0.0.1.0
+foreign import capi "sodium.h crypto_hash_sha256_statebytes"
+  cryptoHashSHA256StateBytes :: CSize
+
 
 -- | This constant represents the size of a pre-hashed message.
 -- It is in use in the @ED25519ph@ multi-part signing system.
@@ -237,3 +237,9 @@ foreign import capi "sodium.h value crypto_hash_sha256_BYTES"
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_hash_sha512_BYTES"
   cryptoHashSHA512Bytes :: CSize
+
+-- | The size of a 'CryptoHashSHA512State'.
+--
+-- @since 0.0.1.0
+foreign import capi "sodium.h crypto_hash_sha512_statebytes"
+  cryptoHashSHA512StateBytes :: CSize

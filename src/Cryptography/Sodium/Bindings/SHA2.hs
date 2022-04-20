@@ -15,8 +15,10 @@ module Cryptography.Sodium.Bindings.SHA2
     -- $introduction
 
     -- * SHA-256
+
     -- ** Single-part message
     cryptoHashSHA256,
+
     -- ** Multi-part messages
     CryptoHashSHA256State,
     cryptoHashSHA256Init,
@@ -24,6 +26,7 @@ module Cryptography.Sodium.Bindings.SHA2
     cryptoHashSHA256Final,
 
     -- * SHA-512
+
     -- ** Single-part message
     cryptoHashSHA512,
 
@@ -32,6 +35,7 @@ module Cryptography.Sodium.Bindings.SHA2
     cryptoHashSHA512Init,
     cryptoHashSHA512Update,
     cryptoHashSHA512Final,
+
     -- * Constants
     cryptoHashSHA256Bytes,
     cryptoHashSHA256StateBytes,
@@ -54,7 +58,6 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 -- These functions are not keyed and are thus deterministic. In addition, the untruncated versions
 -- are vulnerable to length extension attacks. A message can be hashed in a single pass, but a
 -- streaming API is also available to process a message as a sequence of multiple chunks.
-
 
 -- | Hash the content of the second buffer and put the result in the first buffer.
 --
@@ -158,7 +161,6 @@ foreign import capi "sodium.h crypto_hash_sha512"
 -- @since 0.0.1.0
 data CryptoHashSHA512State
 
-
 -- | This function initializes the 'CryptoHashSHA512State' state.
 --
 -- Call this function on a 'Ptr CryptoHashSHA512State' before using it
@@ -226,7 +228,6 @@ foreign import capi "sodium.h value crypto_hash_sha256_BYTES"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_statebytes"
   cryptoHashSHA256StateBytes :: CSize
-
 
 -- | This constant represents the size of a pre-hashed message.
 -- It is in use in the @ED25519ph@ multi-part signing system.

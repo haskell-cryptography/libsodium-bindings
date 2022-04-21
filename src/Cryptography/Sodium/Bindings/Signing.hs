@@ -70,9 +70,6 @@ import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 
 -- | Randomly generate a secret key and a corresponding public key.
 --
--- You can retrieve them by accessing the buffers passed as parameters
--- to this function.
---
 -- /See:/ [crypto_sign_keypair()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#key-pair-generation)
 --
 -- @since 0.0.1.0
@@ -82,7 +79,7 @@ foreign import capi "sodium.h crypto_sign_keypair"
     Ptr CUChar ->
     -- | A pointer to the buffer holding the secret key. It has a length of 'cryptoSignSecretKeyBytes' bytes.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Derive a keypair (secret key and public key) from a seed.
@@ -99,7 +96,7 @@ foreign import capi "sodium.h crypto_sign_seed_keypair"
     Ptr CUChar ->
     -- | A pointer to the seed. It has a length of 'cryptoSignSeedBytes'.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -------------------
@@ -129,7 +126,7 @@ foreign import capi "sodium.h crypto_sign"
     CULLong ->
     -- | Pointer to the secret key.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Check that the signed message has a valid signature for the public key.
@@ -186,7 +183,7 @@ foreign import capi "sodium.h crypto_sign_detached"
     CULLong ->
     -- | Pointer to the secret key.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Verify that the signature is valid for the message, using the
@@ -205,7 +202,7 @@ foreign import capi "sodium.h crypto_sign_verify_detached"
     CULLong ->
     -- | Pointer to the signer's public key
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -------------------------
@@ -259,7 +256,7 @@ foreign import capi "sodium.h crypto_sign_init"
   cryptoSignInit ::
     -- | A pointer to the cryptographic state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoSignState ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Add a new chunk to the message that will eventually be signed.
@@ -278,7 +275,7 @@ foreign import capi "sodium.h crypto_sign_update"
     Ptr CUChar ->
     -- | Length of the new chunk.
     CULLong ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Compute a signature for the previously supplied message
@@ -303,7 +300,7 @@ foreign import capi "sodium.h crypto_sign_final_create"
     Ptr CULLong ->
     -- | Pointer to the secret key. Cannot be 'Foreign.nullPtr'.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Verify that the signature is valid using the public key
@@ -320,7 +317,7 @@ foreign import capi "sodium.h crypto_sign_final_verify"
     Ptr CUChar ->
     -- | Pointer to the public key.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | This function extracts the seed from the
@@ -336,7 +333,7 @@ foreign import capi "sodium.h crypto_sign_ed25519_sk_to_seed"
     Ptr CUChar ->
     -- | Pointer to the secret key.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | This function extracts the public key from the secret key secret key
@@ -352,7 +349,7 @@ foreign import capi "sodium.h crypto_sign_ed25519_sk_to_pk"
     Ptr CUChar ->
     -- | Pointer to the secret key.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 ---------------

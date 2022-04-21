@@ -72,7 +72,7 @@ foreign import capi "sodium.h crypto_hash_sha256"
     Ptr CUChar ->
     -- | The length of the data you want to hash.
     CULLong ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | This is the opaque state held and used by the SHA-256 functions.
@@ -96,7 +96,7 @@ foreign import capi "sodium.h crypto_hash_sha256_init"
   cryptoHashSHA256Init ::
     -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA256State ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Add a new chunk to the message that will eventually be hashed.
@@ -115,7 +115,7 @@ foreign import capi "sodium.h crypto_hash_sha256_update"
     Ptr CUChar ->
     -- | The length in bytes of the chunk.
     CULLong ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
@@ -133,7 +133,7 @@ foreign import capi "sodium.h crypto_hash_sha256_final"
     Ptr CryptoHashSHA256State ->
     -- | The buffer in which the final hash is stored.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Hash the content of the second buffer and put the result in the first buffer.
@@ -149,7 +149,7 @@ foreign import capi "sodium.h crypto_hash_sha512"
     Ptr CUChar ->
     -- | The length of the data you want to hash.
     CULLong ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | This is the opaque state held and used by the SHA-512 functions.
@@ -173,7 +173,7 @@ foreign import capi "sodium.h crypto_hash_sha512_init"
   cryptoHashSHA512Init ::
     -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Add a new chunk to the message that will eventually be hashed.
@@ -192,7 +192,7 @@ foreign import capi "sodium.h crypto_hash_sha512_update"
     Ptr CUChar ->
     -- | The length in bytes of the chunk.
     CULLong ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
@@ -210,7 +210,7 @@ foreign import capi "sodium.h crypto_hash_sha512_final"
     Ptr CryptoHashSHA512State ->
     -- | The buffer in which the final hash is stored.
     Ptr CUChar ->
-    -- | Return code is 0 on success, -1 on error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 ---------------

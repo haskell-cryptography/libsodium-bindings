@@ -80,7 +80,7 @@ withGenericHashState action = withGenericHashStateOfSize cryptoGenericHashBytes 
 withGenericHashStateOfSize :: CSize -> (Ptr CryptoGenericHashState -> IO a) -> IO a
 withGenericHashStateOfSize size action = allocaBytes (fromIntegral size) action
 
--- | This function puts a fingerprint of the message (the @in@ parameter) of length @inlen@ into
+-- | Put a fingerprint of the message (the @in@ parameter) of length @inlen@ into
 -- the @out@ buffer.
 -- The minimum recommended output size (@outlen@) is 'cryptoGenericHashBytes'.
 -- However, for specific use cases, the size can be any value between 'cryptoGenericHashBytesMin' (included)
@@ -112,11 +112,11 @@ foreign import capi "sodium.h crypto_generichash"
     Ptr CUChar ->
     -- | @keylen@ parameter.
     CSize ->
-    -- | The function will return 0, and 1 in case of error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
--- | This function intialises a hash state with a key of a specified length, and will
--- eventually produce an output with the specified length in bytes.
+-- | Initialise a hash state with a key of a specified length, and
+-- produce an output with the specified length in bytes.
 --
 -- The @'Ptr' 'CUChar'@ argument must point to enough memory to hold a key,
 -- which must also be initialised.
@@ -135,7 +135,7 @@ foreign import capi "sodium.h crypto_generichash_init"
     CSize ->
     -- | Length of the result
     CSize ->
-    -- | The function will return 0, and 1 in case of error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | If you process a message in chunks, you can sequentially process each chunk by calling 'cryptoGenericHashUpdate'
@@ -151,7 +151,7 @@ foreign import capi "sodium.h crypto_generichash_update"
     Ptr CUChar ->
     -- | Length of the chunk in bytes
     CULLong ->
-    -- | The function will return 0, and 1 in case of error.
+    -- | Returns 0 on success, -1 on error.
     IO CInt
 
 -- | After processing everything you need with 'cryptoGenericHashUpdate', you can finalise the operation
@@ -166,7 +166,7 @@ foreign import capi "sodium.h crypto_generichash_final"
     Ptr CUChar ->
     -- | Size of the hash.
     CSize ->
-    -- | The function will return 0, and 1 in case of error of if called twice.
+    -- | Returns 0 on success, -1 if called twice.
     IO CInt
 
 -- | This function creates a key of the recommended length 'cryptoGenericHashKeyBytes'.

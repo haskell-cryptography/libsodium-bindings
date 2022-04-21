@@ -1,6 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
 -- Module: Cryptography.Sodium.Bindings.Signing
@@ -131,8 +131,8 @@ foreign import capi "sodium.h crypto_sign"
 
 -- | Check that the signed message has a valid signature for the public key.
 --
--- On success, it puts the message without the signature into, and stores its length in
--- the buffer holding the length of the message, if the pointer is not a 'Foreign.nullPtr'.
+-- On success, it puts the message, without the signature into the first buffer.
+-- The length of the message will be stored in the , if the pointer is not a 'Foreign.nullPtr'.
 --
 -- /See:/ [crypto_sign_open()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#key-pair-generation)
 --
@@ -242,7 +242,7 @@ data CryptoSignState
 -- @since 0.0.1.0
 withSignState :: (Ptr CryptoSignState -> IO a) -> IO a
 withSignState action = do
-  let size = (fromIntegral @CSize @Int) cryptoSignStateBytes
+  let size :: Int = fromIntegral cryptoSignStateBytes
   allocaBytes size action
 
 -- | Initialise the 'CryptoSignState' state.

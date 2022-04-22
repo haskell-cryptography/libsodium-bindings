@@ -1,4 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE Trustworthy #-}
 
 -- |
@@ -21,6 +22,7 @@ module Cryptography.Sodium.Bindings.SHA2
 
     -- ** Multi-part messages
     CryptoHashSHA256State,
+    withCryptoHashSHA256State,
     cryptoHashSHA256Init,
     cryptoHashSHA256Update,
     cryptoHashSHA256Final,
@@ -32,6 +34,7 @@ module Cryptography.Sodium.Bindings.SHA2
 
     -- ** Multi-part messages
     CryptoHashSHA512State,
+    withCryptoHashSHA512State,
     cryptoHashSHA512Init,
     cryptoHashSHA512Update,
     cryptoHashSHA512Final,
@@ -44,7 +47,7 @@ module Cryptography.Sodium.Bindings.SHA2
   )
 where
 
-import Foreign (Ptr)
+import Foreign (Ptr, allocaBytes)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
@@ -84,6 +87,19 @@ foreign import capi "sodium.h crypto_hash_sha256"
 -- @since 0.0.1.0
 data CryptoHashSHA256State
 
+-- | Perform an operation with a 'CryptoHashSHA256State of size 'cryptoHashSHA256StateBytes'
+-- allocated and deallocated automatically.
+--
+-- ⚠ The return value of 'withCryptoHashSHA256State __MUST NOT__ leak the 'CryptoHashSHA256State'.
+--
+-- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
+--
+-- @since 0.0.1.0
+withCryptoHashSHA256State :: (Ptr CryptoHashSHA256State -> IO a) -> IO a
+withCryptoHashSHA256State action = do
+  let size :: Int = fromIntegral cryptoHashSHA256StateBytes
+  allocaBytes size action
+
 -- | This function initializes the 'CryptoHashSHA256State' state.
 --
 -- Call this function on a 'Ptr CryptoHashSHA256State' before using it
@@ -94,7 +110,7 @@ data CryptoHashSHA256State
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_init"
   cryptoHashSHA256Init ::
-    -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA256State ->
     -- | Returns 0 on success, -1 on error.
     IO CInt
@@ -109,7 +125,7 @@ foreign import capi "sodium.h crypto_hash_sha256_init"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_update"
   cryptoHashSHA256Update ::
-    -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA256State ->
     -- | A pointer to the new message chunk to process.
     Ptr CUChar ->
@@ -129,7 +145,7 @@ foreign import capi "sodium.h crypto_hash_sha256_update"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_final"
   cryptoHashSHA256Final ::
-    -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA256State ->
     -- | The buffer in which the final hash is stored.
     Ptr CUChar ->
@@ -161,6 +177,19 @@ foreign import capi "sodium.h crypto_hash_sha512"
 -- @since 0.0.1.0
 data CryptoHashSHA512State
 
+-- | Perform an operation with a 'CryptoHashSHA512State of size 'cryptoHashSHA512StateBytes'
+-- allocated and deallocated automatically.
+--
+-- ⚠ The return value of 'withCryptoHashSHA512State __MUST NOT__ leak the 'CryptoHashSHA512State'.
+--
+-- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
+--
+-- @since 0.0.1.0
+withCryptoHashSHA512State :: (Ptr CryptoHashSHA512State -> IO a) -> IO a
+withCryptoHashSHA512State action = do
+  let size :: Int = fromIntegral cryptoHashSHA512StateBytes
+  allocaBytes size action
+
 -- | This function initializes the 'CryptoHashSHA512State' state.
 --
 -- Call this function on a 'Ptr CryptoHashSHA512State' before using it
@@ -171,7 +200,7 @@ data CryptoHashSHA512State
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_init"
   cryptoHashSHA512Init ::
-    -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
     -- | Returns 0 on success, -1 on error.
     IO CInt
@@ -186,7 +215,7 @@ foreign import capi "sodium.h crypto_hash_sha512_init"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_update"
   cryptoHashSHA512Update ::
-    -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
     -- | A pointer to the new message chunk to process.
     Ptr CUChar ->
@@ -206,7 +235,7 @@ foreign import capi "sodium.h crypto_hash_sha512_update"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_final"
   cryptoHashSHA512Final ::
-    -- | A pointer to an initialized hash state. Cannot be 'Foreign.nullPtr'.
+    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
     Ptr CryptoHashSHA512State ->
     -- | The buffer in which the final hash is stored.
     Ptr CUChar ->

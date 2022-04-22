@@ -1,6 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE Trustworthy #-}
 
 -- |
 -- Module: Cryptography.Sodium.Bindings.Signing

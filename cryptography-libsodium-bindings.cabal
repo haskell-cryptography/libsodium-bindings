@@ -61,10 +61,12 @@ library
   extra-bundled-libraries: sodium
   exposed-modules:
     Cryptography.Sodium.Bindings.Comparison
-    Cryptography.Sodium.Bindings.Hashing
+    Cryptography.Sodium.Bindings.GenericHashing
     Cryptography.Sodium.Bindings.Main
     Cryptography.Sodium.Bindings.PasswordHashing
     Cryptography.Sodium.Bindings.Random
+    Cryptography.Sodium.Bindings.SHA2
+    Cryptography.Sodium.Bindings.Signing
     Cryptography.Sodium.Bindings.XChaCha20
 
   hs-source-dirs:          src

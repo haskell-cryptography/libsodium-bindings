@@ -87,7 +87,7 @@ foreign import capi "sodium.h crypto_hash_sha256"
 -- @since 0.0.1.0
 data CryptoHashSHA256State
 
--- | Perform an operation with a 'CryptoHashSHA256State of size 'cryptoHashSHA256StateBytes'
+-- | Perform an operation with a 'CryptoHashSHA256State' of size 'cryptoHashSHA256StateBytes'
 -- allocated and deallocated automatically.
 --
 -- ⚠ The return value of 'withCryptoHashSHA256State __MUST NOT__ leak the 'CryptoHashSHA256State'.

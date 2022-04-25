@@ -86,7 +86,7 @@ withGenericHashStateOfSize size action = allocaBytes (fromIntegral size) action
 -- However, for specific use cases, the size can be any value between 'cryptoGenericHashBytesMin' (included)
 -- and 'cryptoGenericHashBytesMax' (included).
 --
--- The @key@ parameter can be NULL and keylen can be 0. In this case, a message will always have the same fingerprint
+-- The @key@ parameter can be 'Foreign.nullPtr' and keylen can be 0. In this case, a message will always have the same fingerprint
 -- But a key can also be specified. A message will always have the same fingerprint for a given key, but different
 -- keys used to hash the same message are very likely to produce distinct fingerprints.
 -- In particular, the key can be used to make sure that different applications generate different fingerprints even

@@ -49,10 +49,8 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar)
 foreign import capi "sodium.h crypto_kx_keypair"
   cryptoKXKeyPair ::
     -- | The buffer that will hold the public key, of size 'cryptoKXPublicKeyBytes'.
-    -- It cannot be a 'Foreign.nullPtr'.
     Ptr CUChar ->
     -- | The buffer that will hold the secret key, of size 'cryptoKXSecretKeyBytes'.
-    -- It cannot be a 'Foreign.nullPtr'.
     Ptr CUChar ->
     -- | Returns 0 on success, -1 on error.
     IO CInt
@@ -68,13 +66,10 @@ foreign import capi "sodium.h crypto_kx_keypair"
 foreign import capi "sodium.h crypto_kx_seed_keypair"
   cryptoKXSeedKeypair ::
     -- | The buffer that will hold the public key, of size 'cryptoKXPublicKeyBytes'.
-    -- It cannot be a 'Foreign.nullPtr'.
     Ptr CUChar ->
     -- | The buffer that will hold the secret key, of size 'cryptoKXSecretKeyBytes'.
-    -- It cannot be a 'Foreign.nullPtr'.
     Ptr CUChar ->
-    -- | The pointer to the seed from which the keys are derived.
-    -- It cannot be a 'Foreign.nullPtr'.
+    -- | The pointer to the seed from which the keys are derived. It is of size 'crypto_kx_SEEDBYTES' bytes.
     Ptr CUChar ->
     -- | Returns 0 on success, -1 on error.
     IO CInt

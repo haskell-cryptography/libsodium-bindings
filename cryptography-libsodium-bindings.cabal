@@ -62,6 +62,7 @@ library
   exposed-modules:
     Cryptography.Sodium.Bindings.Comparison
     Cryptography.Sodium.Bindings.GenericHashing
+    Cryptography.Sodium.Bindings.KeyExchange
     Cryptography.Sodium.Bindings.Main
     Cryptography.Sodium.Bindings.PasswordHashing
     Cryptography.Sodium.Bindings.Random

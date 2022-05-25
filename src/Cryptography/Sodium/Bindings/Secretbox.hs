@@ -44,12 +44,12 @@ import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
 --
 -- It comes in two flavours:
 --
---   [easy] Both the ciphertext and authentication tag are stored in the smae buffer.
+--   [easy] Both the ciphertext and authentication tag are stored in the same buffer.
 --   [detached] The ciphertext and authentication tag may be stored in separate buffers.
 --
 --
 -- The same key is used for both encryption and decryption, so it must be kept secret.
--- A key can be generated using the 'cryptoSecretboxKeygen' primitive
+-- A key can be generated using the 'cryptoSecretboxKeygen' primitive.
 --
 --
 -- Each message must use a unique nonce, which may be generated with the 'Cryptography.Sodium.Bindings.Random.randombytesBuf' primitive.

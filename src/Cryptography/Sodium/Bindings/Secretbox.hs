@@ -73,7 +73,7 @@ foreign import capi "sodium.h crypto_secretbox_keygen"
 -- The message and ciphertext buffers may overlap enabling in-place encryption, but note that the
 -- ciphertext will be 'cryptoSecretboxMACBytes' bytes longer than the message.
 --
--- /See also:/ [crytpo_secretbox_easy](https://doc.libsodium.org/secret-key_cryptography/secretbox#combined-mode)
+-- /See also:/ [crytpo_secretbox_easy()](https://doc.libsodium.org/secret-key_cryptography/secretbox#combined-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_easy"

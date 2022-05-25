@@ -55,9 +55,11 @@ import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
 -- Each message must use a unique nonce, which may be generated with the 'Cryptography.Sodium.Bindings.Random.randombytesBuf' primitive.
 -- The nonce does not need to be kept secret but should never be reused.
 --
--- For more information see the upstream docs: <https://libsodium.gitbook.io/doc/secret-key_cryptography/secretbox>
+-- For more information see the upstream docs: <https://doc.libsodium.org/secret-key_cryptography/secretbox>
 
 -- | Generate a key that can be used by the primitives of the secretbox API.
+--
+-- See also: [Secretbox example](https://doc.libsodium.org/secret-key_cryptography/secretbox#example)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_keygen"
@@ -70,6 +72,8 @@ foreign import capi "sodium.h crypto_secretbox_keygen"
 --
 -- The message and ciphertext buffers may overlap enabling in-place encryption, but note that the
 -- ciphertext will be 'cryptoSecretboxMACBytes' bytes longer than the message.
+--
+-- See also: [Combined mode](https://doc.libsodium.org/secret-key_cryptography/secretbox#combined-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_easy"
@@ -93,6 +97,8 @@ foreign import capi "sodium.h crypto_secretbox_easy"
 -- The message and ciphertext buffers may overlap enabling in-place decryption, but note that the
 -- message will be 'cryptoSecretboxMACBytes' bytes shorter than the ciphertext.
 --
+-- See also: [Combined mode](https://doc.libsodium.org/secret-key_cryptography/secretbox#combined-mode)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_open_easy"
   cryptoSecretboxOpenEasy ::
@@ -111,6 +117,8 @@ foreign import capi "sodium.h crypto_secretbox_open_easy"
     IO CInt
 
 -- | Encrypt a message using a secret key and nonce.
+--
+-- See also: [Detached mode](https://doc.libsodium.org/secret-key_cryptography/secretbox#detached-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_detached"
@@ -133,6 +141,8 @@ foreign import capi "sodium.h crypto_secretbox_detached"
 
 -- | Verify and decrypt ciphertext using a secret key and nonce
 --
+-- See also: [Detached mode](https://doc.libsodium.org/secret-key_cryptography/secretbox#detached-mode)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_open_detached"
   cryptoSecretboxOpenDetached ::
@@ -153,11 +163,15 @@ foreign import capi "sodium.h crypto_secretbox_open_detached"
 
 -- | The length of a secretbox key in bytes.
 --
+-- See also: [Constants](https://doc.libsodium.org/secret-key_cryptography/secretbox#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretbox_KEYBYTES"
   cryptoSecretboxKeyBytes :: CSize
 
 -- | The length of a secretbox nonce in bytes.
+--
+-- See also: [Constants](https://doc.libsodium.org/secret-key_cryptography/secretbox#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretbox_NONCEBYTES"
@@ -165,17 +179,23 @@ foreign import capi "sodium.h value crypto_secretbox_NONCEBYTES"
 
 -- | The length of a secretbox authentication tag in bytes.
 --
+-- See also: [Constants](https://doc.libsodium.org/secret-key_cryptography/secretbox#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretbox_MACBYTES"
   cryptoSecretboxMACBytes :: CSize
 
 -- | The underlying cryptographic algorithm used to implement the secretbox API.
 --
+-- See also: [Algorithm details](https://doc.libsodium.org/secret-key_cryptography/secretbox#algorithm-details)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretbox_PRIMITIVE"
   cryptoSecretboxPrimitive :: Ptr CChar
 
 -- | Maximum length of a message in bytes that can be encrypted using the secretbox API.
+--
+-- See also: [Constants](https://doc.libsodium.org/secret-key_cryptography/secretbox#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretbox_MESSAGEBYTES_MAX"

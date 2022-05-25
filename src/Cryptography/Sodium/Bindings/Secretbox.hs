@@ -59,7 +59,7 @@ import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
 
 -- | Generate a key that can be used by the primitives of the secretbox API.
 --
--- See also: [Secretbox example](https://doc.libsodium.org/secret-key_cryptography/secretbox#example)
+-- See also: [Detached mode](https://doc.libsodium.org/secret-key_cryptography/secretbox#detached-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_keygen"

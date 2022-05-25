@@ -164,6 +164,8 @@ foreign import capi "sodium.h value crypto_secretbox_NONCEBYTES"
   cryptoSecretboxNonceBytes :: CSize
 
 -- | The length of a secretbox authentication tag in bytes.
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretbox_MACBYTES"
   cryptoSecretboxMACBytes :: CSize
 

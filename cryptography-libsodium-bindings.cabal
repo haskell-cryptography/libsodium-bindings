@@ -66,6 +66,7 @@ library
     Cryptography.Sodium.Bindings.Main
     Cryptography.Sodium.Bindings.PasswordHashing
     Cryptography.Sodium.Bindings.Random
+    Cryptography.Sodium.Bindings.Scrypt
     Cryptography.Sodium.Bindings.Secretbox
     Cryptography.Sodium.Bindings.SHA2
     Cryptography.Sodium.Bindings.Signing

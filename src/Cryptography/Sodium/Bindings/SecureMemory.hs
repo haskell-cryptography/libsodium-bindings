@@ -1,6 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE Safe #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
 --
@@ -16,13 +16,16 @@ module Cryptography.Sodium.Bindings.SecureMemory
     -- $introduction
 
     -- * Zeroing memory
-    memZero
+    memZero,
+
     -- * Locking memory
-  , lock
-  , unlock
-  ) where
+    lock,
+    unlock,
+  )
+where
+
 import Foreign (Ptr)
-import Foreign.C.Types (CSize(CSize), CInt(CInt))
+import Foreign.C.Types (CInt (CInt), CSize (CSize))
 
 -- $introduction
 -- This module provides bindings to the secure memory functions provided by Libsodium.
@@ -57,7 +60,6 @@ foreign import capi "sodium.h sodium_memzero"
     -- | Length in bytes of the area to zero
     CSize ->
     IO ()
-
 
 -- | Lock a memory region starting at the pointer
 -- address. This can help avoid swapping sensitive

@@ -42,7 +42,7 @@ module Cryptography.Sodium.Bindings.Scrypt
 where
 
 import Foreign (Ptr)
-import Foreign.C (CChar (..), CInt (CInt), CSize (CSize), CULLong (CULLong), CUChar)
+import Foreign.C (CChar (..), CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
 -- This is an implementation of the scrypt password hashing function.

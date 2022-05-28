@@ -68,6 +68,7 @@ library
     Cryptography.Sodium.Bindings.Random
     Cryptography.Sodium.Bindings.Scrypt
     Cryptography.Sodium.Bindings.Secretbox
+    Cryptography.Sodium.Bindings.SecureMemory
     Cryptography.Sodium.Bindings.SHA2
     Cryptography.Sodium.Bindings.Signing
     Cryptography.Sodium.Bindings.XChaCha20

@@ -26,6 +26,7 @@ where
 
 import Foreign (Ptr)
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
+import Data.Word (Word8)
 
 -- $introduction
 -- This module provides bindings to the secure memory functions provided by Libsodium.
@@ -56,7 +57,7 @@ import Foreign.C.Types (CInt (CInt), CSize (CSize))
 foreign import capi "sodium.h sodium_memzero"
   memZero ::
     -- | Start pointer
-    Ptr x ->
+    Ptr Word8 ->
     -- | Length in bytes of the area to zero
     CSize ->
     IO ()
@@ -69,7 +70,7 @@ foreign import capi "sodium.h sodium_memzero"
 foreign import capi "sodium.h sodium_mlock"
   lock ::
     -- | Start pointer
-    Ptr x ->
+    Ptr Word8 ->
     -- | Size of the memory region to lock
     CSize ->
     -- | Returns 0 on success, -1 if any system limit is reached.
@@ -85,7 +86,7 @@ foreign import capi "sodium.h sodium_mlock"
 foreign import capi "sodium.h sodium_munlock"
   unlock ::
     -- | Start pointer
-    Ptr x ->
+    Ptr Word8 ->
     -- | Size of the memory region to unlock
     CSize ->
     IO CInt

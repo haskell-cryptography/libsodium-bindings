@@ -1,6 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE Trustworthy #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
 
 -- |
 --
@@ -42,7 +43,7 @@ module Cryptography.Sodium.Bindings.Scrypt
 where
 
 import Foreign (Ptr)
-import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
+import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong), CChar(CChar))
 
 -- $introduction
 -- This is an implementation of the scrypt password hashing function.
@@ -64,7 +65,7 @@ import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CU
 -- The /memlimit/ parameter should be a power of 2.
 --
 -- Do not use anything less than 16 MiB, even for interactive use.
--- Then a reasonable starting point for /opslimit/ is @memlimit / 32@.
+-- A reasonable starting point for /opslimit/ is @memlimit / 32@.
 -- Measure how long the scrypt function needs to hash a password.
 -- If this is way too long for your application, reduce /memlimit/ and adjust /opslimit/ using the above formula.
 -- If the function is so fast that you can afford it to be more computationally intensive without any usability issues, increase /opslimit/. For online use (e.g.
@@ -114,7 +115,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
   cryptoPWHashScryptSalsa2018SHA256 ::
     -- | A pointer to the computed key.
     Ptr CUChar ->
-    -- | The length of the computer key.
+    -- | The length of the computed key.
     -- Should be  between 'cryptoPWHashScryptSalsa2018SHA256BytesMin'
     -- and 'cryptoPWHashScryptSalsa2018SHA256BytesMax' (~127 GB).
     CULLong ->
@@ -123,7 +124,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
     -- | The length of the password.
     -- Should be between 'cryptoPWHashScryptSalsa2018SHA256PasswdMin'
     -- and 'cryptoPWHashScryptSalsa2018SHA256PasswdMax'.
-    CChar ->
+    CULLong ->
     -- | The salt, of length 'cryptoPWHashScryptSalsa2018SHA256SaltBytes'.
     Ptr CUChar ->
     -- | /opslimit:/ The maximum amount of computations to perform.
@@ -144,7 +145,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
 -- Password Storage --
 ----------------------
 
--- | Generate an C ASCII encoded string which includes:
+-- | Generate an ASCII C-String string which includes:
 --
 -- * The result of a memory-hard, CPU-intensive hash function applied to the password;
 -- * The automatically generated salt used for the previous computation;
@@ -179,7 +180,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str_verify"
   cryptoPWHashScryptSalsa2018SHA256StrVerify ::
-    -- | The password verification C string, of size 'cryptoPWHashScryptSalsa2018SHA256StrBytes' bytes.
+    -- | The password verification C-string, of size 'cryptoPWHashScryptSalsa2018SHA256StrBytes' bytes.
     Ptr CChar ->
     -- | The password.
     Ptr CChar ->

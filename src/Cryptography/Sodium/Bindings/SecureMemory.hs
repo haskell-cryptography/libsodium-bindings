@@ -40,7 +40,10 @@ import Data.Word (Word8)
 -- For similar reasons, on Unix systems, one should also disable core dumps when
 -- running crypto code outside a development environment.
 -- This can be achieved using a shell built-in such as @ulimit@ or programmatically
--- using @setrlimit(RLIMIT_CORE, &(struct rlimit) {0, 0})@.
+-- using 'System.Posix.Resource.setResourceLimit':
+--
+-- >>> setResourceLimit ResourceCoreFileSize (ResourceLimits 0 0)
+--
 -- On operating systems where this feature is implemented, kernel crash dumps
 -- should also be disabled.
 --

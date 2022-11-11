@@ -53,4 +53,5 @@ library
     LibSodium.Bindings.SecureMemory
     LibSodium.Bindings.SHA2
     LibSodium.Bindings.Signing
+    LibSodium.Bindings.Utils
     LibSodium.Bindings.XChaCha20

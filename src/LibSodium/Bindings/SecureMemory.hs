@@ -4,14 +4,14 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.SecureMemory
+-- Module: LibSodium.Bindings.SecureMemory
 -- Description: Direct bindings to the libsodium secure memory functions
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.SecureMemory
+module LibSodium.Bindings.SecureMemory
   ( -- * Introduction
     -- $introduction
 
@@ -32,7 +32,7 @@ import Foreign.C.Types (CInt (CInt), CSize (CSize))
 -- This module provides bindings to the secure memory functions provided by Libsodium.
 -- It is intended to be qualified on import:
 --
--- > import qualified Cryptography.Sodium.Bindings.SecureMemory as SecureMemory
+-- > import qualified LibSodium.Bindings.SecureMemory as SecureMemory
 --
 -- It is recommended to disable swap partitions on machines processing sensitive
 -- data or, as a second choice, use encrypted swap partitions.

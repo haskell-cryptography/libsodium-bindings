@@ -4,14 +4,14 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.SHA2
+-- Module: LibSodium.Bindings.SHA2
 -- Description: Direct bindings to the SHA-256 and SHA-512 hashing functions, and their HMAC variants
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.SHA2
+module LibSodium.Bindings.SHA2
   ( -- * Introduction
     -- $introduction
 
@@ -114,9 +114,9 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 --
 -- The SHA-256 and SHA-512 functions are provided for interoperability with other applications. If you are
 -- looking for a generic hash function and not specifically SHA-2, using
--- 'Cryptography.Sodium.Bindings.GenericHashing' (BLAKE2b) might be a better choice.
+-- 'LibSodium.Bindings.GenericHashing' (BLAKE2b) might be a better choice.
 -- These functions are also not suitable for hashing passwords or deriving keys from passwords.
--- Use 'Cryptography.Sodium.Bindings.PasswordHashing' instead.
+-- Use 'LibSodium.Bindings.PasswordHashing' instead.
 --
 -- Only use these functions for interoperability with 3rd party services.
 --
@@ -738,7 +738,7 @@ foreign import capi "sodium.h crypto_hash_sha256_statebytes"
 -- It is in use in the @ED25519ph@ multi-part signing system.
 --
 -- For more information, please consult the documentation of
--- "Cryptography.Sodium.Bindings.Signing".
+-- "LibSodium.Bindings.Signing".
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_hash_sha512_BYTES"

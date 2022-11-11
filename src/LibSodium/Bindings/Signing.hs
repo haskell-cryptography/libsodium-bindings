@@ -3,14 +3,14 @@
 {-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.Bindings.Signing
+-- Module: LibSodium.Bindings.Signing
 -- Description: Direct bindings to the public-key signing algorithm ed25519 implemented in Libsodium
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.Signing
+module LibSodium.Bindings.Signing
   ( -- * Introduction
     -- $introduction
 
@@ -221,7 +221,7 @@ foreign import capi "sodium.h crypto_sign_verify_detached"
 --
 -- @Ed25519ph(m)@ is intentionally not equivalent to @Ed25519(SHA512(m))@. If, for
 -- some reason, you need to pre-hash the message yourself, then use the multi-part
--- 'Cryptography.Sodium.Bindings.GenericHashing' module and sign the 512-bit output.
+-- 'LibSodium.Bindings.GenericHashing' module and sign the 512-bit output.
 
 -- | Opaque tag representing the hash state struct @crypto_sign_state@ used by the C API.
 --

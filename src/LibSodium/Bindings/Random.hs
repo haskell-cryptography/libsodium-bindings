@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Safe #-}
 
--- | Module: Cryptography.Sodium.Bindings.Random
+-- | Module: LibSodium.Bindings.Random
 -- Description: Secure random number generation
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -15,7 +15,7 @@
 -- * On Windows, @RtlGenRandom@.
 -- * On FreeBSD and Linux, @getrandom@ syscall.
 -- * On other UNIX platforms, @\/dev\/urandom@.
-module Cryptography.Sodium.Bindings.Random
+module LibSodium.Bindings.Random
   ( randombytesRandom
   , randombytesUniform
   , randombytesBuf

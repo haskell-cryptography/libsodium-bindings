@@ -3,14 +3,14 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.PasswordHashing
+-- Module: LibSodium.Bindings.PasswordHashing
 -- Description: Direct bindings to the password hashing primitives of Libsodium.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.PasswordHashing
+module LibSodium.Bindings.PasswordHashing
   ( -- * Introduction
     -- $introduction
 
@@ -91,7 +91,7 @@ foreign import capi "sodium.h crypto_pwhash"
     -- ^ @passwdlen@ parameter. It is the size of the password.
     -> Ptr CUChar
     -- ^ @salt@ parameter. It is of a fixed length established by 'cryptoPWHashSaltBytes'. It should be unpredictable.
-    -- 'Cryptography.Sodium.Bindings.Random.randombytesBuf' is the best way to fill the 'cryptoPWHashSaltBytes' of the
+    -- 'LibSodium.Bindings.Random.randombytesBuf' is the best way to fill the 'cryptoPWHashSaltBytes' of the
     -- salt.
     -> CULLong
     -- ^ @opslimit@ parameter. It represents the maximum amount of computations to perform. Raising this number will make the function require more CPU cycles

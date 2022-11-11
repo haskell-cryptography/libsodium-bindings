@@ -5,14 +5,14 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.Scrypt
+-- Module: LibSodium.Bindings.Scrypt
 -- Description: Direct bindings to the scrypt password hashing function.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.Scrypt
+module LibSodium.Bindings.Scrypt
   ( -- * Introduction
     -- $introduction
 
@@ -84,9 +84,9 @@ import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CU
 -- This can have security implications if the password is present in another password database
 -- using raw, unsalted SHA-256 or when upgrading passwords previously hashed with unsalted SHA-256 to scrypt.
 --
--- It is highly recommended to use 'Cryptography.Sodium.Bindings.SecureMemory.lock'
+-- It is highly recommended to use 'LibSodium.Bindings.SecureMemory.lock'
 -- to lock memory regions storing plaintext passwords and to call
--- 'Cryptography.Sodium.Bindings.SecureMemory.unlock' right after
+-- 'LibSodium.Bindings.SecureMemory.unlock' right after
 -- 'cryptoPWHashScryptSalsa2018SHA256Str' and 'cryptoPWHashScryptSalsa2018SHA256StrVerify'
 -- return.
 
@@ -101,7 +101,7 @@ import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CU
 -- However, with these parameters, deriving a key takes about
 -- 2 seconds on a 2.8 GHz Core i7 CPU and requires up to 1 GiB of dedicated RAM.
 --
--- The salt should be unpredictable. 'Cryptography.Sodium.Bindings.Random.randombytesBuf'
+-- The salt should be unpredictable. 'LibSodium.Bindings.Random.randombytesBuf'
 -- is the easiest way to fill the 'cryptoPWHashScryptSalsa2018SHA256SaltBytes' bytes
 -- of the salt.
 --

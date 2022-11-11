@@ -3,14 +3,14 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.GenericHashing
+-- Module: LibSodium.Bindings.GenericHashing
 -- Description: Direct bindings to the generic hashing primitives of Libsodium.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.GenericHashing
+module LibSodium.Bindings.GenericHashing
   ( -- * Introduction
     -- $introduction
 

@@ -2,13 +2,13 @@
 {-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.Bindings.Secretbox
+-- Module: LibSodium.Bindings.Secretbox
 -- Description: Direct bindings to the secretbox API of Libsodium
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.Secretbox
+module LibSodium.Bindings.Secretbox
   ( -- * Introduction
     -- $introduction
 
@@ -52,7 +52,7 @@ import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
 -- A key can be generated using the 'cryptoSecretboxKeygen' primitive.
 --
 --
--- Each message must use a unique nonce, which may be generated with the 'Cryptography.Sodium.Bindings.Random.randombytesBuf' primitive.
+-- Each message must use a unique nonce, which may be generated with the 'LibSodium.Bindings.Random.randombytesBuf' primitive.
 -- The nonce does not need to be kept secret but should never be reused.
 --
 -- For more information see the upstream docs: <https://doc.libsodium.org/secret-key_cryptography/secretbox>

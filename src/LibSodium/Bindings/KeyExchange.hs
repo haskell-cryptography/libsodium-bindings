@@ -3,14 +3,14 @@
 {-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.Bindings.KeyExchange
+-- Module: LibSodium.Bindings.KeyExchange
 -- Description: Direct bindings to the key exchange functions implemented in Libsodium
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.KeyExchange
+module LibSodium.Bindings.KeyExchange
   ( -- * Introduction
     -- $introduction
 
@@ -36,7 +36,7 @@ module Cryptography.Sodium.Bindings.KeyExchange
 where
 
 import Foreign (Ptr)
-import Foreign.C (CInt (CInt), CSize (CSize), CUChar)
+import Foreign.C (CChar, CInt (CInt), CSize (CSize), CUChar)
 
 -- $introduction
 --
@@ -162,4 +162,4 @@ foreign import capi "sodium.h value crypto_kx_SESSIONKEYBYTES"
 
 -- | @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_PRIMITIVE"
-  cryptoKXPrimitive :: CSize
+  cryptoKXPrimitive :: Ptr CChar

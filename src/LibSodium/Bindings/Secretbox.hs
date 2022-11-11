@@ -2,35 +2,35 @@
 {-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.Bindings.Secretbox
+-- Module: LibSodium.Bindings.Secretbox
 -- Description: Direct bindings to the secretbox API of Libsodium
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.Secretbox
+module LibSodium.Bindings.Secretbox
   ( -- * Introduction
     -- $introduction
 
     -- * Secretbox
 
     -- ** Keygen
-    cryptoSecretboxKeygen,
+    cryptoSecretboxKeygen
 
     -- ** Easy
-    cryptoSecretboxEasy,
-    cryptoSecretboxOpenEasy,
+  , cryptoSecretboxEasy
+  , cryptoSecretboxOpenEasy
 
     -- ** Detached
-    cryptoSecretboxDetached,
-    cryptoSecretboxOpenDetached,
+  , cryptoSecretboxDetached
+  , cryptoSecretboxOpenDetached
 
     -- ** Constants
-    cryptoSecretboxKeyBytes,
-    cryptoSecretboxNonceBytes,
-    cryptoSecretboxMACBytes,
-    cryptoSecretboxPrimitive,
-    cryptoSecretboxMessageBytesMax,
+  , cryptoSecretboxKeyBytes
+  , cryptoSecretboxNonceBytes
+  , cryptoSecretboxMACBytes
+  , cryptoSecretboxPrimitive
+  , cryptoSecretboxMessageBytesMax
   )
 where
 
@@ -52,7 +52,7 @@ import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
 -- A key can be generated using the 'cryptoSecretboxKeygen' primitive.
 --
 --
--- Each message must use a unique nonce, which may be generated with the 'Cryptography.Sodium.Bindings.Random.randombytesBuf' primitive.
+-- Each message must use a unique nonce, which may be generated with the 'LibSodium.Bindings.Random.randombytesBuf' primitive.
 -- The nonce does not need to be kept secret but should never be reused.
 --
 -- For more information see the upstream docs: <https://doc.libsodium.org/secret-key_cryptography/secretbox>
@@ -63,10 +63,10 @@ import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_keygen"
-  cryptoSecretboxKeygen ::
-    -- | key buffer of length 'cryptoSecretboxKeyBytes'
-    Ptr CUChar ->
-    IO ()
+  cryptoSecretboxKeygen
+    :: Ptr CUChar
+    -- ^ key buffer of length 'cryptoSecretboxKeyBytes'
+    -> IO ()
 
 -- | Encrypt a message using a secret key and nonce.
 --
@@ -77,20 +77,20 @@ foreign import capi "sodium.h crypto_secretbox_keygen"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_easy"
-  cryptoSecretboxEasy ::
-    -- | A pointer to the buffer that will hold the ciphertext.
+  cryptoSecretboxEasy
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the ciphertext.
     -- The length of the ciphertext is the length of the message in bytes plus 'cryptoSecretboxMACBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the buffer holding the message to be encrypted.
-    Ptr CUChar ->
-    -- | The length of the message in bytes.
-    CULLong ->
-    -- | A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success and -1 on error.
-    IO CInt
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer holding the message to be encrypted.
+    -> CULLong
+    -- ^ The length of the message in bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success and -1 on error.
 
 -- | Verify and decrypt ciphertext using a secret key and nonce.
 --
@@ -101,20 +101,20 @@ foreign import capi "sodium.h crypto_secretbox_easy"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_open_easy"
-  cryptoSecretboxOpenEasy ::
-    -- | A pointer to the buffer that will hold the decrypted message.
+  cryptoSecretboxOpenEasy
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the decrypted message.
     -- The length of the message is the length of the ciphertext in bytes minus 'cryptoSecretboxMACBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the buffer holding the ciphertext to be verified and decrypted.
-    Ptr CUChar ->
-    -- | The length of the ciphertext in bytes.
-    CULLong ->
-    -- | A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success and -1 on error.
-    IO CInt
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer holding the ciphertext to be verified and decrypted.
+    -> CULLong
+    -- ^ The length of the ciphertext in bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success and -1 on error.
 
 -- | Encrypt a message using a secret key and nonce.
 --
@@ -122,22 +122,22 @@ foreign import capi "sodium.h crypto_secretbox_open_easy"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_detached"
-  cryptoSecretboxDetached ::
-    -- | A pointer to the buffer that will hold the ciphertext. This will have the same length as the message.
-    Ptr CUChar ->
-    -- | A pointer to the buffer that will hold the authentication tag.
+  cryptoSecretboxDetached
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the ciphertext. This will have the same length as the message.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the authentication tag.
     -- This will be of length 'cryptoSecretboxMACBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the buffer holding the message to be encrypted.
-    Ptr CUChar ->
-    -- | The length of the message in bytes.
-    CULLong ->
-    -- | A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success and -1 on error.
-    IO CInt
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer holding the message to be encrypted.
+    -> CULLong
+    -- ^ The length of the message in bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success and -1 on error.
 
 -- | Verify and decrypt ciphertext using a secret key and nonce
 --
@@ -145,21 +145,21 @@ foreign import capi "sodium.h crypto_secretbox_detached"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretbox_open_detached"
-  cryptoSecretboxOpenDetached ::
-    -- | A pointer to the buffer that will hold the decrypted message. This will have the same length as the ciphertext.
-    Ptr CUChar ->
-    -- | A pointer to the buffer holding the ciphertext to be decrypted.
-    Ptr CUChar ->
-    -- | A pointer to the buffer holding the authentication tag to be verified.
-    Ptr CUChar ->
-    -- | The length of the ciphertext in bytes.
-    CULLong ->
-    -- | A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success and -1 on error.
-    IO CInt
+  cryptoSecretboxOpenDetached
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the decrypted message. This will have the same length as the ciphertext.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer holding the ciphertext to be decrypted.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer holding the authentication tag to be verified.
+    -> CULLong
+    -- ^ The length of the ciphertext in bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the nonce of size 'cryptoSecretboxNonceBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key of size 'cryptoSecretboxKeyBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success and -1 on error.
 
 -- | The length of a secretbox key in bytes.
 --

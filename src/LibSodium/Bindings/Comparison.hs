@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
 
--- | Module: Cryptography.Sodium.Bindings.Comparison
+-- | Module: LibSodium.Bindings.Comparison
 -- Description: Helper functions for constant-time comparison
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -11,9 +11,9 @@
 --
 -- Secure comparison functions, designed to run in constant time for a given
 -- input length.
-module Cryptography.Sodium.Bindings.Comparison
-  ( sodiumMemcmp,
-    sodiumIsZero,
+module LibSodium.Bindings.Comparison
+  ( sodiumMemcmp
+  , sodiumIsZero
   )
 where
 
@@ -29,15 +29,15 @@ import Foreign.Ptr (Ptr)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memcmp"
-  sodiumMemcmp ::
-    -- | First location with data to compare
-    Ptr CUChar ->
-    -- | Second location with data to compare
-    Ptr CUChar ->
-    -- | How many bytes to compare
-    CSize ->
-    -- | 0 if all bytes match, -1 otherwise
-    CInt
+  sodiumMemcmp
+    :: Ptr CUChar
+    -- ^ First location with data to compare
+    -> Ptr CUChar
+    -- ^ Second location with data to compare
+    -> CSize
+    -- ^ How many bytes to compare
+    -> CInt
+    -- ^ 0 if all bytes match, -1 otherwise
 
 -- | Checks if the given number of bytes at the given location are all equal to
 -- zero. Constant-time for any given length.
@@ -48,10 +48,10 @@ foreign import capi "sodium.h sodium_memcmp"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_is_zero"
-  sodiumIsZero ::
-    -- | Location with data to check
-    Ptr CUChar ->
-    -- | How many bytes to check
-    CSize ->
-    -- | 1 if all the bytes were zeroes, 0 otherwise
-    CInt
+  sodiumIsZero
+    :: Ptr CUChar
+    -- ^ Location with data to check
+    -> CSize
+    -- ^ How many bytes to check
+    -> CInt
+    -- ^ 1 if all the bytes were zeroes, 0 otherwise

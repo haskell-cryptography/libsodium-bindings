@@ -4,106 +4,106 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.SHA2
+-- Module: LibSodium.Bindings.SHA2
 -- Description: Direct bindings to the SHA-256 and SHA-512 hashing functions, and their HMAC variants
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.SHA2
+module LibSodium.Bindings.SHA2
   ( -- * Introduction
     -- $introduction
 
     -- * SHA-256
 
     -- ** Single-part message
-    cryptoHashSHA256,
+    cryptoHashSHA256
 
     -- ** Multi-part messages
-    CryptoHashSHA256State,
-    withCryptoHashSHA256State,
-    cryptoHashSHA256Init,
-    cryptoHashSHA256Update,
-    cryptoHashSHA256Final,
+  , CryptoHashSHA256State
+  , withCryptoHashSHA256State
+  , cryptoHashSHA256Init
+  , cryptoHashSHA256Update
+  , cryptoHashSHA256Final
 
     -- ** Constants
-    cryptoHashSHA256Bytes,
-    cryptoHashSHA256StateBytes,
+  , cryptoHashSHA256Bytes
+  , cryptoHashSHA256StateBytes
 
     -- * HMAC-SHA-256
 
     -- ** Single-part message
-    cryptoAuthHMACSHA256,
-    cryptoAuthHMACSHA256Verify,
-    cryptoAuthHMACSHA256Keygen,
+  , cryptoAuthHMACSHA256
+  , cryptoAuthHMACSHA256Verify
+  , cryptoAuthHMACSHA256Keygen
 
     -- ** Multi-part messages
-    CryptoAuthHMACSHA256State,
-    withCryptoAuthHMACSHA256State,
-    cryptoAuthHMACSHA256Init,
-    cryptoAuthHMACSHA256Update,
-    cryptoAuthHMACSHA256Final,
+  , CryptoAuthHMACSHA256State
+  , withCryptoAuthHMACSHA256State
+  , cryptoAuthHMACSHA256Init
+  , cryptoAuthHMACSHA256Update
+  , cryptoAuthHMACSHA256Final
 
     -- ** Constants
-    cryptoAuthHMACSHA256StateBytes,
-    cryptoAuthHMACSHA256Bytes,
-    cryptoAuthHMACSHA256KeyBytes,
+  , cryptoAuthHMACSHA256StateBytes
+  , cryptoAuthHMACSHA256Bytes
+  , cryptoAuthHMACSHA256KeyBytes
 
     -- * SHA-512
 
     -- ** Single-part message
-    cryptoHashSHA512,
+  , cryptoHashSHA512
 
     -- ** Multi-part messages
-    CryptoHashSHA512State,
-    withCryptoHashSHA512State,
-    cryptoHashSHA512Init,
-    cryptoHashSHA512Update,
-    cryptoHashSHA512Final,
+  , CryptoHashSHA512State
+  , withCryptoHashSHA512State
+  , cryptoHashSHA512Init
+  , cryptoHashSHA512Update
+  , cryptoHashSHA512Final
 
     -- ** Constants
-    cryptoHashSHA512Bytes,
-    cryptoHashSHA512StateBytes,
+  , cryptoHashSHA512Bytes
+  , cryptoHashSHA512StateBytes
 
     -- * HMAC-SHA-512
 
     -- ** Single-part message
-    CryptoAuthHMACSHA512State,
-    withCryptoAuthHMACSHA512State,
-    cryptoAuthHMACSHA512,
-    cryptoAuthHMACSHA512Verify,
-    cryptoAuthHMACSHA512Keygen,
+  , CryptoAuthHMACSHA512State
+  , withCryptoAuthHMACSHA512State
+  , cryptoAuthHMACSHA512
+  , cryptoAuthHMACSHA512Verify
+  , cryptoAuthHMACSHA512Keygen
 
     -- ** Multi-part messages
-    cryptoAuthHMACSHA512Init,
-    cryptoAuthHMACSHA512Update,
-    cryptoAuthHMACSHA512Final,
+  , cryptoAuthHMACSHA512Init
+  , cryptoAuthHMACSHA512Update
+  , cryptoAuthHMACSHA512Final
 
     -- ** Constants
-    cryptoAuthHMACSHA512StateBytes,
-    cryptoAuthHMACSHA512Bytes,
-    cryptoAuthHMACSHA512KeyBytes,
+  , cryptoAuthHMACSHA512StateBytes
+  , cryptoAuthHMACSHA512Bytes
+  , cryptoAuthHMACSHA512KeyBytes
 
     -- * HMAC-SHA-512-256
     -- $hmacsha512256
 
     -- ** Single-part message
-    CryptoAuthHMACSHA512256State,
-    withCryptoAuthHMACSHA512256State,
-    cryptoAuthHMACSHA512256,
-    cryptoAuthHMACSHA512256Verify,
-    cryptoAuthHMACSHA512256Keygen,
+  , CryptoAuthHMACSHA512256State
+  , withCryptoAuthHMACSHA512256State
+  , cryptoAuthHMACSHA512256
+  , cryptoAuthHMACSHA512256Verify
+  , cryptoAuthHMACSHA512256Keygen
 
     -- ** Multi-part messages
-    cryptoAuthHMACSHA512256Init,
-    cryptoAuthHMACSHA512256Update,
-    cryptoAuthHMACSHA512256Final,
+  , cryptoAuthHMACSHA512256Init
+  , cryptoAuthHMACSHA512256Update
+  , cryptoAuthHMACSHA512256Final
 
     -- ** Constants
-    cryptoAuthHMACSHA512256StateBytes,
-    cryptoAuthHMACSHA512256Bytes,
-    cryptoAuthHMACSHA512256KeyBytes,
+  , cryptoAuthHMACSHA512256StateBytes
+  , cryptoAuthHMACSHA512256Bytes
+  , cryptoAuthHMACSHA512256KeyBytes
   )
 where
 
@@ -114,9 +114,9 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 --
 -- The SHA-256 and SHA-512 functions are provided for interoperability with other applications. If you are
 -- looking for a generic hash function and not specifically SHA-2, using
--- 'Cryptography.Sodium.Bindings.GenericHashing' (BLAKE2b) might be a better choice.
+-- 'LibSodium.Bindings.GenericHashing' (BLAKE2b) might be a better choice.
 -- These functions are also not suitable for hashing passwords or deriving keys from passwords.
--- Use 'Cryptography.Sodium.Bindings.PasswordHashing' instead.
+-- Use 'LibSodium.Bindings.PasswordHashing' instead.
 --
 -- Only use these functions for interoperability with 3rd party services.
 --
@@ -134,15 +134,15 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256"
-  cryptoHashSHA256 ::
-    -- | A pointer to the hash of your data.
-    Ptr CUChar ->
-    -- | A pointer to the data you want to hash.
-    Ptr CUChar ->
-    -- | The length of the data you want to hash.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA256
+    :: Ptr CUChar
+    -- ^ A pointer to the hash of your data.
+    -> Ptr CUChar
+    -- ^ A pointer to the data you want to hash.
+    -> CULLong
+    -- ^ The length of the data you want to hash.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | This is the opaque state held and used by the SHA-256 functions.
 --
@@ -175,11 +175,11 @@ withCryptoHashSHA256State action = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_init"
-  cryptoHashSHA256Init ::
-    -- | A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoHashSHA256State ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA256Init
+    :: Ptr CryptoHashSHA256State
+    -- ^ A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Add a new chunk to the message that will eventually be hashed.
 --
@@ -190,15 +190,15 @@ foreign import capi "sodium.h crypto_hash_sha256_init"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_update"
-  cryptoHashSHA256Update ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoHashSHA256State ->
-    -- | A pointer to the new message chunk to process.
-    Ptr CUChar ->
-    -- | The length in bytes of the chunk.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA256Update
+    :: Ptr CryptoHashSHA256State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the new message chunk to process.
+    -> CULLong
+    -- ^ The length in bytes of the chunk.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
 -- then put in a buffer.
@@ -210,13 +210,13 @@ foreign import capi "sodium.h crypto_hash_sha256_update"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_final"
-  cryptoHashSHA256Final ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoHashSHA256State ->
-    -- | The buffer in which the final hash is stored.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA256Final
+    :: Ptr CryptoHashSHA256State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ The buffer in which the final hash is stored.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -------------------
 --  HMAC-SHA-256 --
@@ -229,17 +229,17 @@ foreign import capi "sodium.h crypto_hash_sha256_final"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256"
-  cryptoAuthHMACSHA256 ::
-    -- | A pointer to the buffer holding the authenticator.
-    Ptr CUChar ->
-    -- | A pointer to the message to be authenticated.
-    Ptr CUChar ->
-    -- | The length of the message to be authenticated.
-    CULLong ->
-    -- | A pointer to the secret key used for authentication, of length 'cryptoAuthHMACSHA256Bytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA256
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer holding the authenticator.
+    -> Ptr CUChar
+    -- ^ A pointer to the message to be authenticated.
+    -> CULLong
+    -- ^ The length of the message to be authenticated.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key used for authentication, of length 'cryptoAuthHMACSHA256Bytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Verify that an authenticator provided by 'cryptoAuthHMACSHA256' is correct.
 --
@@ -247,17 +247,17 @@ foreign import capi "sodium.h crypto_auth_hmacsha256"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_verify"
-  cryptoAuthHMACSHA256Verify ::
-    -- | A pointer to buffer holding the authenticator.
-    Ptr CUChar ->
-    -- | A pointer to the message that is being authenticated.
-    Ptr CUChar ->
-    -- | The length of the message that is being authenticated.
-    CULLong ->
-    -- | A pointer to the secret key, of size 'cryptoAuthHMACSHA256KeyBytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on failure.
-    IO CInt
+  cryptoAuthHMACSHA256Verify
+    :: Ptr CUChar
+    -- ^ A pointer to buffer holding the authenticator.
+    -> Ptr CUChar
+    -- ^ A pointer to the message that is being authenticated.
+    -> CULLong
+    -- ^ The length of the message that is being authenticated.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key, of size 'cryptoAuthHMACSHA256KeyBytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on failure.
 
 -- | Create a random key of the correct length.
 --
@@ -265,11 +265,11 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_verify"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_keygen"
-  cryptoAuthHMACSHA256Keygen ::
-    -- | A pointer to the buffer that will hold the secret key, of size 'cryptoAuthHMACSHA256KeyBytes'.
-    Ptr CUChar ->
-    -- | Nothing is returned
-    IO ()
+  cryptoAuthHMACSHA256Keygen
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the secret key, of size 'cryptoAuthHMACSHA256KeyBytes'.
+    -> IO ()
+    -- ^ Nothing is returned
 
 -- | This is the opaque state held and used by the HMAC-SHA-256 functions.
 --
@@ -304,15 +304,15 @@ withCryptoAuthHMACSHA256State action = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_init"
-  cryptoAuthHMACSHA256Init ::
-    -- | A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA256State ->
-    -- | A pointer to the secret key.
-    Ptr CUChar ->
-    -- | The size of the key.
-    CSize ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA256Init
+    :: Ptr CryptoAuthHMACSHA256State
+    -- ^ A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key.
+    -> CSize
+    -- ^ The size of the key.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Add a new chunk to the message that will eventually be hashed.
 --
@@ -323,15 +323,15 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_init"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_update"
-  cryptoAuthHMACSHA256Update ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA256State ->
-    -- | A pointer to the message to authenticate.
-    Ptr CUChar ->
-    -- | The size of the message to authenticate.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA256Update
+    :: Ptr CryptoAuthHMACSHA256State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the message to authenticate.
+    -> CULLong
+    -- ^ The size of the message to authenticate.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
 -- then put in a buffer.
@@ -343,13 +343,13 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_update"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_final"
-  cryptoAuthHMACSHA256Final ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA256State ->
-    -- | A pointer to the buffer that will hold the authenticator.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA256Final
+    :: Ptr CryptoAuthHMACSHA256State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the authenticator.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -------------
 -- SHA-512 --
@@ -361,15 +361,15 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_final"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512"
-  cryptoHashSHA512 ::
-    -- | A pointer to the hash of your data.
-    Ptr CUChar ->
-    -- | A pointer to the data you want to hash.
-    Ptr CUChar ->
-    -- | The length of the data you want to hash.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA512
+    :: Ptr CUChar
+    -- ^ A pointer to the hash of your data.
+    -> Ptr CUChar
+    -- ^ A pointer to the data you want to hash.
+    -> CULLong
+    -- ^ The length of the data you want to hash.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | This is the opaque state held and used by the SHA-512 functions.
 --
@@ -402,11 +402,11 @@ withCryptoHashSHA512State action = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_init"
-  cryptoHashSHA512Init ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoHashSHA512State ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA512Init
+    :: Ptr CryptoHashSHA512State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Add a new chunk to the message that will eventually be hashed.
 --
@@ -417,15 +417,15 @@ foreign import capi "sodium.h crypto_hash_sha512_init"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_update"
-  cryptoHashSHA512Update ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoHashSHA512State ->
-    -- | A pointer to the new message chunk to process.
-    Ptr CUChar ->
-    -- | The length in bytes of the chunk.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA512Update
+    :: Ptr CryptoHashSHA512State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the new message chunk to process.
+    -> CULLong
+    -- ^ The length in bytes of the chunk.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
 -- then put in a buffer.
@@ -437,13 +437,13 @@ foreign import capi "sodium.h crypto_hash_sha512_update"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_final"
-  cryptoHashSHA512Final ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoHashSHA512State ->
-    -- | The buffer in which the final hash is stored.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoHashSHA512Final
+    :: Ptr CryptoHashSHA512State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ The buffer in which the final hash is stored.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -------------------
 --  HMAC-SHA-512 --
@@ -456,17 +456,17 @@ foreign import capi "sodium.h crypto_hash_sha512_final"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512"
-  cryptoAuthHMACSHA512 ::
-    -- | A pointer to the buffer holding the authenticator.
-    Ptr CUChar ->
-    -- | A pointer to the message to be authenticated.
-    Ptr CUChar ->
-    -- | The length of the message to be authenticated.
-    CULLong ->
-    -- | A pointer to the secret key used for authentication, of length 'cryptoAuthHMACSHA512Bytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer holding the authenticator.
+    -> Ptr CUChar
+    -- ^ A pointer to the message to be authenticated.
+    -> CULLong
+    -- ^ The length of the message to be authenticated.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key used for authentication, of length 'cryptoAuthHMACSHA512Bytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Verify that an authenticator provided by 'cryptoAuthHMACSHA512' is correct.
 --
@@ -474,17 +474,17 @@ foreign import capi "sodium.h crypto_auth_hmacsha512"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_verify"
-  cryptoAuthHMACSHA512Verify ::
-    -- | A pointer to buffer holding the authenticator.
-    Ptr CUChar ->
-    -- | A pointer to the message that is being authenticated.
-    Ptr CUChar ->
-    -- | The length of the message that is being authenticated.
-    CULLong ->
-    -- | A pointer to the secret key, of size 'cryptoAuthHMACSHA512KeyBytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on failure.
-    IO CInt
+  cryptoAuthHMACSHA512Verify
+    :: Ptr CUChar
+    -- ^ A pointer to buffer holding the authenticator.
+    -> Ptr CUChar
+    -- ^ A pointer to the message that is being authenticated.
+    -> CULLong
+    -- ^ The length of the message that is being authenticated.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key, of size 'cryptoAuthHMACSHA512KeyBytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on failure.
 
 -- | Create a random key of the correct length.
 --
@@ -492,11 +492,11 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_verify"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_keygen"
-  cryptoAuthHMACSHA512Keygen ::
-    -- | A pointer to the buffer that will hold the secret key, of size 'cryptoAuthHMACSHA512KeyBytes'.
-    Ptr CUChar ->
-    -- | Nothing is returned
-    IO ()
+  cryptoAuthHMACSHA512Keygen
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the secret key, of size 'cryptoAuthHMACSHA512KeyBytes'.
+    -> IO ()
+    -- ^ Nothing is returned
 
 -- | This is the opaque state held and used by the HMAC-SHA-512 functions.
 --
@@ -531,15 +531,15 @@ withCryptoAuthHMACSHA512State action = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_init"
-  cryptoAuthHMACSHA512Init ::
-    -- | A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA512State ->
-    -- | A pointer to the secret key.
-    Ptr CUChar ->
-    -- | The size of the key.
-    CSize ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512Init
+    :: Ptr CryptoAuthHMACSHA512State
+    -- ^ A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key.
+    -> CSize
+    -- ^ The size of the key.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Add a new chunk to the message that will eventually be hashed.
 --
@@ -550,15 +550,15 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_init"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_update"
-  cryptoAuthHMACSHA512Update ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA512State ->
-    -- | A pointer to the message to authenticate.
-    Ptr CUChar ->
-    -- | The size of the message to authenticate.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512Update
+    :: Ptr CryptoAuthHMACSHA512State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the message to authenticate.
+    -> CULLong
+    -- ^ The size of the message to authenticate.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
 -- then put in a buffer.
@@ -570,13 +570,13 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_update"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_final"
-  cryptoAuthHMACSHA512Final ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA512State ->
-    -- | A pointer to the buffer that will hold the authenticator.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512Final
+    :: Ptr CryptoAuthHMACSHA512State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the authenticator.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -----------------------
 --  HMAC-SHA-512-256 --
@@ -594,17 +594,17 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_final"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256"
-  cryptoAuthHMACSHA512256 ::
-    -- | A pointer to the buffer holding the authenticator.
-    Ptr CUChar ->
-    -- | A pointer to the message to be authenticated.
-    Ptr CUChar ->
-    -- | The length of the message to be authenticated.
-    CULLong ->
-    -- | A pointer to the secret key used for authentication, of length 'cryptoAuthHMACSHA512256Bytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512256
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer holding the authenticator.
+    -> Ptr CUChar
+    -- ^ A pointer to the message to be authenticated.
+    -> CULLong
+    -- ^ The length of the message to be authenticated.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key used for authentication, of length 'cryptoAuthHMACSHA512256Bytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Verify that an authenticator provided by 'cryptoAuthHMACSHA512256' is correct.
 --
@@ -612,17 +612,17 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_verify"
-  cryptoAuthHMACSHA512256Verify ::
-    -- | A pointer to buffer holding the authenticator.
-    Ptr CUChar ->
-    -- | A pointer to the message that is being authenticated.
-    Ptr CUChar ->
-    -- | The length of the message that is being authenticated.
-    CULLong ->
-    -- | A pointer to the secret key, of size 'cryptoAuthHMACSHA512256KeyBytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on failure.
-    IO CInt
+  cryptoAuthHMACSHA512256Verify
+    :: Ptr CUChar
+    -- ^ A pointer to buffer holding the authenticator.
+    -> Ptr CUChar
+    -- ^ A pointer to the message that is being authenticated.
+    -> CULLong
+    -- ^ The length of the message that is being authenticated.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key, of size 'cryptoAuthHMACSHA512256KeyBytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on failure.
 
 -- | Create a random key of the correct length.
 --
@@ -630,12 +630,12 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_verify"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_keygen"
-  cryptoAuthHMACSHA512256Keygen ::
-    -- | A pointer to the buffer that will hold the secret key,
+  cryptoAuthHMACSHA512256Keygen
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the secret key,
     -- of size 'cryptoAuthHMACSHA512256KeyBytes'.
-    Ptr CUChar ->
-    -- | Nothing is returned
-    IO ()
+    -> IO ()
+    -- ^ Nothing is returned
 
 -- | This is the opaque state held and used by the HMAC-SHA-512256 functions.
 --
@@ -671,15 +671,15 @@ withCryptoAuthHMACSHA512256State action = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_init"
-  cryptoAuthHMACSHA512256Init ::
-    -- | A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA512256State ->
-    -- | A pointer to the secret key.
-    Ptr CUChar ->
-    -- | The size of the key.
-    CSize ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512256Init
+    :: Ptr CryptoAuthHMACSHA512256State
+    -- ^ A pointer to an uninitialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the secret key.
+    -> CSize
+    -- ^ The size of the key.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Add a new chunk to the message that will eventually be hashed.
 --
@@ -690,15 +690,15 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_init"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_update"
-  cryptoAuthHMACSHA512256Update ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA512256State ->
-    -- | A pointer to the message to authenticate.
-    Ptr CUChar ->
-    -- | The size of the message to authenticate.
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512256Update
+    :: Ptr CryptoAuthHMACSHA512256State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the message to authenticate.
+    -> CULLong
+    -- ^ The size of the message to authenticate.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Finalise the hashing of a message. The final hash is padded with extra zeros if necessary,
 -- then put in a buffer.
@@ -710,13 +710,13 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_update"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_final"
-  cryptoAuthHMACSHA512256Final ::
-    -- | A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
-    Ptr CryptoAuthHMACSHA512256State ->
-    -- | A pointer to the buffer that will hold the authenticator.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoAuthHMACSHA512256Final
+    :: Ptr CryptoAuthHMACSHA512256State
+    -- ^ A pointer to an initialised hash state. Cannot be 'Foreign.nullPtr'.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the authenticator.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 ---------------
 -- Constants --
@@ -738,7 +738,7 @@ foreign import capi "sodium.h crypto_hash_sha256_statebytes"
 -- It is in use in the @ED25519ph@ multi-part signing system.
 --
 -- For more information, please consult the documentation of
--- "Cryptography.Sodium.Bindings.Signing".
+-- "LibSodium.Bindings.Signing".
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_hash_sha512_BYTES"

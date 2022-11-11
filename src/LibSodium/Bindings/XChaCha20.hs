@@ -2,7 +2,7 @@
 {-# LANGUAGE Trustworthy #-}
 
 -- |
--- Module: Cryptography.Sodium.Bindings.XChaCha20
+-- Module: LibSodium.Bindings.XChaCha20
 -- Description: Direct bindings to XChaCha20 primitives
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -11,25 +11,25 @@
 -- Portability: GHC only
 --
 -- Direct bindings to XChaCha20 primitives.
-module Cryptography.Sodium.Bindings.XChaCha20
+module LibSodium.Bindings.XChaCha20
   ( -- * Constants
-    cryptoStreamXChaCha20KeyBytes,
-    cryptoStreamXChaCha20NonceBytes,
+    cryptoStreamXChaCha20KeyBytes
+  , cryptoStreamXChaCha20NonceBytes
 
     -- * Functions
-    cryptoStreamXChaCha20,
-    cryptoStreamXChaCha20Xor,
-    cryptoStreamXChaCha20XorIC,
-    cryptoStreamXChaCha20Keygen,
+  , cryptoStreamXChaCha20
+  , cryptoStreamXChaCha20Xor
+  , cryptoStreamXChaCha20XorIC
+  , cryptoStreamXChaCha20Keygen
   )
 where
 
 import Data.Word (Word64)
 import Foreign.C.Types
-  ( CInt (CInt),
-    CSize (CSize),
-    CUChar,
-    CULLong (CULLong),
+  ( CInt (CInt)
+  , CSize (CSize)
+  , CUChar
+  , CULLong (CULLong)
   )
 import Foreign.Ptr (Ptr)
 
@@ -49,17 +49,17 @@ import Foreign.Ptr (Ptr)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20"
-  cryptoStreamXChaCha20 ::
-    -- | Out-parameter where pseudorandom bytes will be stored
-    Ptr CUChar ->
-    -- | How many bytes to write
-    CULLong ->
-    -- | Nonce location (see documentation, won't be modified)
-    Ptr CUChar ->
-    -- | Secret key location (see documentation, won't be modified)
-    Ptr CUChar ->
-    -- | Always 0 (see documentation)
-    IO CInt
+  cryptoStreamXChaCha20
+    :: Ptr CUChar
+    -- ^ Out-parameter where pseudorandom bytes will be stored
+    -> CULLong
+    -- ^ How many bytes to write
+    -> Ptr CUChar
+    -- ^ Nonce location (see documentation, won't be modified)
+    -> Ptr CUChar
+    -- ^ Secret key location (see documentation, won't be modified)
+    -> IO CInt
+    -- ^ Always 0 (see documentation)
 
 -- | Encrypt a message of the given length, using a nonce and a secret key. The
 -- amount of data read from the nonce location and secret key location will be
@@ -86,19 +86,19 @@ foreign import capi "sodium.h crypto_stream_xchacha20"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20_xor"
-  cryptoStreamXChaCha20Xor ::
-    -- | Out-parameter where the ciphertext will be stored
-    Ptr CUChar ->
-    -- | Message location (won't be modified)
-    Ptr CUChar ->
-    -- | Message length
-    CULLong ->
-    -- | Nonce location (see documentation, won't be modified)
-    Ptr CUChar ->
-    -- | Secret key location (see documentation, won't be modified)
-    Ptr CUChar ->
-    -- | Always 0 (see documentation)
-    IO CInt
+  cryptoStreamXChaCha20Xor
+    :: Ptr CUChar
+    -- ^ Out-parameter where the ciphertext will be stored
+    -> Ptr CUChar
+    -- ^ Message location (won't be modified)
+    -> CULLong
+    -- ^ Message length
+    -> Ptr CUChar
+    -- ^ Nonce location (see documentation, won't be modified)
+    -> Ptr CUChar
+    -- ^ Secret key location (see documentation, won't be modified)
+    -> IO CInt
+    -- ^ Always 0 (see documentation)
 
 -- | As 'cryptoStreamXChaCha20Xor', but allows setting the initial value of the
 -- block counter to a non-zero value. This permits direct access to any block
@@ -113,21 +113,21 @@ foreign import capi "sodium.h crypto_stream_xchacha20_xor"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20_xor_ic"
-  cryptoStreamXChaCha20XorIC ::
-    -- | Out-parameter where the ciphertext will be stored
-    Ptr CUChar ->
-    -- | Message location (won't be modified)
-    Ptr CUChar ->
-    -- | Message length
-    CULLong ->
-    -- | Nonce location (see documentation, won't be modified)
-    Ptr CUChar ->
-    -- | Value of block counter (see documentation)
-    Word64 ->
-    -- | Secret key location (see documentation, won't be modified)
-    Ptr CUChar ->
-    -- | Always 0 (see documentation)
-    IO CInt
+  cryptoStreamXChaCha20XorIC
+    :: Ptr CUChar
+    -- ^ Out-parameter where the ciphertext will be stored
+    -> Ptr CUChar
+    -- ^ Message location (won't be modified)
+    -> CULLong
+    -- ^ Message length
+    -> Ptr CUChar
+    -- ^ Nonce location (see documentation, won't be modified)
+    -> Word64
+    -- ^ Value of block counter (see documentation)
+    -> Ptr CUChar
+    -- ^ Secret key location (see documentation, won't be modified)
+    -> IO CInt
+    -- ^ Always 0 (see documentation)
 
 -- | Generate a random XChaCha20 secret key. This will always write
 -- 'cryptoStreamXChaCha20KeyBytes' to the out-parameter.
@@ -138,11 +138,11 @@ foreign import capi "sodium.h crypto_stream_xchacha20_xor_ic"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20_keygen"
-  cryptoStreamXChaCha20Keygen ::
-    -- | Out-parameter where the key will be stored
-    Ptr CUChar ->
-    -- | Doesn't return anything meaningful
-    IO ()
+  cryptoStreamXChaCha20Keygen
+    :: Ptr CUChar
+    -- ^ Out-parameter where the key will be stored
+    -> IO ()
+    -- ^ Doesn't return anything meaningful
 
 -- | The number of bytes in an XChaCha20 secret key.
 --

@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Safe #-}
 
--- | Module: Cryptography.Sodium.Bindings.Random
+-- | Module: LibSodium.Bindings.Random
 -- Description: Secure random number generation
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -15,10 +15,10 @@
 -- * On Windows, @RtlGenRandom@.
 -- * On FreeBSD and Linux, @getrandom@ syscall.
 -- * On other UNIX platforms, @\/dev\/urandom@.
-module Cryptography.Sodium.Bindings.Random
-  ( randombytesRandom,
-    randombytesUniform,
-    randombytesBuf,
+module LibSodium.Bindings.Random
+  ( randombytesRandom
+  , randombytesUniform
+  , randombytesBuf
   )
 where
 
@@ -46,10 +46,10 @@ foreign import capi "sodium.h randombytes_random"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_uniform"
-  randombytesUniform ::
-    -- | upper limit (exclusive)
-    Word32 ->
-    IO Word32
+  randombytesUniform
+    :: Word32
+    -- ^ upper limit (exclusive)
+    -> IO Word32
 
 -- | Fills a buffer of the given size with unpredictable bytes.
 --
@@ -59,10 +59,10 @@ foreign import capi "sodium.h randombytes_uniform"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_buf"
-  randombytesBuf ::
-    -- | Out-parameter to fill
-    Ptr Word8 ->
-    -- | How many bytes to generate
-    CSize ->
-    -- | No meaningful return value
-    IO ()
+  randombytesBuf
+    :: Ptr Word8
+    -- ^ Out-parameter to fill
+    -> CSize
+    -- ^ How many bytes to generate
+    -> IO ()
+    -- ^ No meaningful return value

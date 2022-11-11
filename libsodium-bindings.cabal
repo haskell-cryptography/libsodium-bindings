@@ -1,0 +1,56 @@
+cabal-version:      3.0
+name:               libsodium-bindings
+version:            0.0.1.0
+category:           Cryptography
+synopsis:           Static FFI bindings to libsodium
+description:
+  This library embeds FFI bindings to the stable version of libsodium 1.0.18.
+  The interface exposed by this library is kept close to the C library.
+
+homepage:           https://github.com/haskell-cryptography/libsodium-bindings
+bug-reports:
+  https://github.com/haskell-cryptography/libsodium-bindings/issues
+
+author:             Hécate Moonlight, Koz Ross
+maintainer:         The Haskell Cryptography contributors
+license:            BSD-3-Clause
+build-type:         Simple
+tested-with:        GHC ==8.10.7 || ==9.0.1 || ==9.2.4
+extra-source-files:
+  CHANGELOG.md
+  LICENSE
+  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/haskell-cryptography/libsodium-bindings
+
+common common
+  build-depends:     base >=4.14 && <5
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+    -fhide-source-paths -Wno-unused-do-bind -haddock
+
+  pkgconfig-depends: libsodium ==1.0.18
+  default-language:  Haskell2010
+
+common common-rts-options
+  ghc-options: -rtsopts -threaded -with-rtsopts=-N
+
+library
+  import:          common
+  hs-source-dirs:  src
+  exposed-modules:
+    LibSodium.Bindings.Comparison
+    LibSodium.Bindings.GenericHashing
+    LibSodium.Bindings.KeyExchange
+    LibSodium.Bindings.Main
+    LibSodium.Bindings.PasswordHashing
+    LibSodium.Bindings.Random
+    LibSodium.Bindings.Scrypt
+    LibSodium.Bindings.Secretbox
+    LibSodium.Bindings.SecureMemory
+    LibSodium.Bindings.SHA2
+    LibSodium.Bindings.Signing
+    LibSodium.Bindings.XChaCha20

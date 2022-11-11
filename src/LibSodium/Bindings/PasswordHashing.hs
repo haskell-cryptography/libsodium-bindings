@@ -3,43 +3,43 @@
 
 -- |
 --
--- Module: Cryptography.Sodium.Bindings.PasswordHashing
+-- Module: LibSodium.Bindings.PasswordHashing
 -- Description: Direct bindings to the password hashing primitives of Libsodium.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module Cryptography.Sodium.Bindings.PasswordHashing
+module LibSodium.Bindings.PasswordHashing
   ( -- * Introduction
     -- $introduction
 
     -- * Operations
-    cryptoPWHash,
-    cryptoPWHashStr,
-    cryptoPWHashStrVerify,
-    cryptoPWHashStrNeedsRehash,
+    cryptoPWHash
+  , cryptoPWHashStr
+  , cryptoPWHashStrVerify
+  , cryptoPWHashStrNeedsRehash
 
     -- * Constants
-    cryptoPWHashAlgDefault,
-    cryptoPWHashAlgArgon2I13,
-    cryptoPWHashAlgArgon2ID13,
-    cryptoPWHashSaltBytes,
-    cryptoPWHashPasswdMin,
-    cryptoPWHashPasswdMax,
-    cryptoPWHashOpsLimitInteractive,
-    cryptoPWHashOpsLimitSensitive,
-    cryptoPWHashOpsLimitModerate,
-    cryptoPWHashOpsLimitMin,
-    cryptoPWHashOpsLimitMax,
-    cryptoPWHashMemLimitModerate,
-    cryptoPWHashMemLimitInteractive,
-    cryptoPWHashMemLimitSensitive,
-    cryptoPWHashMemLimitMin,
-    cryptoPWHashMemLimitMax,
-    cryptoPWHashBytesMax,
-    cryptoPWHashBytesMin,
-    cryptoPWHashStrBytes,
+  , cryptoPWHashAlgDefault
+  , cryptoPWHashAlgArgon2I13
+  , cryptoPWHashAlgArgon2ID13
+  , cryptoPWHashSaltBytes
+  , cryptoPWHashPasswdMin
+  , cryptoPWHashPasswdMax
+  , cryptoPWHashOpsLimitInteractive
+  , cryptoPWHashOpsLimitSensitive
+  , cryptoPWHashOpsLimitModerate
+  , cryptoPWHashOpsLimitMin
+  , cryptoPWHashOpsLimitMax
+  , cryptoPWHashMemLimitModerate
+  , cryptoPWHashMemLimitInteractive
+  , cryptoPWHashMemLimitSensitive
+  , cryptoPWHashMemLimitMin
+  , cryptoPWHashMemLimitMax
+  , cryptoPWHashBytesMax
+  , cryptoPWHashBytesMin
+  , cryptoPWHashStrBytes
   )
 where
 
@@ -79,32 +79,32 @@ import Foreign.C (CChar (..), CInt (..), CLLong (..), CSize (..), CUChar (..), C
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash"
-  cryptoPWHash ::
-    -- | @out@ parameter. It represents the address of a dedicated storage area of @outlen@ bytes.
-    Ptr CUChar ->
-    -- | @outlen@ parameter. It is the length of the key derived from the @passwd@ parameter.
+  cryptoPWHash
+    :: Ptr CUChar
+    -- ^ @out@ parameter. It represents the address of a dedicated storage area of @outlen@ bytes.
+    -> CLLong
+    -- ^ @outlen@ parameter. It is the length of the key derived from the @passwd@ parameter.
     -- This should be a least 'cryptoPWHashBytesMin' and at most 'cryptoPWHashBytesMax'.
-    CLLong ->
-    -- | @passwd@ parameter. It is a pointer to the password that is to be derived.
-    Ptr CChar ->
-    -- | @passwdlen@ parameter. It is the size of the password.
-    CULLong ->
-    -- | @salt@ parameter. It is of a fixed length established by 'cryptoPWHashSaltBytes'. It should be unpredictable.
-    -- 'Cryptography.Sodium.Bindings.Random.randombytesBuf' is the best way to fill the 'cryptoPWHashSaltBytes' of the
+    -> Ptr CChar
+    -- ^ @passwd@ parameter. It is a pointer to the password that is to be derived.
+    -> CULLong
+    -- ^ @passwdlen@ parameter. It is the size of the password.
+    -> Ptr CUChar
+    -- ^ @salt@ parameter. It is of a fixed length established by 'cryptoPWHashSaltBytes'. It should be unpredictable.
+    -- 'LibSodium.Bindings.Random.randombytesBuf' is the best way to fill the 'cryptoPWHashSaltBytes' of the
     -- salt.
-    Ptr CUChar ->
-    -- | @opslimit@ parameter. It represents the maximum amount of computations to perform. Raising this number will make the function require more CPU cycles
+    -> CULLong
+    -- ^ @opslimit@ parameter. It represents the maximum amount of computations to perform. Raising this number will make the function require more CPU cycles
     -- to compute a key. This number must be between 'cryptoPWHashOpsLimitMin' and 'cryptoPWHashOpsLimitMax'.
-    CULLong ->
-    -- | @memlimit@ parameter. It is the maximum amount of RAM in bytes that the function will use.
+    -> CSize
+    -- ^ @memlimit@ parameter. It is the maximum amount of RAM in bytes that the function will use.
     -- This number must be between 'cryptoPWHashMemLimitMin' 'cryptoPWHashMemLimitMax'
-    CSize ->
-    -- | @alg@ parameter. It is an identifier for the algorithm to use and should be set to one of the following values:
+    -> CInt
+    -- ^ @alg@ parameter. It is an identifier for the algorithm to use and should be set to one of the following values:
     --     'cryptoPWHashAlgDefault', 'cryptoPWHashAlgArgon2I13' or 'cryptoPWHashAlgArgon2ID13'.
-    CInt ->
-    -- | The return code is 0 on success and -1 if the computation didn't complete,
+    -> IO CInt
+    -- ^ The return code is 0 on success and -1 if the computation didn't complete,
     -- usually because the operating system refused to allocate the amount of requested memory.
-    IO CInt
 
 -- | This function is used for password storage, like an SQL database.
 -- It stores an ASCII-encoded string into its @out@ parameter,
@@ -119,48 +119,48 @@ foreign import capi "sodium.h crypto_pwhash"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_str"
-  cryptoPWHashStr ::
-    -- | @out@ parameter. It must be of size 'cryptoPWHashStrBytes'.
-    Ptr CChar ->
-    -- | @passwd@ parameter. Points to a password to be stored.
-    Ptr CChar ->
-    -- | @passwdlen@ parameter. Length of the password.
-    CULLong ->
-    -- | @opslimit@ parameter. It represents the maximum amount of computations to perform.
-    CULLong ->
-    -- | @memlimit@ parameter. It is the maximum amount of RAM in bytes that the function will use.
-    CSize ->
-    -- | The function returns 0 on success and -1 if it didn't complete successfully.
-    IO CInt
+  cryptoPWHashStr
+    :: Ptr CChar
+    -- ^ @out@ parameter. It must be of size 'cryptoPWHashStrBytes'.
+    -> Ptr CChar
+    -- ^ @passwd@ parameter. Points to a password to be stored.
+    -> CULLong
+    -- ^ @passwdlen@ parameter. Length of the password.
+    -> CULLong
+    -- ^ @opslimit@ parameter. It represents the maximum amount of computations to perform.
+    -> CSize
+    -- ^ @memlimit@ parameter. It is the maximum amount of RAM in bytes that the function will use.
+    -> IO CInt
+    -- ^ The function returns 0 on success and -1 if it didn't complete successfully.
 
 -- | This function verifies that the @str@ parameter is a valid password verification string
 -- (as generated by 'cryptoPWHashStr'), for a @passwd@ whose length is @passwdlen@.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_str_verify"
-  cryptoPWHashStrVerify ::
-    -- | @str@ parameter. It must be zero-terminated.
-    Ptr CChar ->
-    -- | @passwd@ parameter.
-    Ptr CChar ->
-    -- | @passwdlen@ parameter.
-    CULLong ->
-    -- | It returns 0 if the verification succeeds and -1 on error.
-    IO CInt
+  cryptoPWHashStrVerify
+    :: Ptr CChar
+    -- ^ @str@ parameter. It must be zero-terminated.
+    -> Ptr CChar
+    -- ^ @passwd@ parameter.
+    -> CULLong
+    -- ^ @passwdlen@ parameter.
+    -> IO CInt
+    -- ^ It returns 0 if the verification succeeds and -1 on error.
 
 -- | This functions checks if a password verification string @str@ matches the parameters @opslimit@, @memlimit@, and the current default algorithm.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_str_needs_rehash"
-  cryptoPWHashStrNeedsRehash ::
-    -- | @str@ parameter.
-    Ptr CChar ->
-    -- | @opslimit@ parameter.
-    CULLong ->
-    -- | @memlimit@ parameter.
-    CSize ->
-    -- | The function returns 0 if the parameters already match the given ones, and returns 1 on error. In particular, It will return 1 if the string appears to be correct but doesn't match the given parameters. In that situation, applications may want to compute a new hash using the current parameters the next time the user logs in.
-    IO CInt
+  cryptoPWHashStrNeedsRehash
+    :: Ptr CChar
+    -- ^ @str@ parameter.
+    -> CULLong
+    -- ^ @opslimit@ parameter.
+    -> CSize
+    -- ^ @memlimit@ parameter.
+    -> IO CInt
+    -- ^ The function returns 0 if the parameters already match the given ones, and returns 1 on error. In particular, It will return 1 if the string appears to be correct but doesn't match the given parameters. In that situation, applications may want to compute a new hash using the current parameters the next time the user logs in.
 
 -- | Haskell binding to the @crypto_pwhash_ALG_DEFAULT@ constant.
 --

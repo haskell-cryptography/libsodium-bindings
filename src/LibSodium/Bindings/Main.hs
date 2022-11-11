@@ -4,7 +4,7 @@
 {-# LANGUAGE Safe #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
--- | Module: Cryptography.Sodium.Bindings.Main
+-- | Module: LibSodium.Bindings.Main
 -- Description: Wrappers for initialization
 -- Copyright: (C) Koz Ross 2022
 -- License: BSD-3-Clause
@@ -21,13 +21,13 @@
 -- If you are using @cryptography-libsodium@ as a dependency for a library, you
 -- are probably not interested in this; it's designed for application authors who
 -- need capabilities provided by @cryptography-libsodium@.
-module Cryptography.Sodium.Bindings.Main
+module LibSodium.Bindings.Main
   ( -- * High-level wrappers
-    secureMain,
-    secureMainWith,
+    secureMain
+  , secureMainWith
 
     -- * Low-level binding
-    sodiumInit,
+  , sodiumInit
   )
 where
 
@@ -72,6 +72,6 @@ secureMainWith badPath goodPath = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_init"
-  sodiumInit ::
-    -- | 0 if successful, -1 on failure, 1 on repeat calls
-    IO CInt
+  sodiumInit
+    :: IO CInt
+    -- ^ 0 if successful, -1 on failure, 1 on repeat calls

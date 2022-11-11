@@ -15,22 +15,22 @@ module Cryptography.Sodium.Bindings.GenericHashing
     -- $introduction
 
     -- * Operations
-    CryptoGenericHashState,
-    cryptoGenericHash,
-    cryptoGenericHashKeyGen,
-    withGenericHashState,
-    withGenericHashStateOfSize,
-    cryptoGenericHashInit,
-    cryptoGenericHashUpdate,
-    cryptoGenericHashFinal,
+    CryptoGenericHashState
+  , cryptoGenericHash
+  , cryptoGenericHashKeyGen
+  , withGenericHashState
+  , withGenericHashStateOfSize
+  , cryptoGenericHashInit
+  , cryptoGenericHashUpdate
+  , cryptoGenericHashFinal
 
     -- * Constants
-    cryptoGenericHashBytes,
-    cryptoGenericHashBytesMin,
-    cryptoGenericHashBytesMax,
-    cryptoGenericHashKeyBytes,
-    cryptoGenericHashKeyBytesMin,
-    cryptoGenericHashKeyBytesMax,
+  , cryptoGenericHashBytes
+  , cryptoGenericHashBytesMin
+  , cryptoGenericHashBytesMax
+  , cryptoGenericHashKeyBytes
+  , cryptoGenericHashKeyBytesMin
+  , cryptoGenericHashKeyBytesMax
   )
 where
 
@@ -99,21 +99,21 @@ withGenericHashStateOfSize size action = allocaBytes (fromIntegral size) action
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash"
-  cryptoGenericHash ::
-    -- | @out@ parameter.
-    Ptr CUChar ->
-    -- | @outlen@ parameter.
-    CSize ->
-    -- | @in@ parameter.
-    Ptr CUChar ->
-    -- | @inlen@ parameter.
-    CULLong ->
-    -- | @key@ parameter.
-    Ptr CUChar ->
-    -- | @keylen@ parameter.
-    CSize ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoGenericHash
+    :: Ptr CUChar
+    -- ^ @out@ parameter.
+    -> CSize
+    -- ^ @outlen@ parameter.
+    -> Ptr CUChar
+    -- ^ @in@ parameter.
+    -> CULLong
+    -- ^ @inlen@ parameter.
+    -> Ptr CUChar
+    -- ^ @key@ parameter.
+    -> CSize
+    -- ^ @keylen@ parameter.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Initialise a hash state with a key of a specified length, and
 -- produce an output with the specified length in bytes.
@@ -126,17 +126,17 @@ foreign import capi "sodium.h crypto_generichash"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_init"
-  cryptoGenericHashInit ::
-    -- | Pointer to the hash state
-    Ptr CryptoGenericHashState ->
-    -- | Pointer to a key
-    Ptr CUChar ->
-    -- | Length of the key
-    CSize ->
-    -- | Length of the result
-    CSize ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoGenericHashInit
+    :: Ptr CryptoGenericHashState
+    -- ^ Pointer to the hash state
+    -> Ptr CUChar
+    -- ^ Pointer to a key
+    -> CSize
+    -- ^ Length of the key
+    -> CSize
+    -- ^ Length of the result
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | If you process a message in chunks, you can sequentially process each chunk by calling 'cryptoGenericHashUpdate'
 -- by providing a pointer to the previously initialised state, a pointer to the input chunk,
@@ -144,39 +144,39 @@ foreign import capi "sodium.h crypto_generichash_init"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_update"
-  cryptoGenericHashUpdate ::
-    -- | Pointer to the hash state
-    Ptr CryptoGenericHashState ->
-    -- | Pointer to a chunk to be processed
-    Ptr CUChar ->
-    -- | Length of the chunk in bytes
-    CULLong ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoGenericHashUpdate
+    :: Ptr CryptoGenericHashState
+    -- ^ Pointer to the hash state
+    -> Ptr CUChar
+    -- ^ Pointer to a chunk to be processed
+    -> CULLong
+    -- ^ Length of the chunk in bytes
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | After processing everything you need with 'cryptoGenericHashUpdate', you can finalise the operation
 -- with 'cryptoGenericHashFinal'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_final"
-  cryptoGenericHashFinal ::
-    -- | The hash state used throughout the previous hashing operations.
-    Ptr CryptoGenericHashState ->
-    -- | The pointer to the resulting fingerprint.
-    Ptr CUChar ->
-    -- | Size of the hash.
-    CSize ->
-    -- | Returns 0 on success, -1 if called twice.
-    IO CInt
+  cryptoGenericHashFinal
+    :: Ptr CryptoGenericHashState
+    -- ^ The hash state used throughout the previous hashing operations.
+    -> Ptr CUChar
+    -- ^ The pointer to the resulting fingerprint.
+    -> CSize
+    -- ^ Size of the hash.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 if called twice.
 
 -- | This function creates a key of the recommended length 'cryptoGenericHashKeyBytes'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_keygen"
-  cryptoGenericHashKeyGen ::
-    -- | A pointer to the key
-    Ptr CUChar ->
-    IO ()
+  cryptoGenericHashKeyGen
+    :: Ptr CUChar
+    -- ^ A pointer to the key
+    -> IO ()
 
 -- | Haskell binding to the @crypto_generichash_BYTES@ constant
 --

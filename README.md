@@ -1,6 +1,6 @@
-# cryptography-libsodium-bindings [![CI](https://github.com/haskell-cryptography/cryptography-libsodium-bindings/actions/workflows/ci.yml/badge.svg)](https://github.com/haskell-cryptography/cryptography-libsodium-bindings/actions/workflows/ci.yml) [![made with Haskell](https://img.shields.io/badge/Made%20in-Haskell-%235e5086?logo=haskell&style=flat-square)](https://haskell.org)
+# libsodium-bindings [![CI](https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/ci.yml/badge.svg)](https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/ci.yml) [![made with Haskell](https://img.shields.io/badge/Made%20in-Haskell-%235e5086?logo=haskell&style=flat-square)](https://haskell.org)
 
-`cryptography-libsodium-bindings` exposes a set of FFI bindings from the `libsodium-1.0.18-stable` library.
+`libsodium-bindings` exposes a set of FFI bindings from the `libsodium-1.0.18-stable` library.
 
 Here are the principles of the library (from our [STRUCTURE](https://github.com/haskell-cryptography/governance/blob/main/STRUCTURE.md) document):
 
@@ -11,7 +11,7 @@ Here are the principles of the library (from our [STRUCTURE](https://github.com/
 
 ## Comparison with other libraries
 
-These other libraries available in Hackage provide bindings to libsodium. Here are how they differ from cryptography-libsodium-bindings:
+These other libraries available in Hackage provide bindings to libsodium. Here are how they differ from libsodium-bindings:
 
 ### [saltine](https://hackage.haskell.org/package/saltine)
 
@@ -23,9 +23,9 @@ It supports GHC from 8.0.2 to 9.0.1.
 `saltine` combines both FFI bindings and Haskell utilities, and uses the `ccall` FFI calling convention convention.
 Its documentation meets our quality standards
 
-In comparison, `cryptography-libsodium-bindings` statically links to libsodium 1.0.18-stable, and does not depend on non-`base` packages.
+In comparison, `libsodium-bindings` statically links to libsodium 1.0.18-stable, and does not depend on non-`base` packages.
 In particular, since there is no dependency on `text`, you are free to use `text-2.0` or stay on the 1.2 branch.
-`cryptography-libsodium-bindings` only provides FFI bindings, and can be used as a dependency by higher-level interfaces.
+`libsodium-bindings` only provides FFI bindings, and can be used as a dependency by higher-level interfaces.
 It supports GHC from 8.10.7 to 9.2.1.
 Moreover, it follows the latest
 [GHC recommendations regarding foreign imports](https://www.haskell.org/ghc/blog/20210709-capi-usage.html#recommendations),
@@ -40,7 +40,7 @@ It requires c2hs to be installed on the developer's system, and supports GHC fro
 `libsodium` only provides FFI bindings, and uses the `ccall` FFI calling convention.  
 Documentation is lacking from the project, and requires a back-and-forth between the package and the libsodium documentation.
 
-In comparison, `cryptography-libsodium-bindings` statically links to libsodium 1.0.18, and does not use `c2hs`.
+In comparison, `libsodium-bindings` statically links to libsodium 1.0.18, and does not use `c2hs`.
 It supports GHC from 8.10.7 to 9.2.1.
-`cryptography-libsodium-bindings` uses the `capi` FFI calling convention.  
+`libsodium-bindings` uses the `capi` FFI calling convention.  
 The documentation of the project aims to render the user self-sufficient.

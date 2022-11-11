@@ -16,17 +16,17 @@ module Cryptography.Sodium.Bindings.SecureMemory
     -- $introduction
 
     -- * Zeroing memory
-    memZero,
+    memZero
 
     -- * Locking memory
-    lock,
-    unlock,
+  , lock
+  , unlock
   )
 where
 
+import Data.Word (Word8)
 import Foreign (Ptr)
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
-import Data.Word (Word8)
 
 -- $introduction
 -- This module provides bindings to the secure memory functions provided by Libsodium.
@@ -58,12 +58,12 @@ import Data.Word (Word8)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memzero"
-  memZero ::
-    -- | Start pointer
-    Ptr Word8 ->
-    -- | Length in bytes of the area to zero
-    CSize ->
-    IO ()
+  memZero
+    :: Ptr Word8
+    -- ^ Start pointer
+    -> CSize
+    -- ^ Length in bytes of the area to zero
+    -> IO ()
 
 -- | Lock a memory region starting at the pointer
 -- address. This can help avoid swapping sensitive
@@ -71,13 +71,13 @@ foreign import capi "sodium.h sodium_memzero"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_mlock"
-  lock ::
-    -- | Start pointer
-    Ptr Word8 ->
-    -- | Size of the memory region to lock
-    CSize ->
-    -- | Returns 0 on success, -1 if any system limit is reached.
-    IO CInt
+  lock
+    :: Ptr Word8
+    -- ^ Start pointer
+    -> CSize
+    -- ^ Size of the memory region to lock
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 if any system limit is reached.
 
 -- | Unlock the memory region by overwriting it with zeros and and flagging the
 -- pages as swappable again. Calling 'memZero' prior to 'unlock' is thus not required.
@@ -87,9 +87,9 @@ foreign import capi "sodium.h sodium_mlock"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_munlock"
-  unlock ::
-    -- | Start pointer
-    Ptr Word8 ->
-    -- | Size of the memory region to unlock
-    CSize ->
-    IO CInt
+  unlock
+    :: Ptr Word8
+    -- ^ Start pointer
+    -> CSize
+    -- ^ Size of the memory region to unlock
+    -> IO CInt

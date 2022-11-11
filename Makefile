@@ -16,8 +16,8 @@ repl: ## Start a REPL
 lint: ## Run the code linter (HLint)
 	@find src -name "*.hs" | parallel -j $(PROCS) -- hlint --refactor-options="-i" --refactor {}
 
-style: ## Run the code formatter (ormolu)
-	@find src -name "*.hs" | parallel -j $(PROCS) -- ormolu -m inplace {}
+style: ## Run the code formatter (fourmolu, cabal-fmt)
+	@fourmolu -q --mode inplace src
 	@cabal-fmt -i *.cabal
 
 help: ## Display this help message

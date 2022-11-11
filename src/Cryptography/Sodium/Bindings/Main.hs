@@ -23,11 +23,11 @@
 -- need capabilities provided by @cryptography-libsodium@.
 module Cryptography.Sodium.Bindings.Main
   ( -- * High-level wrappers
-    secureMain,
-    secureMainWith,
+    secureMain
+  , secureMainWith
 
     -- * Low-level binding
-    sodiumInit,
+  , sodiumInit
   )
 where
 
@@ -72,6 +72,6 @@ secureMainWith badPath goodPath = do
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_init"
-  sodiumInit ::
-    -- | 0 if successful, -1 on failure, 1 on repeat calls
-    IO CInt
+  sodiumInit
+    :: IO CInt
+    -- ^ 0 if successful, -1 on failure, 1 on repeat calls

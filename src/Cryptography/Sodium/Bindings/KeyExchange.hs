@@ -17,21 +17,21 @@ module Cryptography.Sodium.Bindings.KeyExchange
     -- * Key Exchange
 
     -- ** Key generation
-    cryptoKXKeyPair,
-    cryptoKXSeedKeypair,
+    cryptoKXKeyPair
+  , cryptoKXSeedKeypair
 
     -- ** Client
-    cryptoKXClientSessionKeys,
+  , cryptoKXClientSessionKeys
 
     -- ** Server
-    cryptoKXServerSessionKeys,
+  , cryptoKXServerSessionKeys
 
     -- ** Constants
-    cryptoKXPublicKeyBytes,
-    cryptoKXSecretKeyBytes,
-    cryptoKXSeedBytes,
-    cryptoKXSessionKeyBytes,
-    cryptoKXPrimitive,
+  , cryptoKXPublicKeyBytes
+  , cryptoKXSecretKeyBytes
+  , cryptoKXSeedBytes
+  , cryptoKXSessionKeyBytes
+  , cryptoKXPrimitive
   )
 where
 
@@ -51,13 +51,13 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_keypair"
-  cryptoKXKeyPair ::
-    -- | The buffer that will hold the public key, of size 'cryptoKXPublicKeyBytes'.
-    Ptr CUChar ->
-    -- | The buffer that will hold the secret key, of size 'cryptoKXSecretKeyBytes'.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoKXKeyPair
+    :: Ptr CUChar
+    -- ^ The buffer that will hold the public key, of size 'cryptoKXPublicKeyBytes'.
+    -> Ptr CUChar
+    -- ^ The buffer that will hold the secret key, of size 'cryptoKXSecretKeyBytes'.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Create a new key pair from a seed.
 --
@@ -68,15 +68,15 @@ foreign import capi "sodium.h crypto_kx_keypair"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_seed_keypair"
-  cryptoKXSeedKeypair ::
-    -- | The buffer that will hold the public key, of size 'cryptoKXPublicKeyBytes'.
-    Ptr CUChar ->
-    -- | The buffer that will hold the secret key, of size 'cryptoKXSecretKeyBytes'.
-    Ptr CUChar ->
-    -- | The pointer to the seed from which the keys are derived. It is of size 'cryptoKXSeedBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+  cryptoKXSeedKeypair
+    :: Ptr CUChar
+    -- ^ The buffer that will hold the public key, of size 'cryptoKXPublicKeyBytes'.
+    -> Ptr CUChar
+    -- ^ The buffer that will hold the secret key, of size 'cryptoKXSecretKeyBytes'.
+    -> Ptr CUChar
+    -- ^ The pointer to the seed from which the keys are derived. It is of size 'cryptoKXSeedBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Compute a pair of shared session keys (secret and public).
 --
@@ -96,19 +96,19 @@ foreign import capi "sodium.h crypto_kx_seed_keypair"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_client_session_keys"
-  cryptoKXClientSessionKeys ::
-    -- | A pointer to the buffer that will hold the shared secret key, of size 'cryptoKXSessionKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the buffer that will hold the shared public key, of size 'cryptoKXSessionKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the client's public key, of size 'cryptoKXPublicKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the client's secret key, of size 'cryptoKXSecretKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the server's public key, of size 'cryptoKXPublicKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error, such as when the server's public key is not acceptable.
-    IO CInt
+  cryptoKXClientSessionKeys
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the shared secret key, of size 'cryptoKXSessionKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the shared public key, of size 'cryptoKXSessionKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the client's public key, of size 'cryptoKXPublicKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the client's secret key, of size 'cryptoKXSecretKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the server's public key, of size 'cryptoKXPublicKeyBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error, such as when the server's public key is not acceptable.
 
 --
 
@@ -130,19 +130,19 @@ foreign import capi "sodium.h crypto_kx_client_session_keys"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_server_session_keys"
-  cryptoKXServerSessionKeys ::
-    -- | A pointer to the buffer that will hold the shared secret key, of size 'cryptoKXSessionKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the buffer that will hold the shared public key, of size 'cryptoKXSessionKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the server's public key, of size 'cryptoKXPublicKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the server's secret key, of size 'cryptoKXSecretKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | A pointer to the client's public key, of size 'cryptoKXPublicKeyBytes' bytes.
-    Ptr CUChar ->
-    -- | Returns 0 on success, -1 on error, such as when the server's public key is not acceptable.
-    IO CInt
+  cryptoKXServerSessionKeys
+    :: Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the shared secret key, of size 'cryptoKXSessionKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the buffer that will hold the shared public key, of size 'cryptoKXSessionKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the server's public key, of size 'cryptoKXPublicKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the server's secret key, of size 'cryptoKXSecretKeyBytes' bytes.
+    -> Ptr CUChar
+    -- ^ A pointer to the client's public key, of size 'cryptoKXPublicKeyBytes' bytes.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error, such as when the server's public key is not acceptable.
 
 -- | @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_PUBLICKEYBYTES"

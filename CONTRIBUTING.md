@@ -1,4 +1,4 @@
-Thank you for your contribution to `cryptography-libsodium-bindings`! While there is no
+Thank you for your contribution to `libsodium-bindings`! While there is no
 Contributor License Agreement (CLA) to sign, we _do_ need you to read the
 following instructions before you contribute.
 
@@ -55,4 +55,4 @@ Open an [issue][Ticket] and tell us what you can about your problem.
 
 [CoC]: https://github.com/haskell-cryptography/governance/blob/master/CODE_OF_CONDUCT.md
 [Ticket]: https://github.com/haskell-cryptography/cryptography-libsodium/issues/new
-[Questions board]: https://github.com/haskell-cryptography/cryptography-libsodium-bindings/discussions/categories/q-a
+[Questions board]: https://github.com/haskell-cryptography/libsodium-bindings/discussions/categories/q-a

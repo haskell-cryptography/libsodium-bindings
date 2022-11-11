@@ -17,33 +17,33 @@ module Cryptography.Sodium.Bindings.Scrypt
     -- $introduction
 
     -- * Key Derivation
-    cryptoPWHashScryptSalsa2018SHA256,
+    cryptoPWHashScryptSalsa2018SHA256
 
     -- * Password storage
-    cryptoPWHashScryptSalsa2018SHA256Str,
-    cryptoPWHashScryptSalsa2018SHA256StrVerify,
+  , cryptoPWHashScryptSalsa2018SHA256Str
+  , cryptoPWHashScryptSalsa2018SHA256StrVerify
 
     -- * Constants
-    cryptoPWHashScryptSalsa2018SHA256BytesMin,
-    cryptoPWHashScryptSalsa2018SHA256BytesMax,
-    cryptoPWHashScryptSalsa2018SHA256PasswdMin,
-    cryptoPWHashScryptSalsa2018SHA256PasswdMax,
-    cryptoPWHashScryptSalsa2018SHA256SaltBytes,
-    cryptoPWHashScryptSalsa2018SHA256StrBytes,
-    cryptoPWHashScryptSalsa2018SHA256StrPrefix,
-    cryptoPWHashScryptSalsa2018SHA256OpsLimitMin,
-    cryptoPWHashScryptSalsa2018SHA256OpsLimitMax,
-    cryptoPWHashScryptSalsa2018SHA256MemLimitMin,
-    cryptoPWHashScryptSalsa2018SHA256MemLimitMax,
-    cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive,
-    cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive,
-    cryptoPWHashScryptSalsa2018SHA256OpsLimitSensitive,
-    cryptoPWHashScryptSalsa2018SHA256MemLimitSensitive,
+  , cryptoPWHashScryptSalsa2018SHA256BytesMin
+  , cryptoPWHashScryptSalsa2018SHA256BytesMax
+  , cryptoPWHashScryptSalsa2018SHA256PasswdMin
+  , cryptoPWHashScryptSalsa2018SHA256PasswdMax
+  , cryptoPWHashScryptSalsa2018SHA256SaltBytes
+  , cryptoPWHashScryptSalsa2018SHA256StrBytes
+  , cryptoPWHashScryptSalsa2018SHA256StrPrefix
+  , cryptoPWHashScryptSalsa2018SHA256OpsLimitMin
+  , cryptoPWHashScryptSalsa2018SHA256OpsLimitMax
+  , cryptoPWHashScryptSalsa2018SHA256MemLimitMin
+  , cryptoPWHashScryptSalsa2018SHA256MemLimitMax
+  , cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive
+  , cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive
+  , cryptoPWHashScryptSalsa2018SHA256OpsLimitSensitive
+  , cryptoPWHashScryptSalsa2018SHA256MemLimitSensitive
   )
 where
 
 import Foreign (Ptr)
-import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong), CChar(CChar))
+import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
 -- This is an implementation of the scrypt password hashing function.
@@ -112,34 +112,34 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong), CChar(C
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
-  cryptoPWHashScryptSalsa2018SHA256 ::
-    -- | A pointer to the computed key.
-    Ptr CUChar ->
-    -- | The length of the computed key.
+  cryptoPWHashScryptSalsa2018SHA256
+    :: Ptr CUChar
+    -- ^ A pointer to the computed key.
+    -> CULLong
+    -- ^ The length of the computed key.
     -- Should be  between 'cryptoPWHashScryptSalsa2018SHA256BytesMin'
     -- and 'cryptoPWHashScryptSalsa2018SHA256BytesMax' (~127 GB).
-    CULLong ->
-    -- | A pointer to the password from which the key is derived
-    Ptr CChar ->
-    -- | The length of the password.
+    -> Ptr CChar
+    -- ^ A pointer to the password from which the key is derived
+    -> CULLong
+    -- ^ The length of the password.
     -- Should be between 'cryptoPWHashScryptSalsa2018SHA256PasswdMin'
     -- and 'cryptoPWHashScryptSalsa2018SHA256PasswdMax'.
-    CULLong ->
-    -- | The salt, of length 'cryptoPWHashScryptSalsa2018SHA256SaltBytes'.
-    Ptr CUChar ->
-    -- | /opslimit:/ The maximum amount of computations to perform.
+    -> Ptr CUChar
+    -- ^ The salt, of length 'cryptoPWHashScryptSalsa2018SHA256SaltBytes'.
+    -> CULLong
+    -- ^ /opslimit:/ The maximum amount of computations to perform.
     -- Must be between 'cryptoPWHashScryptSalsa2018SHA256OpsLimitMin'
     -- and 'cryptoPWHashScryptSalsa2018SHA256OpsLimitMax'.
-    CULLong ->
-    -- | /memlimit:/ The maximum amount of RAM in bytes that the function will use.
+    -> CSize
+    -- ^ /memlimit:/ The maximum amount of RAM in bytes that the function will use.
     -- It is highly recommended to allow the function to use at least 16 MiB.
     -- This number must be between 'cryptoPWHashScryptSalsa2018SHA256MemLimitMin'
     -- and 'cryptoPWHashScryptSalsa2018SHA256MemLimitMax'.
-    CSize ->
-    -- | Returns 0 on success, -1 if the computation didn't complete,
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 if the computation didn't complete,
     -- usually because the operating system refused to allocate the amount of
     -- requested memory.
-    IO CInt
 
 ----------------------
 -- Password Storage --
@@ -155,23 +155,23 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
-  cryptoPWHashScryptSalsa2018SHA256Str ::
-    -- | A pointer to the buffer receiving the string.
-    Ptr CChar ->
-    -- | The password
-    Ptr CChar ->
-    -- | Password length
-    CULLong ->
-    -- | /opslimit:/ The maximum amount of computations to perform.
+  cryptoPWHashScryptSalsa2018SHA256Str
+    :: Ptr CChar
+    -- ^ A pointer to the buffer receiving the string.
+    -> Ptr CChar
+    -- ^ The password
+    -> CULLong
+    -- ^ Password length
+    -> CULLong
+    -- ^ /opslimit:/ The maximum amount of computations to perform.
     -- The 'cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive' constant
     -- is a safe baseline value to use.
-    CULLong ->
-    -- | /memlimit:/ The maximum amount of RAM in bytes that the function will use.
+    -> CSize
+    -- ^ /memlimit:/ The maximum amount of RAM in bytes that the function will use.
     -- The 'cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive' constant
     -- is a safe baseline value to use.
-    CSize ->
-    -- | Returns 0 on success, -1 on error.
-    IO CInt
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on error.
 
 -- | Verify that the password verification string is valid for the associated password.
 --
@@ -179,15 +179,15 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str_verify"
-  cryptoPWHashScryptSalsa2018SHA256StrVerify ::
-    -- | The password verification C-string, of size 'cryptoPWHashScryptSalsa2018SHA256StrBytes' bytes.
-    Ptr CChar ->
-    -- | The password.
-    Ptr CChar ->
-    -- | The password length.
-    CULLong ->
-    -- | Returns 0 on success, -1 on password verification failure.
-    IO CInt
+  cryptoPWHashScryptSalsa2018SHA256StrVerify
+    :: Ptr CChar
+    -- ^ The password verification C-string, of size 'cryptoPWHashScryptSalsa2018SHA256StrBytes' bytes.
+    -> Ptr CChar
+    -- ^ The password.
+    -> CULLong
+    -- ^ The password length.
+    -> IO CInt
+    -- ^ Returns 0 on success, -1 on password verification failure.
 
 ---------------
 -- Constants --

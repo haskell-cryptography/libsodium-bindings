@@ -29,9 +29,9 @@ testCryptoGenericHashWithoutKey =
       (fromIntegral cstringLength)
       nullPtr
       0
-    out <- peekCString (castPtr outPtr)
+    out <- peekCStringLen(castPtr outPtr, cstringLength)
     assertEqual "Hashed test string is consistent without key"
-                "\DEL=\ETB\SOp\ETBd=\STXBLzL\SOHl2\CAN\DELQ"
+                "\DEL=\ETB\SOp\ETBd"
                 out
 
 testCryptoGenericHashWithKey :: Assertion
@@ -49,7 +49,7 @@ testCryptoGenericHashWithKey =
         (fromIntegral cstringLength)
         (castPtr keyPtr)
         (fromIntegral keyLength)
-      out <- peekCString (castPtr outPtr)
-      assertEqual "Hashed test string is consistent without key"
-                  "<|1e$\SO3\888\GSsrs\15158\ESC4"
+      out <- peekCStringLen (castPtr outPtr, cstringLength)
+      assertEqual "Hashed test string is consistent with key"
+                  "<|1"
                   out

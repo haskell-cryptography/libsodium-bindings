@@ -7,9 +7,8 @@ import Test.Tasty.HUnit
 import Foreign hiding (void)
 import Control.Monad (void)
 import Foreign.C
-import qualified Data.ByteString.Internal as BS
-import Data.ByteString (ByteString)
-import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes)
+import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes)
+import qualified Data.ByteString.Unsafe as BS
 
 spec :: TestTree
 spec =
@@ -39,22 +38,18 @@ testCryptoGenericHashWithKey :: Assertion
 testCryptoGenericHashWithKey =
   let key = "af7d1575690407317bf93723a8d1dca5"
       msg = "Test Test" :: String
-      keyLength = cryptoGenericHashKeyBytes
   in
     withCStringLen msg $ \(cString, cstringLength) ->
     allocaBytes (fromIntegral cryptoGenericHashBytes) $ \outPtr ->
-    withByteString key $ \keyPtr -> do
+    BS.unsafeUseAsCStringLen key $ \(keyPtr, keyLength) -> do
       void $ cryptoGenericHash
         outPtr
         cryptoGenericHashBytes
         (castPtr cString :: Ptr CUChar)
         (fromIntegral cstringLength)
-        keyPtr
-        keyLength
+        (castPtr keyPtr)
+        (fromIntegral keyLength)
       out <- peekCString (castPtr outPtr)
       assertEqual "Hashed test string is consistent without key"
                   "<|1e$\SO3\888\GSsrs\15158\ESC4"
                   out
-
-withByteString :: ByteString -> (Ptr a -> IO b) -> IO b
-withByteString (BS.PS fptr off _) f = withForeignPtr fptr $ \ptr -> f $! (ptr `plusPtr` off)

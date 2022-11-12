@@ -7,6 +7,9 @@ deps: ## Install the dependencies of the backend
 build: ## Build the project in fast mode
 	@cabal build -O0
 
+test: ## Build and run the test suite
+	@cabal test
+
 clean: ## Remove compilation artifacts
 	@cabal clean
 

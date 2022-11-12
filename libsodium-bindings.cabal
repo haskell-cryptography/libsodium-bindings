@@ -54,3 +54,19 @@ library
     LibSodium.Bindings.SHA2
     LibSodium.Bindings.Signing
     LibSodium.Bindings.XChaCha20
+
+test-suite libsodium-bindings-tests
+  import:         common
+  import:         common-rts-options
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:  Test.GenericHashing
+  hs-source-dirs: test
+  build-depends:
+    , base
+    , base16
+    , bytestring
+    , libsodium-bindings
+    , tasty
+    , tasty-hunit
+    , text

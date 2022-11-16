@@ -1,5 +1,4 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE Safe #-}
 
 -- | Module: LibSodium.Bindings.Random
 -- Description: Secure random number generation

@@ -1,6 +1,12 @@
-packages: ./libsodium-bindings.cabal
+packages:
+  ./libsodium-bindings/libsodium-bindings.cabal
+  ./sel/sel.cabal
 
 package libsodium-bindings
   ghc-options: -Werror
+
+package *
+  ghc-options: -haddock
+  documentation: True
 
 test-show-details: direct

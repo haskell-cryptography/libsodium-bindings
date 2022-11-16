@@ -232,31 +232,31 @@ foreign import capi "sodium.h value crypto_pwhash_OPSLIMIT_MAX"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_MEMLIMIT_MODERATE"
-  cryptoPWHashMemLimitModerate :: CULLong
+  cryptoPWHashMemLimitModerate :: CSize
 
 -- | Haskell binding to the @crypto_pwhash_MEMLIMIT_INTERACTIVE@ constant.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_MEMLIMIT_INTERACTIVE"
-  cryptoPWHashMemLimitInteractive :: CULLong
+  cryptoPWHashMemLimitInteractive :: CSize
 
 -- | Haskell binding to the @crypto_pwhash_MEMLIMIT_SENSITIVE@ constant.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_MEMLIMIT_SENSITIVE"
-  cryptoPWHashMemLimitSensitive :: CULLong
+  cryptoPWHashMemLimitSensitive :: CSize
 
 -- | Haskell binding to the @crypto_pwhash_MEMLIMIT_MIN@ constant.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_MEMLIMIT_MIN"
-  cryptoPWHashMemLimitMin :: CULLong
+  cryptoPWHashMemLimitMin :: CSize
 
 -- | Haskell binding to the @crypto_pwhash_MEMLIMIT_MAX@ constant.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_MEMLIMIT_MAX"
-  cryptoPWHashMemLimitMax :: CULLong
+  cryptoPWHashMemLimitMax :: CSize
 
 -- | Haskell binding to the @crypto_pwhash_BYTES_MAX@ constant.
 --

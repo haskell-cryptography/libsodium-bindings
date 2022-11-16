@@ -1,0 +1,177 @@
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+
+-- |
+--
+-- Module: Sel.Hashing.Password
+-- Description: Password hashing with the Ed25519 algorithm
+-- Copyright: (C) Hécate Moonlight 2022
+-- License: BSD-3-Clause
+-- Maintainer: The Haskell Cryptography Group
+-- Portability: GHC only
+module Sel.Signing
+  ( -- ** Introduction
+    -- $introduction
+    PublicKey
+  , SecretKey
+  , SignedMessage
+
+    -- ** Key Pair generation
+  , generateKeyPair
+
+    -- ** Message Signing
+  , signMessage
+  , openMessage
+
+    -- ** Constructing and Deconstructing
+  , getSignature
+  , unsafeGetMessage
+  , mkSignature
+  ) where
+
+import Control.Monad (void)
+import Data.ByteString (ByteString)
+import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
+import qualified Data.ByteString.Unsafe as ByteString
+import Foreign
+  ( ForeignPtr
+  , Ptr
+  , castPtr
+  , mallocBytes
+  , mallocForeignPtrBytes
+  , withForeignPtr
+  )
+import Foreign.C (CChar, CSize, CUChar, CULLong)
+import qualified Foreign.Marshal.Array as Foreign
+import qualified Foreign.Ptr as Foreign
+import GHC.IO.Handle.Text (memcpy)
+import LibSodium.Bindings.Signing
+  ( cryptoSignBytes
+  , cryptoSignDetached
+  , cryptoSignKeyPair
+  , cryptoSignPublicKeyBytes
+  , cryptoSignSecretKeyBytes
+  , cryptoSignVerifyDetached
+  )
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
+-- |
+--
+-- @since 0.0.1.0
+newtype PublicKey = PublicKey (ForeignPtr CUChar)
+  deriving newtype
+    ( Eq
+      -- ^ @since 0.0.1.0
+    , Ord
+      -- ^ @since 0.0.1.0
+    , Show
+      -- ^ @since 0.0.1.0
+    )
+
+-- |
+--
+-- @since 0.0.1.0
+newtype SecretKey = SecretKey (ForeignPtr CUChar)
+  deriving newtype
+    ( Eq
+      -- ^ @since 0.0.1.0
+    , Ord
+      -- ^ @since 0.0.1.0
+    , Show
+      -- ^ @since 0.0.1.0
+    )
+
+-- |
+--
+-- @since 0.0.1.0
+data SignedMessage = SignedMessage
+  { messageLength :: CSize
+  , messageForeignPtr :: ForeignPtr CUChar
+  , signatureForeignPtr :: ForeignPtr CUChar
+  }
+  deriving stock
+    ( Eq
+      -- ^ @since 0.0.1.0
+    , Ord
+      -- ^ @since 0.0.1.0
+    , Show
+      -- ^ @since 0.0.1.0
+    )
+
+generateKeyPair :: IO (PublicKey, SecretKey)
+generateKeyPair = do
+  publicKeyForeignPtr <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignPublicKeyBytes)
+  secretKeyForeignPtr <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignSecretKeyBytes)
+  withForeignPtr publicKeyForeignPtr $ \pkPtr ->
+    withForeignPtr secretKeyForeignPtr $ \skPtr ->
+      void $
+        cryptoSignKeyPair
+          pkPtr
+          skPtr
+  pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
+
+signMessage :: ByteString -> SecretKey -> IO SignedMessage
+signMessage message (SecretKey skFPtr) =
+  ByteString.unsafeUseAsCStringLen message $ \(cString, messageLength) -> do
+    let sigLength = fromIntegral @CSize @Int cryptoSignBytes
+    (messageForeignPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes messageLength
+    signatureForeignPtr <- Foreign.mallocForeignPtrBytes sigLength
+    withForeignPtr messageForeignPtr $ \messagePtr ->
+      withForeignPtr signatureForeignPtr $ \signaturePtr ->
+        withForeignPtr skFPtr $ \skPtr -> do
+          Foreign.copyArray messagePtr (Foreign.castPtr @CChar @CUChar cString) messageLength
+          void $
+            cryptoSignDetached
+              signaturePtr
+              Foreign.nullPtr -- Always of size 'cryptoSignBytes'
+              (castPtr @CChar @CUChar cString)
+              (fromIntegral @Int @CULLong messageLength)
+              skPtr
+    pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr
+
+openMessage :: SignedMessage -> PublicKey -> Maybe ByteString
+openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr} (PublicKey pkForeignPtr) = unsafeDupablePerformIO $
+  withForeignPtr pkForeignPtr $ \publicKeyPtr ->
+    withForeignPtr signatureForeignPtr $ \signaturePtr -> do
+      withForeignPtr messageForeignPtr $ \messagePtr -> do
+        result <-
+          cryptoSignVerifyDetached
+            signaturePtr
+            messagePtr
+            (fromIntegral @CSize @CULLong messageLength)
+            publicKeyPtr
+        case result of
+          (-1) -> pure Nothing
+          _ -> do
+            bsPtr <- mallocBytes (fromIntegral messageLength)
+            memcpy bsPtr (castPtr messagePtr) messageLength
+            Just <$> unsafePackMallocCStringLen (castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
+
+getSignature :: SignedMessage -> ByteString
+getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
+  withForeignPtr signatureForeignPtr $ \signaturePtr -> do
+    bsPtr <- Foreign.mallocBytes (fromIntegral cryptoSignBytes)
+    memcpy bsPtr signaturePtr cryptoSignBytes
+    unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral cryptoSignBytes)
+
+unsafeGetMessage :: SignedMessage -> ByteString
+unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupablePerformIO $
+  withForeignPtr messageForeignPtr $ \messagePtr -> do
+    bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
+    memcpy bsPtr messagePtr messageLength
+    unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
+
+mkSignature :: ByteString -> ByteString -> SignedMessage
+mkSignature message signature = unsafeDupablePerformIO $
+  ByteString.unsafeUseAsCStringLen message $ \(messageStringPtr, messageLength) ->
+    ByteString.unsafeUseAsCStringLen signature $ \(signatureStringPtr, _) -> do
+      (messageForeignPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes messageLength
+      signatureForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSignBytes)
+      withForeignPtr messageForeignPtr $ \messagePtr ->
+        withForeignPtr signatureForeignPtr $ \signaturePtr -> do
+          Foreign.copyArray messagePtr (Foreign.castPtr messageStringPtr) messageLength
+          Foreign.copyArray signaturePtr (Foreign.castPtr signatureStringPtr) (fromIntegral cryptoSignBytes)
+      pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr

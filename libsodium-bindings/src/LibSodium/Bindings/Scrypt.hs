@@ -218,7 +218,7 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_PASSWD_MA
   cryptoPWHashScryptSalsa2018SHA256PasswdMax :: CSize
 
 -- | Length of the salt used by 'cryptoPWHashScryptSalsa2018SHA256'.
--- The easiest way to get a salt is to use 'randombytesBuf'.
+-- The easiest way to get a salt is to use 'LibSodium.Bindings.Random.randombytesBuf'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_SALTBYTES"

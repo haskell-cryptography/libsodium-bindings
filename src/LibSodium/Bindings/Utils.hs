@@ -18,9 +18,9 @@ module LibSodium.Bindings.Utils
   ( -- * Low-level binding
     sodiumMemcmp
   , sodiumBin2Hex
-  , sodiumHex2Bin
+  --  , sodiumHex2Bin
   , sodiumBin2Base64
-  , sodiumBase642Bin
+  --  , sodiumBase642Bin
 
     -- * Constants
   , sodiumBase64VariantOriginal
@@ -31,7 +31,7 @@ module LibSodium.Bindings.Utils
 where
 
 import Foreign (Ptr)
-import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar)
+import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..))
 import Foreign.C.String
 
 -- | Constant-time comparison function.
@@ -66,6 +66,20 @@ foreign import capi "sodium.h sodium_bin2hex"
     -> IO CString
     -- ^ The return string, terminated with a null byte.
 
+{-
+
+Due to a deficiency in Haskell's C FFI regarding nested pointers,
+this function and its Base64 counterpart have been commented out.
+
+The C shim that GHC generates ignores the `const` qualifier in the
+type for `hex_end`, leading to multiple type errors.
+
+There is a pull request in GHC to fix this that is to ship with GHC 9.6.
+https://gitlab.haskell.org/ghc/ghc/-/commit/4f70a8a0b5db49ff249271faefec14bf1421f365
+
+-}
+
+{-
 -- | Decode a hexadecimal string to bytes. Constant-time.
 foreign import capi "sodium.h sodium_hex2bin"
   sodiumHex2Bin
@@ -83,7 +97,7 @@ foreign import capi "sodium.h sodium_hex2bin"
     -- These characters will ignored and will not be present in the output.
     -> Ptr CSize
     -- ^ `bin_len`, The length of the output buffer.
-    -> Ptr (Ptr CChar)
+    -> Ptr CString
     -- ^ `hex_end`, A pointer to the end of the input string.
     -- If this isn't null, then it will be set to the first byte after the last
     -- valid parsed character.
@@ -91,6 +105,7 @@ foreign import capi "sodium.h sodium_hex2bin"
     -- ^ 0 if successful, -1 on failure. Common failures are if the string
     -- couldn't be fully parsed or if the parsed string is longer than the
     -- maximum amount of bytes allocated to store it.
+-}
 
 -- | Encode bytes to a Base64 string. Constant-time.
 foreign import capi "sodium.h sodium_bin2base64"
@@ -113,6 +128,7 @@ foreign import capi "sodium.h sodium_bin2base64"
     -> IO CString
     -- ^ The returned Base64 string, terminated with a null byte.
 
+{-
 foreign import capi "sodium.h sodium_base642bin"
   sodiumBase642Bin
     :: Ptr CUChar
@@ -130,7 +146,7 @@ foreign import capi "sodium.h sodium_base642bin"
     -> Ptr CSize
     -- ^ `bin_len`, The length of the output buffer.
     -- This will always be at most `b64_len / 4 * 3` bytes long.
-    -> Ptr (Ptr CChar)
+    -> Ptr CString
     -- ^ `b64_end`, A pointer to the end of the input string.
     -- If this isn't null, then it will be set to the first byte after the last
     -- valid parsed character.
@@ -141,15 +157,23 @@ foreign import capi "sodium.h sodium_base642bin"
     -- ^ 0 if successful, -1 on failure. Common failures are if the string
     -- couldn't be fully parsed or if the parsed string is longer than the
     -- maximum amount of bytes allocated to store it.
+-}
 
+-- | The original variant of Base64 with padding. This ensures that the
+-- length of the encoded data will always be a multiple of four bytes.
 foreign import capi "sodium.h value sodium_base64_VARIANT_ORIGINAL"
   sodiumBase64VariantOriginal :: CInt
 
+-- | The original variant of Base64. No variant offers any security advantages
+-- over the other.
 foreign import capi "sodium.h value sodium_base64_VARIANT_ORIGINAL_NO_PADDING"
   sodiumBase64VariantOriginalNoPadding :: CInt
 
+-- | The URL-safe variant of Base64 with padding.
 foreign import capi "sodium.h value sodium_base64_VARIANT_URLSAFE"
   sodiumBase64VariantURLSafe :: CInt
 
+-- | The URL-safe variant of Base64. This is the same as the original variant,
+-- except '+' and '/' are replaced with '-' and '_'.
 foreign import capi "sodium.h value sodium_base64_VARIANT_URLSAFE_NO_PADDING"
   sodiumBase64VariantURLSafeNoPadding :: CInt

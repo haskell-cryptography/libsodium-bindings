@@ -50,7 +50,7 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 --   * File integrity checking
 --   * Creating unique identifiers to index arbitrarily long data
 --
--- __⚠ Do not use this module to hash passwords! ⚠__
+-- __⚠️ Do not use this module to hash passwords! ⚠️__
 --
 -- If you need to deviate from the defaults enforced by this module,
 -- please use the underlying bindings at "LibSodium.Bindings.GenericHashing".

@@ -156,7 +156,7 @@ data CryptoHashSHA256State
 -- | Perform an operation with a 'CryptoHashSHA256State' of size 'cryptoHashSHA256StateBytes'
 -- allocated and deallocated automatically.
 --
--- ⚠ The return value of 'withCryptoHashSHA256State' __MUST NOT__ leak the 'CryptoHashSHA256State'.
+-- ⚠️ The return value of 'withCryptoHashSHA256State' __MUST NOT__ leak the 'CryptoHashSHA256State'.
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
@@ -285,7 +285,7 @@ data CryptoAuthHMACSHA256State
 -- | Perform an operation with a 'CryptoAuthHMACSHA256State' of size 'cryptoAuthHMACSHA256StateBytes'
 -- allocated and deallocated automatically.
 --
--- ⚠ The return value of 'withCryptoAuthHMACSHA256State' __MUST NOT__ leak the 'CryptoAuthHMACSHA256State'.
+-- ⚠️ The return value of 'withCryptoAuthHMACSHA256State' __MUST NOT__ leak the 'CryptoAuthHMACSHA256State'.
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
@@ -383,7 +383,7 @@ data CryptoHashSHA512State
 -- | Perform an operation with a 'CryptoHashSHA512State of size 'cryptoHashSHA512StateBytes'
 -- allocated and deallocated automatically.
 --
--- ⚠ The return value of 'withCryptoHashSHA512State' __MUST NOT__ leak the 'CryptoHashSHA512State'.
+-- ⚠️ The return value of 'withCryptoHashSHA512State' __MUST NOT__ leak the 'CryptoHashSHA512State'.
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
@@ -512,7 +512,7 @@ data CryptoAuthHMACSHA512State
 -- | Perform an operation with a 'CryptoAuthHMACSHA512State' of size 'cryptoAuthHMACSHA512StateBytes'
 -- allocated and deallocated automatically.
 --
--- ⚠ The return value of 'withCryptoAuthHMACSHA512State' __MUST NOT__ leak the 'CryptoAuthHMACSHA512State'.
+-- ⚠️ The return value of 'withCryptoAuthHMACSHA512State' __MUST NOT__ leak the 'CryptoAuthHMACSHA512State'.
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
@@ -651,7 +651,7 @@ data CryptoAuthHMACSHA512256State
 -- | Perform an operation with a 'CryptoAuthHMACSHA512256State'
 -- of size 'cryptoAuthHMACSHA512256StateBytes' allocated and deallocated automatically.
 --
--- ⚠ The return value of 'withCryptoAuthHMACSHA512256State' __MUST NOT__ leak
+-- ⚠️ The return value of 'withCryptoAuthHMACSHA512256State' __MUST NOT__ leak
 -- the 'CryptoAuthHMACSHA512256State'.
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.

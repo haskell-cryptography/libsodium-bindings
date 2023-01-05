@@ -235,7 +235,7 @@ data CryptoSignState
 -- | Perform an operation with a 'CryptoSignState' of size 'cryptoSignStateBytes' allocated
 -- and deallocated automatically.
 --
--- ⚠ The return value of 'withSignState' __MUST NOT__ leak the 'CryptoSignState'.
+-- ⚠️ The return value of 'withSignState' __MUST NOT__ leak the 'CryptoSignState'.
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --

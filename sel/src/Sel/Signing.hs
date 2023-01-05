@@ -7,7 +7,7 @@
 -- |
 --
 -- Module: Sel.Hashing.Password
--- Description: Password hashing with the Ed25519 algorithm
+-- Description: Public-key signatures with the Ed25519 algorithm
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
@@ -58,6 +58,17 @@ import LibSodium.Bindings.Signing
   )
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
+-- $introduction
+--
+-- Public-key Signatures work with a 'SecretKey' and 'PublicKey'
+--
+-- * The 'SecretKey' is used to append a signature to any number of messages. It must stay private;
+-- * The 'PublicKey' is used by third-parties to to verify that the signature appended to a message was
+-- issued by the creator of the public key. It must be distributed to third-parties.
+--
+-- Verifiers need to already know and ultimately trust a public key before messages signed
+-- using it can be verified.
+
 -- |
 --
 -- @since 0.0.1.0
@@ -101,6 +112,9 @@ data SignedMessage = SignedMessage
       -- ^ @since 0.0.1.0
     )
 
+-- |
+--
+-- @since 0.0.1.0
 generateKeyPair :: IO (PublicKey, SecretKey)
 generateKeyPair = do
   publicKeyForeignPtr <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignPublicKeyBytes)
@@ -113,6 +127,9 @@ generateKeyPair = do
           skPtr
   pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
 
+-- |
+--
+-- @since 0.0.1.0
 signMessage :: ByteString -> SecretKey -> IO SignedMessage
 signMessage message (SecretKey skFPtr) =
   ByteString.unsafeUseAsCStringLen message $ \(cString, messageLength) -> do
@@ -132,6 +149,9 @@ signMessage message (SecretKey skFPtr) =
               skPtr
     pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr
 
+-- |
+--
+-- @since 0.0.1.0
 openMessage :: SignedMessage -> PublicKey -> Maybe ByteString
 openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr} (PublicKey pkForeignPtr) = unsafeDupablePerformIO $
   withForeignPtr pkForeignPtr $ \publicKeyPtr ->
@@ -150,6 +170,9 @@ openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr}
             memcpy bsPtr (castPtr messagePtr) messageLength
             Just <$> unsafePackMallocCStringLen (castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
 
+-- |
+--
+-- @since 0.0.1.0
 getSignature :: SignedMessage -> ByteString
 getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
   withForeignPtr signatureForeignPtr $ \signaturePtr -> do
@@ -157,6 +180,9 @@ getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
     memcpy bsPtr signaturePtr cryptoSignBytes
     unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral cryptoSignBytes)
 
+-- |
+--
+-- @since 0.0.1.0
 unsafeGetMessage :: SignedMessage -> ByteString
 unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupablePerformIO $
   withForeignPtr messageForeignPtr $ \messagePtr -> do
@@ -164,6 +190,9 @@ unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupable
     memcpy bsPtr messagePtr messageLength
     unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
 
+-- |
+--
+-- @since 0.0.1.0
 mkSignature :: ByteString -> ByteString -> SignedMessage
 mkSignature message signature = unsafeDupablePerformIO $
   ByteString.unsafeUseAsCStringLen message $ \(messageStringPtr, messageLength) ->

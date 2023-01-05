@@ -112,7 +112,10 @@ data SignedMessage = SignedMessage
       -- ^ @since 0.0.1.0
     )
 
--- |
+-- | Generate a pair of public and secret key.
+--
+-- The length parameters used are 'cryptoSignPublicKeyBytes'
+-- and 'cryptoSignSecretKeyBytes'.
 --
 -- @since 0.0.1.0
 generateKeyPair :: IO (PublicKey, SecretKey)
@@ -127,7 +130,7 @@ generateKeyPair = do
           skPtr
   pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
 
--- |
+-- | Sign a message.
 --
 -- @since 0.0.1.0
 signMessage :: ByteString -> SecretKey -> IO SignedMessage
@@ -149,7 +152,8 @@ signMessage message (SecretKey skFPtr) =
               skPtr
     pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr
 
--- |
+-- | Open a signed message with the signatory's public key. The function returns 'Nothing' if there
+-- is a key mismatch.
 --
 -- @since 0.0.1.0
 openMessage :: SignedMessage -> PublicKey -> Maybe ByteString
@@ -170,7 +174,7 @@ openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr}
             memcpy bsPtr (castPtr messagePtr) messageLength
             Just <$> unsafePackMallocCStringLen (castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
 
--- |
+-- | Get the signature part of a 'SignedMessage'.
 --
 -- @since 0.0.1.0
 getSignature :: SignedMessage -> ByteString
@@ -180,7 +184,7 @@ getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
     memcpy bsPtr signaturePtr cryptoSignBytes
     unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral cryptoSignBytes)
 
--- |
+-- | Get the message part of a 'SignedMessage' __without verifying the signature__.
 --
 -- @since 0.0.1.0
 unsafeGetMessage :: SignedMessage -> ByteString
@@ -190,7 +194,7 @@ unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupable
     memcpy bsPtr messagePtr messageLength
     unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
 
--- |
+-- | Combine a message and a signature into a 'SignedMessage'.
 --
 -- @since 0.0.1.0
 mkSignature :: ByteString -> ByteString -> SignedMessage

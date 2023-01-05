@@ -16,7 +16,7 @@ clean: ## Remove compilation artifacts
 bindings: ## Start a REPL for the `libsodium-bindings` package
 	@cabal repl --repl-options -fobject-code libsodium-bindings
 
-sel : ## Start a REPL for the `sel` package
+sel: ## Start a REPL for the `sel` package
 	@cabal repl --repl-options -fobject-code sel
 
 lint: ## Run the code linter (HLint)

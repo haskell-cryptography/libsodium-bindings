@@ -1,5 +1,3 @@
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 
 -- |
@@ -28,17 +26,16 @@ where
 import Control.Monad (void)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base16 as Base16
-import Data.ByteString.Unsafe (unsafePackMallocCStringLen, unsafeUseAsCStringLen)
+import qualified Data.ByteString.Internal as BS
+import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
-import Foreign.C (CChar, CSize, CUChar)
+import Foreign.C (CSize, CUChar)
 import Foreign.Storable
-import GHC.IO.Handle.Text (memcpy)
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
@@ -59,14 +56,6 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 --
 -- @since 0.0.1.0
 newtype HashKey = HashKey (ForeignPtr CUChar)
-  deriving newtype
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- | Create a new 'HashKey' of size 'cryptoGenericHashKeyBytes'.
 --
@@ -87,21 +76,13 @@ newHashKey = do
 --
 -- @since 0.0.1.0
 newtype Hash = Hash (ForeignPtr CUChar)
-  deriving newtype
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 instance Storable Hash where
   sizeOf :: Hash -> Int
-  sizeOf _ = sizeOf (undefined :: CUChar)
+  sizeOf _ = fromIntegral cryptoGenericHashBytes
 
   alignment :: Hash -> Int
-  alignment _ = alignment (undefined :: CUChar)
+  alignment _ = sizeOf (undefined :: CSize)
 
   poke :: Ptr Hash -> Hash -> IO ()
   poke ptr (Hash hashForeignPtr) =
@@ -163,9 +144,7 @@ hashToByteString = Base16.encodeBase16' . hashToBinary
 --
 -- @since 0.0.1.0
 hashToBinary :: Hash -> ByteString
-hashToBinary (Hash fPtr) = unsafeDupablePerformIO $ do
-  let hashBytesSize = fromIntegral cryptoGenericHashBytes
-  Foreign.withForeignPtr fPtr $ \hashPtr -> do
-    bsPtr <- Foreign.mallocBytes hashBytesSize
-    memcpy bsPtr hashPtr cryptoGenericHashBytes
-    unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, hashBytesSize)
+hashToBinary (Hash fPtr) =
+  BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
+  where
+    hashBytesSize = fromIntegral cryptoGenericHashBytes

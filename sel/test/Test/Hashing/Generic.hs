@@ -4,10 +4,12 @@
 module Test.Hashing.Generic where
 
 import Control.Monad (void)
+import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes)
+import Sel.Hashing.Generic
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -21,7 +23,7 @@ spec =
 
 testCryptoGenericHashWithoutKey :: Assertion
 testCryptoGenericHashWithoutKey =
-  withCStringLen "test test" $ \(cString, cstringLength) ->
+  BS.unsafeUseAsCStringLen "test test" $ \(cString, cstringLength) ->
     allocaBytes (fromIntegral cryptoGenericHashBytes) $ \outPtr -> do
       void $
         cryptoGenericHash
@@ -31,11 +33,14 @@ testCryptoGenericHashWithoutKey =
           (fromIntegral cstringLength)
           nullPtr
           0
-      out <- peekCStringLen (castPtr outPtr, cstringLength)
+      expected <- BS.pack <$> peekCStringLen (castPtr outPtr, cstringLength)
+      actual <- hashToBinary <$> hashByteString Nothing "test test"
       assertEqual
         "Hashed test string is consistent without key"
-        "\DEL=\ETB\SOp\ETBd"
-        out
+        expected
+        actual
+
+-- "\DEL=\ETB\SOp\ETBd"
 
 testCryptoGenericHashWithKey :: Assertion
 testCryptoGenericHashWithKey =

@@ -121,7 +121,7 @@ hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytes
 --
 -- @since 0.0.1.0
 verifyText :: PasswordHash -> Text -> Bool
-verifyText passwordhash clearTextPassword = verifyByteString passwordHash (Text.encodeUtf8 clearTextPassword)
+verifyText passwordHash clearTextPassword = verifyByteString passwordHash (Text.encodeUtf8 clearTextPassword)
 
 -- | Verify the password hash against a clear 'ByteString' password
 --

@@ -1,5 +1,4 @@
 {-# LANGUAGE DerivingStrategies #-}
-
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}

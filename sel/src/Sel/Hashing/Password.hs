@@ -16,9 +16,10 @@ module Sel.Hashing.Password
     PasswordHash
 
     -- ** Password Hashing and Verifying
-  , hashPassword
+  , hashByteString
+  , hashText
   , verifyPassword
-  , hashPasswordWithParams
+  , hashByteStringWithParams
 
     -- ** Conversion to textual formats
   , passwordHashToByteString
@@ -37,8 +38,7 @@ where
 import Control.Monad (void)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Internal as BS
-import qualified Data.ByteString.Internal as ByteString
-import qualified Data.ByteString.Unsafe as ByteString
+import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
@@ -68,15 +68,22 @@ newtype PasswordHash = PasswordHash (ForeignPtr CChar)
 instance Display PasswordHash where
   displayBuilder = Builder.fromText . passwordHashToText
 
--- | Hash the password with the Argon2id algorithm and
--- a set of pre-defined parameters
+-- | Hash a UTF8-encoded password with the Argon2id algorithm and
+-- a set of pre-defined parameters.
 --
 -- @since 0.0.1.0
-hashPassword :: Text -> IO PasswordHash
-hashPassword text =
-  Text.withCStringLen text $ \(cString, cStringLen) -> do
-    hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
-    withForeignPtr hashForeignPtr $ \passwordHashPtr ->
+hashText :: Text -> IO PasswordHash
+hashText text = hashByteString (Text.encodeUtf8 text)
+
+-- | Hash the password with the Argon2id algorithm and
+-- a set of pre-defined parameters.
+--
+-- @since 0.0.1.0
+hashByteString :: ByteString -> IO PasswordHash
+hashByteString bytestring =
+  BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
+    hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
+    Foreign.withForeignPtr hashForeignPtr $ \passwordHashPtr ->
       void $
         cryptoPWHashStr
           passwordHashPtr
@@ -107,10 +114,10 @@ verifyPassword (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO $ 
 -- The hash is __not__ encoded in human-readable format.
 --
 -- @since 0.0.1.0
-hashPasswordWithParams :: Argon2Params -> Salt -> Text -> IO PasswordHash
-hashPasswordWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) text =
-  Text.withCStringLen text $ \(cString, cStringLen) -> do
-    ByteString.unsafeUseAsCStringLen argonSalt $ \(saltString, _) -> do
+hashByteStringWithParams :: Argon2Params -> Salt -> ByteString -> IO PasswordHash
+hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytestring =
+  BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
+    BS.unsafeUseAsCStringLen argonSalt $ \(saltString, _) -> do
       hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
       withForeignPtr hashForeignPtr $ \passwordHashPtr ->
         void $
@@ -151,7 +158,7 @@ data Argon2Params = Argon2Params
   , memLimit :: CSize
   }
 
--- | These are the default parameters with which 'hashPasswordWithParams' can be invoked:
+-- | These are the default parameters with which 'hashByteStringWithParams' can be invoked:
 --
 -- * /opsLimit/ = 'cryptoPWHashOpsLimitModerate'
 -- * /memLimit/ = 'cryptoPWHashMemLimitModerate'
@@ -169,9 +176,9 @@ defaultArgon2Params =
 -- @since 0.0.1.0
 genSalt :: IO Salt
 genSalt = do
-  saltForeignPtr <- ByteString.mallocByteString (fromIntegral cryptoPWHashSaltBytes)
+  saltForeignPtr <- BS.mallocByteString (fromIntegral cryptoPWHashSaltBytes)
   withForeignPtr saltForeignPtr $ \saltPtr -> do
     randombytesBuf saltPtr cryptoPWHashSaltBytes
     bsPtr <- mallocBytes (fromIntegral cryptoPWHashSaltBytes)
     memcpy bsPtr saltPtr cryptoPWHashSaltBytes
-    Salt <$> ByteString.unsafePackMallocCStringLen (castPtr @Word8 @CChar bsPtr, fromIntegral cryptoPWHashSaltBytes)
+    Salt <$> BS.unsafePackMallocCStringLen (castPtr @Word8 @CChar bsPtr, fromIntegral cryptoPWHashSaltBytes)

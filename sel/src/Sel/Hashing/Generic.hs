@@ -54,7 +54,12 @@ import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBy
 -- If you need to deviate from the defaults enforced by this module,
 -- please use the underlying bindings at "LibSodium.Bindings.GenericHashing".
 
--- |
+-- | The 'HashKey' is used to produce distinct fingerprints for the same message.
+-- It is optional to use, and 'hashByteString' will always produce the same fingerprint
+-- for the same message if a 'HashKey' is not given. This behaviour is similar to
+-- MD5 and SHA-1 functions, for which 'hashByteString' is a faster and more secure alternative.
+--
+-- Create a new 'HashKey' with 'newHashKey'.
 --
 -- @since 0.0.1.0
 newtype HashKey = HashKey (ForeignPtr CUChar)

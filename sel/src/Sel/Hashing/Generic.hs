@@ -17,6 +17,8 @@ module Sel.Hashing.Generic
   , newHashKey
   , Hash
   , hashByteString
+  , hashByteString2
+
   , hashToText
   , hashToByteString
   , hashToBinary
@@ -27,6 +29,7 @@ import Control.Monad (void)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
+import qualified Data.ByteString.Unsafe as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text (Text)
 import Data.Text.Display
@@ -127,6 +130,29 @@ hashByteString mHashKey bytestring =
               (Foreign.castPtr keyPtr)
               keyLength
         pure $ Hash hashForeignPtr
+
+hashByteString2 :: Maybe HashKey -> ByteString -> IO Hash
+hashByteString2 mHashKey bytestring =
+  case mHashKey of
+    Just (HashKey fPtr) ->
+        Foreign.withForeignPtr fPtr $ \keyPtr ->
+          doHashByteString keyPtr cryptoGenericHashKeyBytes
+    Nothing ->
+          doHashByteString Foreign.nullPtr 0
+  where
+    doHashByteString keyPtr size = do
+      outPtr' <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoGenericHashBytes)
+      Foreign.withForeignPtr outPtr' $ \outPtr ->
+      -- Foreign.allocaBytes (fromIntegral cryptoGenericHashBytes) $ \outPtr -> do
+        BS.unsafeUseAsCStringLen bytestring $ \(cString, cstringLength) ->
+          cryptoGenericHash
+            outPtr
+            cryptoGenericHashBytes
+            (Foreign.castPtr cString :: Ptr CUChar)
+            (fromIntegral cstringLength)
+            keyPtr
+            size
+      pure $ Hash outPtr'
 
 -- | Convert a 'Hash' to a strict hexadecimal 'Text'.
 --

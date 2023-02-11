@@ -4,7 +4,7 @@
 module Test.Hashing.Generic where
 
 import Control.Monad (void)
-import qualified Data.ByteString.Char8 as BS
+-- import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
 import Foreign.C
@@ -22,19 +22,9 @@ spec =
     ]
 
 testCryptoGenericHashWithoutKey :: Assertion
-testCryptoGenericHashWithoutKey =
-  BS.unsafeUseAsCStringLen "test test" $ \(cString, cstringLength) ->
-    allocaBytes (fromIntegral cryptoGenericHashBytes) $ \outPtr -> do
-      void $
-        cryptoGenericHash
-          outPtr
-          cryptoGenericHashBytes
-          (castPtr cString :: Ptr CUChar)
-          (fromIntegral cstringLength)
-          nullPtr
-          0
-      expected <- BS.pack <$> peekCStringLen (castPtr outPtr, cstringLength)
-      actual <- hashToBinary <$> hashByteString Nothing "test test"
+testCryptoGenericHashWithoutKey = do
+      expected <- hashToBinary <$> hashByteString Nothing "test test"
+      actual <- hashToBinary <$> hashByteString2 Nothing "test test"
       assertEqual
         "Hashed test string is consistent without key"
         expected

@@ -1,14 +1,14 @@
 #!/bin/sh
 
 if which fourmolu > /dev/null ; then
-  make style
+  fourmolu --mode check sel libsodium-bindings
 else
-  echo "Ormolu not found, aborting."
+  echo "Fourmolu not found, aborting."
   exit 1
 fi
 
 if which hlint > /dev/null ; then
-  make lint
+  hlint src libsodium-bindings
 else
   echo "HLint not found, aborting."
   exit 1

@@ -26,7 +26,7 @@ module Sel.Hashing.Password
   , passwordHashToText
 
     -- * Salt
-  , Salt (..)
+  , Salt
   , genSalt
 
     -- * Argon2 Parameters
@@ -92,6 +92,29 @@ hashByteString bytestring =
           cryptoPWHashMemLimitModerate
     pure $ PasswordHash hashForeignPtr
 
+-- | Hash the password with the Argon2id algorithm.
+--
+-- The hash is __not__ encoded in human-readable format.
+--
+-- @since 0.0.1.0
+hashByteStringWithParams :: Argon2Params -> Salt -> ByteString -> IO PasswordHash
+hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytestring =
+  BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
+    BS.unsafeUseAsCStringLen argonSalt $ \(saltString, _) -> do
+      hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
+      withForeignPtr hashForeignPtr $ \passwordHashPtr ->
+        void $
+          cryptoPWHash
+            passwordHashPtr
+            (fromIntegral @CSize @CLLong cryptoPWHashStrBytes)
+            cString
+            (fromIntegral @Int @CULLong cStringLen)
+            (castPtr saltString)
+            opsLimit
+            memLimit
+            cryptoPWHashAlgDefault
+      pure $ PasswordHash (castForeignPtr @CUChar @CChar hashForeignPtr)
+
 -- | Verify the password hash against a clear 'Text' password
 --
 -- This function purposefully takes some time to complete, in order to alleviate bruteforce attacks.
@@ -116,29 +139,6 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
           (fromIntegral @Int @CULLong cStringLen)
       pure $ result == 0
 
--- | Hash the password with the Argon2id algorithm.
---
--- The hash is __not__ encoded in human-readable format.
---
--- @since 0.0.1.0
-hashByteStringWithParams :: Argon2Params -> Salt -> ByteString -> IO PasswordHash
-hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytestring =
-  BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
-    BS.unsafeUseAsCStringLen argonSalt $ \(saltString, _) -> do
-      hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
-      withForeignPtr hashForeignPtr $ \passwordHashPtr ->
-        void $
-          cryptoPWHash
-            passwordHashPtr
-            (fromIntegral @CSize @CLLong cryptoPWHashStrBytes)
-            cString
-            (fromIntegral @Int @CULLong cStringLen)
-            (castPtr saltString)
-            opsLimit
-            memLimit
-            cryptoPWHashAlgDefault
-      pure $ PasswordHash (castForeignPtr @CUChar @CChar hashForeignPtr)
-
 -- | Convert a 'PasswordHash' to a 'ByteString'.
 --
 -- @since 0.0.1.0
@@ -154,11 +154,21 @@ passwordHashToByteString (PasswordHash fPtr) =
 passwordHashToText :: PasswordHash -> Text
 passwordHashToText = Text.decodeUtf8 . passwordHashToByteString
 
--- |
+-- | The 'Salt' is used in conjunction with 'hashByteStringWithParams'
+-- when you want to manually provide the piece of data that will
+-- differentiate two fingerprints of the same password.
+--
+-- It is automatically taken care of for you when you use
+-- 'hashByteString' or 'hashText'.
+--
+-- Use 'genSalt' to create a 'Salt' of size
+-- equal to the constant 'cryptoPWHashSaltBytes'.
+--
 -- @since 0.0.1.0
 newtype Salt = Salt ByteString
 
 -- |
+--
 -- @since 0.0.1.0
 data Argon2Params = Argon2Params
   { opsLimit :: CULLong

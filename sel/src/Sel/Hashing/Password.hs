@@ -18,7 +18,8 @@ module Sel.Hashing.Password
     -- ** Password Hashing and Verifying
   , hashByteString
   , hashText
-  , verifyPassword
+  , verifyByteString
+  , verifyText
   , hashByteStringWithParams
 
     -- ** Conversion to textual formats

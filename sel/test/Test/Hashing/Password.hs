@@ -17,7 +17,7 @@ spec =
 testHashPassword :: Assertion
 testHashPassword = do
   let password = "hunter2" :: Text
-  passwordHash <- Sel.hashPassword password
+  passwordHash <- Sel.hashText password
   assertBool
     "Password hashing is consistent"
-    (Sel.verifyPassword passwordHash "hunter2")
+    (Sel.verifyText passwordHash "hunter2")

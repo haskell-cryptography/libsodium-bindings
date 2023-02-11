@@ -24,7 +24,7 @@ spec =
 
 testCryptoGenericHashWithoutKey :: Assertion
 testCryptoGenericHashWithoutKey = do
-  expected <- hashToByteString <$> hashByteString Nothing "test test"
+  expected <- hashToHexByteString <$> hashByteString Nothing "test test"
   assertEqual
     "Hashed test string is consistent without key"
     expected

@@ -20,7 +20,7 @@ sel: ## Start a REPL for the `sel` package
 	@cabal repl --repl-options -fobject-code sel
 
 lint: ## Run the code linter (HLint)
-	@find ./sel ./libsodium-bindings -name "*.hs" | parallel -j $(PROCS) -- hlint --refactor-options="-i" --refactor {}
+	@find sel libsodium-bindings -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code formatter (fourmolu, cabal-fmt)
 	@fourmolu -q --mode inplace sel libsodium-bindings

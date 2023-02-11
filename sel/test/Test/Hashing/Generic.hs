@@ -4,6 +4,7 @@
 module Test.Hashing.Generic where
 
 import Control.Monad (void)
+
 -- import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
@@ -23,14 +24,11 @@ spec =
 
 testCryptoGenericHashWithoutKey :: Assertion
 testCryptoGenericHashWithoutKey = do
-      expected <- hashToBinary <$> hashByteString Nothing "test test"
-      actual <- hashToBinary <$> hashByteString2 Nothing "test test"
-      assertEqual
-        "Hashed test string is consistent without key"
-        expected
-        actual
-
--- "\DEL=\ETB\SOp\ETBd"
+  expected <- hashToByteString <$> hashByteString Nothing "test test"
+  assertEqual
+    "Hashed test string is consistent without key"
+    expected
+    "7f3dc1170e7017a1643d84d102429c4c7aec4ca99c016c32af18af997fed51f1"
 
 testCryptoGenericHashWithKey :: Assertion
 testCryptoGenericHashWithKey =

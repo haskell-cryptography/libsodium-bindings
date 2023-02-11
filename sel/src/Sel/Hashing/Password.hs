@@ -42,7 +42,6 @@ import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
-import qualified Data.Text.Foreign as Text
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
@@ -93,14 +92,22 @@ hashByteString bytestring =
           cryptoPWHashMemLimitModerate
     pure $ PasswordHash hashForeignPtr
 
--- | Verify the password hash.
+-- | Verify the password hash against a clear 'Text' password
 --
 -- This function purposefully takes some time to complete, in order to alleviate bruteforce attacks.
 --
 -- @since 0.0.1.0
-verifyPassword :: PasswordHash -> Text -> Bool
-verifyPassword (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO $ do
-  Text.withCStringLen clearTextPassword $ \(cString, cStringLen) -> do
+verifyText :: PasswordHash -> Text -> Bool
+verifyText passwordhash clearTextPassword = verifyByteString passwordHash (Text.encodeUtf8 clearTextPassword)
+
+-- | Verify the password hash against a clear 'ByteString' password
+--
+-- This function purposefully takes some time to complete, in order to alleviate bruteforce attacks.
+--
+-- @since 0.0.1.0
+verifyByteString :: PasswordHash -> ByteString -> Bool
+verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO $ do
+  BS.unsafeUseAsCStringLen clearTextPassword $ \(cString, cStringLen) -> do
     Foreign.withForeignPtr fPtr $ \hashPtr -> do
       result <-
         cryptoPWHashStrVerify

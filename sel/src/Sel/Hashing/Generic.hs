@@ -88,8 +88,9 @@ instance Storable Hash where
   sizeOf :: Hash -> Int
   sizeOf _ = fromIntegral cryptoGenericHashBytes
 
+  -- | Aligned on the size of 'cryptoGenericHashBytes'
   alignment :: Hash -> Int
-  alignment _ = sizeOf (undefined :: CSize)
+  alignment _ = 32
 
   poke :: Ptr Hash -> Hash -> IO ()
   poke ptr (Hash hashForeignPtr) =
@@ -138,14 +139,14 @@ hashByteString mHashKey bytestring =
 -- | Convert a 'Hash' to a strict hexadecimal 'Text'.
 --
 -- @since 0.0.1.0
-hashToText :: Hash -> Text
-hashToText = Base16.encodeBase16 . hashToBinary
+hashToHexText :: Hash -> Text
+hashToHexText = Base16.encodeBase16 . hashToBinary
 
 -- | Convert a 'Hash' to a strict, hexadecimal-encoded 'ByteString'.
 --
 -- @since 0.0.1.0
-hashToByteString :: Hash -> ByteString
-hashToByteString = Base16.encodeBase16' . hashToBinary
+hashToHexByteString :: Hash -> ByteString
+hashToHexByteString = Base16.encodeBase16' . hashToBinary
 
 -- | Convert a 'Hash' to a strict binary 'ByteString'.
 --

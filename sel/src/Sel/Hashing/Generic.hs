@@ -17,8 +17,8 @@ module Sel.Hashing.Generic
   , newHashKey
   , Hash
   , hashByteString
-  , hashToText
-  , hashToByteString
+  , hashToHexText
+  , hashToHexByteString
   , hashToBinary
   )
 where
@@ -88,7 +88,7 @@ instance Storable Hash where
   sizeOf :: Hash -> Int
   sizeOf _ = fromIntegral cryptoGenericHashBytes
 
-  -- | Aligned on the size of 'cryptoGenericHashBytes'
+  --  Aligned on the size of 'cryptoGenericHashBytes'
   alignment :: Hash -> Int
   alignment _ = 32
 
@@ -105,7 +105,7 @@ instance Storable Hash where
     pure $ Hash hashfPtr
 
 instance Display Hash where
-  displayBuilder = Builder.fromText . hashToText
+  displayBuilder = Builder.fromText . hashToHexText
 
 -- | Hash a 'ByteString' with the BLAKE2b algorithm, and an optional key.
 --

@@ -1,6 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -38,6 +36,7 @@ where
 
 import Control.Monad (void)
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Internal as ByteString
 import qualified Data.ByteString.Unsafe as ByteString
 import Data.Text (Text)
@@ -47,11 +46,11 @@ import qualified Data.Text.Foreign as Text
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
-import GHC.Generics
 import GHC.IO.Handle.Text (memcpy)
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
@@ -64,14 +63,6 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 --
 -- @since 0.0.1.0
 newtype PasswordHash = PasswordHash (ForeignPtr CChar)
-  deriving newtype
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- | @since 0.0.1.0
 instance Display PasswordHash where
@@ -138,12 +129,10 @@ hashPasswordWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) text =
 --
 -- @since 0.0.1.0
 passwordHashToByteString :: PasswordHash -> ByteString
-passwordHashToByteString (PasswordHash fPtr) = unsafeDupablePerformIO $ do
-  let hashBytesSize = fromIntegral @CSize @Int cryptoPWHashStrBytes
-  Foreign.withForeignPtr fPtr $ \hashPtr -> do
-    bsPtr <- Foreign.mallocBytes hashBytesSize
-    memcpy bsPtr hashPtr cryptoPWHashStrBytes
-    ByteString.unsafePackMallocCStringLen (bsPtr, hashBytesSize)
+passwordHashToByteString (PasswordHash fPtr) =
+  BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
+  where
+    hashBytesSize = fromIntegral @CSize @Int cryptoPWHashStrBytes
 
 -- | Convert a 'PasswordHash' to a 'ByteString'.
 --
@@ -154,14 +143,6 @@ passwordHashToText = Text.decodeUtf8 . passwordHashToByteString
 -- |
 -- @since 0.0.1.0
 newtype Salt = Salt ByteString
-  deriving newtype
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- |
 -- @since 0.0.1.0
@@ -169,16 +150,6 @@ data Argon2Params = Argon2Params
   { opsLimit :: CULLong
   , memLimit :: CSize
   }
-  deriving stock
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    , Generic
-      -- ^ @since 0.0.1.0
-    )
 
 -- | These are the default parameters with which 'hashPasswordWithParams' can be invoked:
 --

@@ -141,7 +141,7 @@ passwordHashToByteString (PasswordHash fPtr) =
   where
     hashBytesSize = fromIntegral @CSize @Int cryptoPWHashStrBytes
 
--- | Convert a 'PasswordHash' to a 'ByteString'.
+-- | Convert a 'PasswordHash' to a 'Text.
 --
 -- @since 0.0.1.0
 passwordHashToText :: PasswordHash -> Text

@@ -6,7 +6,7 @@
 
 -- |
 --
--- Module: Sel.Hashing.Password
+-- Module: Sel.Hashing.Signing
 -- Description: Public-key signatures with the Ed25519 algorithm
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
@@ -73,27 +73,11 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 --
 -- @since 0.0.1.0
 newtype PublicKey = PublicKey (ForeignPtr CUChar)
-  deriving newtype
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- |
 --
 -- @since 0.0.1.0
 newtype SecretKey = SecretKey (ForeignPtr CUChar)
-  deriving newtype
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- |
 --
@@ -103,14 +87,6 @@ data SignedMessage = SignedMessage
   , messageForeignPtr :: ForeignPtr CUChar
   , signatureForeignPtr :: ForeignPtr CUChar
   }
-  deriving stock
-    ( Eq
-      -- ^ @since 0.0.1.0
-    , Ord
-      -- ^ @since 0.0.1.0
-    , Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- | Generate a pair of public and secret key.
 --

@@ -46,7 +46,7 @@ import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
 --   * File integrity checking
 --   * Creating unique identifiers to index arbitrarily long data
 --
--- ⚠ Do not use this API module to hash passwords!
+-- ⚠️ Do not use this API module to hash passwords!
 --
 -- Whenever there is a @'Ptr' 'CryptoGenericHashState'@, it must point to enough memory
 -- to hold the hash state.

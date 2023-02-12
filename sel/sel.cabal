@@ -1,0 +1,75 @@
+cabal-version:      3.0
+name:               sel
+version:            0.0.1.0
+category:           Cryptography
+synopsis:           High-level interface to libsodium
+description:
+  This library provides a high-level interface to libsodium, aimed
+  at casual users of cryptographic primitives.
+
+homepage:           https://github.com/haskell-cryptography/sel
+bug-reports:        https://github.com/haskell-cryptography/sel/issues
+author:             Hécate Moonlight, Koz Ross
+maintainer:         The Haskell Cryptography contributors
+license:            BSD-3-Clause
+build-type:         Simple
+tested-with:        GHC ==8.10.7 || ==9.0.2 || ==9.2.6 || ==9.4.4
+extra-source-files:
+  CHANGELOG.md
+  LICENSE
+  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/haskell-cryptography/sel
+
+common common
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+    -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
+    -fprint-potential-instances -Wno-unticked-promoted-constructors
+    -Werror=unused-imports
+
+  default-language: Haskell2010
+
+common test-options
+  ghc-options: -rtsopts -threaded -with-rtsopts=-N -O2
+
+library
+  import:          common
+  hs-source-dirs:  src
+  exposed-modules:
+    Sel.Hashing.Generic
+    Sel.Hashing.Password
+    Sel.Signing
+
+  build-depends:
+    , base                >=4.14     && <5
+    , base16              ^>=0.3
+    , bytestring          ^>=0.11
+    , libsodium-bindings  ^>=0.0.1.0
+    , text                ^>=2.0
+    , text-display        ^>=0.0
+
+test-suite sel-tests
+  import:         common
+  import:         test-options
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:
+    Test.Hashing.Generic
+    Test.Hashing.Password
+    Test.Signing
+
+  hs-source-dirs: test
+  build-depends:
+    , base
+    , base16
+    , bytestring
+    , hedgehog
+    , libsodium-bindings
+    , sel
+    , tasty
+    , tasty-hunit
+    , text

@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "libsodium-bindings/src"
+      component: "lib:libsodium-bindings"
+
+    - path: "sel/src"
+      component: "lib:sel"
+
+    - path: "sel/test"
+      component: "sel:test:sel-tests"

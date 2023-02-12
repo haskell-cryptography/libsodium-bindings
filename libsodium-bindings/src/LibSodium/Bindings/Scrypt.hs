@@ -218,7 +218,7 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_PASSWD_MA
   cryptoPWHashScryptSalsa2018SHA256PasswdMax :: CSize
 
 -- | Length of the salt used by 'cryptoPWHashScryptSalsa2018SHA256'.
--- The easiest way to get a salt is to use 'randombytesBuf'.
+-- The easiest way to get a salt is to use 'LibSodium.Bindings.Random.randombytesBuf'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_SALTBYTES"
@@ -275,7 +275,7 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_
 
 -- | The amount of operations most suitable for for highly sensitive data.
 --
--- ⚠  using the sensitive parameters can take up to 2 seconds on a 2.8GHz Core i7 CPU
+-- ⚠️  using the sensitive parameters can take up to 2 seconds on a 2.8GHz Core i7 CPU
 -- and require up to 1GiB of dedicated RAM.
 --
 -- | @since 0.0.1.0
@@ -284,7 +284,7 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_
 
 -- | The amount of memory most suitable for for highly sensitive data.
 --
--- ⚠  using the sensitive parameters can take up to 2 seconds on a 2.8GHz Core i7 CPU
+-- ⚠️  using the sensitive parameters can take up to 2 seconds on a 2.8GHz Core i7 CPU
 -- and require up to 1GiB of dedicated RAM.
 --
 -- @since 0.0.1.0

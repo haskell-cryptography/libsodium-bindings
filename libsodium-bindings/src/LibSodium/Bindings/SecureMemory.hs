@@ -1,5 +1,4 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE Safe #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
@@ -9,7 +8,6 @@
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
--- Stability: Stable
 -- Portability: GHC only
 module LibSodium.Bindings.SecureMemory
   ( -- * Introduction

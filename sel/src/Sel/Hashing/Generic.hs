@@ -37,7 +37,9 @@ import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
 import Foreign.C (CSize, CUChar)
 import Foreign.Storable
+import Foreign.ForeignPtr.Unsafe (unsafeForeignPtrToPtr)
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
+import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
@@ -64,6 +66,24 @@ import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBy
 -- @since 0.0.1.0
 newtype HashKey = HashKey (ForeignPtr CUChar)
 
+instance Eq HashKey where
+ (HashKey pk1) == (HashKey pk2) = 
+    let p = unsafeForeignPtrToPtr pk1
+        q = unsafeForeignPtrToPtr pk2
+     in unsafeDupablePerformIO $
+          do p' <- peek p
+             q' <- peek q
+             return (p' == q')
+
+instance Ord HashKey where
+  compare (HashKey pk1) (HashKey pk2) =
+    let p = unsafeForeignPtrToPtr pk1
+        q = unsafeForeignPtrToPtr pk2
+     in unsafeDupablePerformIO $
+          do p' <- peek p
+             q' <- peek q
+             return $ compare p' q'
+
 -- | Create a new 'HashKey' of size 'cryptoGenericHashKeyBytes'.
 --
 -- @since 0.0.1.0
@@ -83,6 +103,24 @@ newHashKey = do
 --
 -- @since 0.0.1.0
 newtype Hash = Hash (ForeignPtr CUChar)
+
+instance Eq Hash where
+ (Hash pk1) == (Hash pk2) = 
+    let p = unsafeForeignPtrToPtr pk1
+        q = unsafeForeignPtrToPtr pk2
+     in unsafeDupablePerformIO $
+          do p' <- peek p
+             q' <- peek q
+             return (p' == q')
+
+instance Ord Hash where
+  compare (Hash pk1) (Hash pk2) =
+    let p = unsafeForeignPtrToPtr pk1
+        q = unsafeForeignPtrToPtr pk2
+     in unsafeDupablePerformIO $
+          do p' <- peek p
+             q' <- peek q
+             return $ compare p' q'
 
 instance Storable Hash where
   sizeOf :: Hash -> Int

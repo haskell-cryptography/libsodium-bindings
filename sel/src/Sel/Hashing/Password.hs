@@ -46,6 +46,7 @@ import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
+import Foreign.ForeignPtr.Unsafe (unsafeForeignPtrToPtr)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
@@ -63,6 +64,24 @@ import LibSodium.Bindings.Random
 --
 -- @since 0.0.1.0
 newtype PasswordHash = PasswordHash (ForeignPtr CChar)
+
+instance Eq PasswordHash where
+ (PasswordHash pk1) == (PasswordHash pk2) = 
+    let p = unsafeForeignPtrToPtr pk1
+        q = unsafeForeignPtrToPtr pk2
+     in unsafeDupablePerformIO $
+          do p' <- peek p
+             q' <- peek q
+             return (p' == q')
+
+instance Ord PasswordHash where
+  compare (PasswordHash pk1) (PasswordHash pk2) =
+    let p = unsafeForeignPtrToPtr pk1
+        q = unsafeForeignPtrToPtr pk2
+     in unsafeDupablePerformIO $
+          do p' <- peek p
+             q' <- peek q
+             return $ compare p' q'
 
 -- | @since 0.0.1.0
 instance Display PasswordHash where

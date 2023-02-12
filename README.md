@@ -18,7 +18,7 @@ The Haskell Cryptography Group presents its libsodium suite of packages:
 | `crypto-sodium`      | High-level Haskell interface               | `base`, `bytestring`, `random`, `cereal`, `libsodium`, `memory`,             | Unclear            | Defers to `libsodium`          |
 
 [sel]: https://github.com/haskell-cryptography/libsodium-bindings/blob/main/sel/README.md
-[sel-ci]: https://github.com/haskell-cryptography/sel/actions/workflows/sel.yml/badge.svg
+[sel-ci]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/sel.yml/badge.svg
 
 [lb]: https://github.com/haskell-cryptography/libsodium-bindings/blob/main/libsodium-bindings/README.md
 [lb-ci]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/libsodium-bindings.yml/badge.svg

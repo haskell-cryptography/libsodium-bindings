@@ -43,6 +43,8 @@ library
     Sel.Hashing.Generic
     Sel.Hashing.Password
     Sel.Signing
+  other-modules:
+    Sel.Internal
 
   build-depends:
     , base                >=4.14     && <5

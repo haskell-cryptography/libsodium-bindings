@@ -35,9 +35,9 @@ import Data.Text.Display
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign (Ptr)
 import qualified Foreign
-import Foreign.C (CSize(..), CUChar)
-import Foreign.Storable
+import Foreign.C (CSize, CUChar)
 import Foreign.ForeignPtr
+import Foreign.Storable
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
 import Sel.Internal
 import System.IO.Unsafe (unsafeDupablePerformIO)
@@ -68,12 +68,14 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 newtype HashKey = HashKey (ForeignPtr CUChar)
 
 instance Eq HashKey where
- (HashKey hk1) == (HashKey hk2) = unsafeDupablePerformIO $  
-   unsafeForeignPtrEq hk1 hk2 cryptoGenericHashKeyBytes
+  (HashKey hk1) == (HashKey hk2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq hk1 hk2 cryptoGenericHashKeyBytes
 
 instance Ord HashKey where
-  compare (HashKey hk1) (HashKey hk2) = unsafeDupablePerformIO $
-    unsafeForeignPtrOrd hk1 hk2 cryptoGenericHashKeyBytes
+  compare (HashKey hk1) (HashKey hk2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd hk1 hk2 cryptoGenericHashKeyBytes
 
 -- | Create a new 'HashKey' of size 'cryptoGenericHashKeyBytes'.
 --
@@ -96,12 +98,14 @@ newHashKey = do
 newtype Hash = Hash (ForeignPtr CUChar)
 
 instance Eq Hash where
- (Hash h1) == (Hash h2) = unsafeDupablePerformIO $  
-   unsafeForeignPtrEq h1 h2 cryptoGenericHashBytes
+  (Hash h1) == (Hash h2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq h1 h2 cryptoGenericHashBytes
 
 instance Ord Hash where
-  compare (Hash h1) (Hash h2) = unsafeDupablePerformIO $
-   unsafeForeignPtrOrd h1 h2 cryptoGenericHashBytes
+  compare (Hash h1) (Hash h2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd h1 h2 cryptoGenericHashBytes
 
 instance Storable Hash where
   sizeOf :: Hash -> Int

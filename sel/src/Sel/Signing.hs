@@ -29,7 +29,8 @@ module Sel.Signing
   , getSignature
   , unsafeGetMessage
   , mkSignature
-  ) where
+  )
+where
 
 import Control.Monad (void)
 import Data.ByteString (ByteString)
@@ -75,12 +76,14 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 newtype PublicKey = PublicKey (ForeignPtr CUChar)
 
 instance Eq PublicKey where
- (PublicKey pk1) == (PublicKey pk2) = unsafeDupablePerformIO $  
-    unsafeForeignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
+  (PublicKey pk1) == (PublicKey pk2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
 
 instance Ord PublicKey where
-  compare (PublicKey pk1) (PublicKey pk2) = unsafeDupablePerformIO $
-    unsafeForeignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
+  compare (PublicKey pk1) (PublicKey pk2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
 
 -- |
 --
@@ -88,12 +91,14 @@ instance Ord PublicKey where
 newtype SecretKey = SecretKey (ForeignPtr CUChar)
 
 instance Eq SecretKey where
- (SecretKey sk1) == (SecretKey sk2) = unsafeDupablePerformIO $  
-   unsafeForeignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
+  (SecretKey sk1) == (SecretKey sk2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
 
 instance Ord SecretKey where
- compare (SecretKey sk1) (SecretKey sk2) = unsafeDupablePerformIO $  
-   unsafeForeignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
+  compare (SecretKey sk1) (SecretKey sk2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
 
 -- |
 --
@@ -107,16 +112,16 @@ data SignedMessage = SignedMessage
 instance Eq SignedMessage where
   (SignedMessage len1 msg1 sig1) == (SignedMessage len2 msg2 sig2) =
     unsafeDupablePerformIO $ do
-      result1 <- unsafeForeignPtrEq msg1 msg2 len1
-      result2 <- unsafeForeignPtrEq sig1 sig2 cryptoSignBytes
+      result1 <- foreignPtrEq msg1 msg2 len1
+      result2 <- foreignPtrEq sig1 sig2 cryptoSignBytes
       return $ (len1 == len2) && result1 && result2
 
 instance Ord SignedMessage where
   compare (SignedMessage len1 msg1 sig1) (SignedMessage len2 msg2 sig2) =
     unsafeDupablePerformIO $ do
-      result1 <- unsafeForeignPtrOrd msg1 msg2 len1
-      result2 <- unsafeForeignPtrOrd sig1 sig2 cryptoSignBytes
-      return $ (compare len1 len2) <> result1 <> result2
+      result1 <- foreignPtrOrd msg1 msg2 len1
+      result2 <- foreignPtrOrd sig1 sig2 cryptoSignBytes
+      return $ compare len1 len2 <> result1 <> result2
 
 -- | Generate a pair of public and secret key.
 --

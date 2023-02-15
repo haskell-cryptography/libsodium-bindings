@@ -42,12 +42,10 @@ import Foreign
   , mallocBytes
   , mallocForeignPtrBytes
   , withForeignPtr
-  , peek
   )
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import qualified Foreign.Marshal.Array as Foreign
 import qualified Foreign.Ptr as Foreign
-import Foreign.ForeignPtr.Unsafe (unsafeForeignPtrToPtr)
 import GHC.IO.Handle.Text (memcpy)
 import LibSodium.Bindings.Signing
   ( cryptoSignBytes
@@ -57,6 +55,7 @@ import LibSodium.Bindings.Signing
   , cryptoSignSecretKeyBytes
   , cryptoSignVerifyDetached
   )
+import Sel.Internal
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
@@ -76,23 +75,12 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 newtype PublicKey = PublicKey (ForeignPtr CUChar)
 
 instance Eq PublicKey where
- (PublicKey pk1) == (PublicKey pk2) = 
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return (p' == q')
+ (PublicKey pk1) == (PublicKey pk2) = unsafeDupablePerformIO $  
+    unsafeForeignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
 
 instance Ord PublicKey where
-  compare (PublicKey pk1) (PublicKey pk2) =
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return $ compare p' q'
-
+  compare (PublicKey pk1) (PublicKey pk2) = unsafeDupablePerformIO $
+    unsafeForeignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
 
 -- |
 --
@@ -100,22 +88,12 @@ instance Ord PublicKey where
 newtype SecretKey = SecretKey (ForeignPtr CUChar)
 
 instance Eq SecretKey where
- (SecretKey pk1) == (SecretKey pk2) = 
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return (p' == q')
+ (SecretKey sk1) == (SecretKey sk2) = unsafeDupablePerformIO $  
+   unsafeForeignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
 
 instance Ord SecretKey where
-  compare (SecretKey pk1) (SecretKey pk2) =
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return $ compare p' q'
+ compare (SecretKey sk1) (SecretKey sk2) = unsafeDupablePerformIO $  
+   unsafeForeignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
 
 -- |
 --
@@ -128,29 +106,17 @@ data SignedMessage = SignedMessage
 
 instance Eq SignedMessage where
   (SignedMessage len1 msg1 sig1) == (SignedMessage len2 msg2 sig2) =
-    let msg1' = unsafeForeignPtrToPtr msg1
-        msg2' = unsafeForeignPtrToPtr msg2
-        sig1' = unsafeForeignPtrToPtr sig1
-        sig2' = unsafeForeignPtrToPtr sig2
-     in unsafeDupablePerformIO $
-          do m1 <- peek msg1'
-             m2 <- peek msg2'
-             s1 <- peek sig1'
-             s2 <- peek sig2'
-             return $ (len1, m1, s1) == (len2, m2, s2)
+    unsafeDupablePerformIO $ do
+      result1 <- unsafeForeignPtrEq msg1 msg2 len1
+      result2 <- unsafeForeignPtrEq sig1 sig2 cryptoSignBytes
+      return $ (len1 == len2) && result1 && result2
 
 instance Ord SignedMessage where
   compare (SignedMessage len1 msg1 sig1) (SignedMessage len2 msg2 sig2) =
-    let msg1' = unsafeForeignPtrToPtr msg1
-        msg2' = unsafeForeignPtrToPtr msg2
-        sig1' = unsafeForeignPtrToPtr sig1
-        sig2' = unsafeForeignPtrToPtr sig2
-     in unsafeDupablePerformIO $
-          do m1 <- peek msg1'
-             m2 <- peek msg2'
-             s1 <- peek sig1'
-             s2 <- peek sig2'
-             return $ compare (len1, m1, s1) (len2, m2, s2)
+    unsafeDupablePerformIO $ do
+      result1 <- unsafeForeignPtrOrd msg1 msg2 len1
+      result2 <- unsafeForeignPtrOrd sig1 sig2 cryptoSignBytes
+      return $ (compare len1 len2) <> result1 <> result2
 
 -- | Generate a pair of public and secret key.
 --

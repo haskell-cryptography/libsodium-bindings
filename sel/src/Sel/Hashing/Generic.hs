@@ -33,12 +33,13 @@ import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Lazy.Builder as Builder
-import Foreign (ForeignPtr, Ptr)
+import Foreign (Ptr)
 import qualified Foreign
-import Foreign.C (CSize, CUChar)
+import Foreign.C (CSize(..), CUChar)
 import Foreign.Storable
-import Foreign.ForeignPtr.Unsafe (unsafeForeignPtrToPtr)
+import Foreign.ForeignPtr
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
+import Sel.Internal
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
@@ -67,22 +68,12 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 newtype HashKey = HashKey (ForeignPtr CUChar)
 
 instance Eq HashKey where
- (HashKey pk1) == (HashKey pk2) = 
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return (p' == q')
+ (HashKey hk1) == (HashKey hk2) = unsafeDupablePerformIO $  
+   unsafeForeignPtrEq hk1 hk2 cryptoGenericHashKeyBytes
 
 instance Ord HashKey where
-  compare (HashKey pk1) (HashKey pk2) =
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return $ compare p' q'
+  compare (HashKey hk1) (HashKey hk2) = unsafeDupablePerformIO $
+    unsafeForeignPtrOrd hk1 hk2 cryptoGenericHashKeyBytes
 
 -- | Create a new 'HashKey' of size 'cryptoGenericHashKeyBytes'.
 --
@@ -105,22 +96,12 @@ newHashKey = do
 newtype Hash = Hash (ForeignPtr CUChar)
 
 instance Eq Hash where
- (Hash pk1) == (Hash pk2) = 
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return (p' == q')
+ (Hash h1) == (Hash h2) = unsafeDupablePerformIO $  
+   unsafeForeignPtrEq h1 h2 cryptoGenericHashBytes
 
 instance Ord Hash where
-  compare (Hash pk1) (Hash pk2) =
-    let p = unsafeForeignPtrToPtr pk1
-        q = unsafeForeignPtrToPtr pk2
-     in unsafeDupablePerformIO $
-          do p' <- peek p
-             q' <- peek q
-             return $ compare p' q'
+  compare (Hash h1) (Hash h2) = unsafeDupablePerformIO $
+   unsafeForeignPtrOrd h1 h2 cryptoGenericHashBytes
 
 instance Storable Hash where
   sizeOf :: Hash -> Int

@@ -22,12 +22,12 @@ extra-source-files:
   README.md
 
 flag use-pkg-config
-  description: Use pkg-config to find OpenSSL (macOS and linux only).
+  description: Use pkg-config to find Libsodium (macOS and linux only).
   default:     False
   manual:      True
 
 flag homebrew-libsodium
-  description: Use Homebrew version of OpenSSL (macOS only).
+  description: Use Homebrew version of Libsodium (macOS only).
   default:     False
 
 source-repository head

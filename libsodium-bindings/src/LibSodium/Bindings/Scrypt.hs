@@ -205,13 +205,13 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_BYTES_MIN
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_BYTES_MAX"
   cryptoPWHashScryptSalsa2018SHA256BytesMax :: CSize
 
--- | Maximum size of the password.
+-- | Minimum size of the password.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_PASSWD_MIN"
   cryptoPWHashScryptSalsa2018SHA256PasswdMin :: CSize
 
--- | Maximum size of the password/
+-- | Maximum size of the password.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_PASSWD_MAX"

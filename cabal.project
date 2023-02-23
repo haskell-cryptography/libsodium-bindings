@@ -10,3 +10,4 @@ package *
   documentation: True
 
 test-show-details: direct
+tests: True

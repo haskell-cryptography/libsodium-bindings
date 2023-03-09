@@ -64,6 +64,9 @@ data CryptoGenericHashState
 -- | This function allocates a 'CryptoGenericHashState' of size 'cryptoGenericHashBytes'.
 -- If you want more control over the size of the hash state, use 'withGenericHashStateOfSize'.
 --
+-- ⚠️ Do not leak the 'CryptoGenericHashState' outside of the lambda,
+-- otherwise you will point at deallocated memory!
+--
 -- @since 0.0.1.0
 withGenericHashState :: (Ptr CryptoGenericHashState -> IO a) -> IO a
 withGenericHashState action = withGenericHashStateOfSize cryptoGenericHashBytes action

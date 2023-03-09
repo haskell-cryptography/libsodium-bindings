@@ -68,6 +68,7 @@ library
     LibSodium.Bindings.Random
     LibSodium.Bindings.Scrypt
     LibSodium.Bindings.Secretbox
+    LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory
     LibSodium.Bindings.SHA2
     LibSodium.Bindings.Signing

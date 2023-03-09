@@ -61,6 +61,7 @@ library
   hs-source-dirs:  src
   exposed-modules:
     LibSodium.Bindings.Comparison
+    LibSodium.Bindings.CryptoAuth
     LibSodium.Bindings.GenericHashing
     LibSodium.Bindings.KeyExchange
     LibSodium.Bindings.Main

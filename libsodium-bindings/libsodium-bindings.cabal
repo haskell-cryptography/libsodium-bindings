@@ -15,7 +15,7 @@ author:             Hécate Moonlight, Koz Ross
 maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
 build-type:         Simple
-tested-with:        GHC ==8.10.7 || ==9.0.2 || ==9.2.6 || ==9.4.4
+tested-with:        GHC == {8.10.7, 9.0.2, 9.2.7, 9.4.4}
 extra-source-files:
   CHANGELOG.md
   LICENSE
@@ -68,6 +68,7 @@ library
     LibSodium.Bindings.Random
     LibSodium.Bindings.Scrypt
     LibSodium.Bindings.Secretbox
+    LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory
     LibSodium.Bindings.SHA2
     LibSodium.Bindings.Signing

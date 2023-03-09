@@ -104,7 +104,7 @@ withCryptoSecretStreamXChaCha20Poly1305State action = allocaBytes (fromIntegral 
 
 -- === Encryption ===
 
--- | Crate a random secret key to encrypt a stream, and stores it into the parameter
+-- | Create a random secret key to encrypt a stream, and store it into the parameter
 --
 -- Note that using this function is not required to obtain a suitable key:
 -- the secretstream API can use any secret key whose size is

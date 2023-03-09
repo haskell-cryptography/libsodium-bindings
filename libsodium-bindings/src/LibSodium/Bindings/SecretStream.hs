@@ -47,7 +47,7 @@ module LibSodium.Bindings.SecretStream
   ) where
 
 import Foreign (Ptr)
-import Foreign.C (CSize (CSize), CUChar (CUChar), CULLong (CULLong))
+import Foreign.C (CInt (CInt), CSize (CSize), CUChar (CUChar), CULLong (CULLong))
 import Foreign.Marshal (allocaBytes)
 
 -- $introduction
@@ -132,7 +132,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_init_push"
     -- ^ Header buffer, must be of size 'cryptoSecretStreamXChaCha20Poly1305HeaderBytes'.
     -> Ptr CUChar
     -- ^ Buffer holding the secret key. Must be of size 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
-    -> IO Int
+    -> IO CInt
     -- ^ Returns 0 on success, -1 on error.
 
 -- | Encrypt a message using a cryptographic state and a tag.
@@ -162,7 +162,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_push"
     -- ^ Length of the additional, optional data. Can be 0 if you have nothing to add.
     -> CUChar
     -- ^ Tag for the cipher text.
-    -> IO Int
+    -> IO CInt
     -- ^ Returns 0 on success, -1 on error.
 
 -- === Decryption ===
@@ -181,7 +181,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_init_pull"
     -- ^ Header buffer, must be of size 'cryptoSecretStreamXChaCha20Poly1305HeaderBytes'.
     -> Ptr CUChar
     -- ^ Buffer holding the secret key. Must be of size 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
-    -> IO Int
+    -> IO CInt
     -- ^ Returns 0 on success, -1 if the header is invalid.
 
 -- | Decrypt a message chunk.
@@ -211,7 +211,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_pull"
     -- ^ Additional, optional data that was bundled with the cipher text will be put there. Can be 'Foreign.Ptr.nullPtr' if you know that nothing was added.
     -> CULLong
     -- ^ Length of the additional, optional data. Can be 0 if you have nothing to add.
-    -> IO Int
+    -> IO CInt
     -- ^ Return 0 on success, -1 if the ciphertext appears to be invalid.
 
 -- === Rekeying ===

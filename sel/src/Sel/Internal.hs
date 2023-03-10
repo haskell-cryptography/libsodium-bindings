@@ -9,7 +9,7 @@ import Foreign.Ptr (Ptr)
 
 -- | This calls to C's `memcmp` function, used in lieu of
 -- libsodium's `memcmp` in cases when the return code is necessary.
-foreign import capi unsafe "memcmp"
+foreign import capi unsafe "string.h memcmp"
   memcmp :: Ptr a -> Ptr b -> CSize -> IO CInt
 
 -- | Compare if the contents of two `ForeignPtr`s are equal.

@@ -33,11 +33,14 @@ import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Lazy.Builder as Builder
-import Foreign (ForeignPtr, Ptr)
+import Foreign (Ptr)
 import qualified Foreign
 import Foreign.C (CSize, CUChar)
+import Foreign.ForeignPtr
 import Foreign.Storable
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
+import Sel.Internal
+import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
@@ -64,6 +67,16 @@ import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBy
 -- @since 0.0.1.0
 newtype HashKey = HashKey (ForeignPtr CUChar)
 
+instance Eq HashKey where
+  (HashKey hk1) == (HashKey hk2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq hk1 hk2 cryptoGenericHashKeyBytes
+
+instance Ord HashKey where
+  compare (HashKey hk1) (HashKey hk2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd hk1 hk2 cryptoGenericHashKeyBytes
+
 -- | Create a new 'HashKey' of size 'cryptoGenericHashKeyBytes'.
 --
 -- @since 0.0.1.0
@@ -83,6 +96,16 @@ newHashKey = do
 --
 -- @since 0.0.1.0
 newtype Hash = Hash (ForeignPtr CUChar)
+
+instance Eq Hash where
+  (Hash h1) == (Hash h2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq h1 h2 cryptoGenericHashBytes
+
+instance Ord Hash where
+  compare (Hash h1) (Hash h2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd h1 h2 cryptoGenericHashBytes
 
 instance Storable Hash where
   sizeOf :: Hash -> Int

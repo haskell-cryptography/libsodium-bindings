@@ -29,7 +29,8 @@ module Sel.Signing
   , getSignature
   , unsafeGetMessage
   , mkSignature
-  ) where
+  )
+where
 
 import Control.Monad (void)
 import Data.ByteString (ByteString)
@@ -55,6 +56,7 @@ import LibSodium.Bindings.Signing
   , cryptoSignSecretKeyBytes
   , cryptoSignVerifyDetached
   )
+import Sel.Internal
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
@@ -73,10 +75,30 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 -- @since 0.0.1.0
 newtype PublicKey = PublicKey (ForeignPtr CUChar)
 
+instance Eq PublicKey where
+  (PublicKey pk1) == (PublicKey pk2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
+
+instance Ord PublicKey where
+  compare (PublicKey pk1) (PublicKey pk2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
+
 -- |
 --
 -- @since 0.0.1.0
 newtype SecretKey = SecretKey (ForeignPtr CUChar)
+
+instance Eq SecretKey where
+  (SecretKey sk1) == (SecretKey sk2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
+
+instance Ord SecretKey where
+  compare (SecretKey sk1) (SecretKey sk2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
 
 -- |
 --
@@ -86,6 +108,20 @@ data SignedMessage = SignedMessage
   , messageForeignPtr :: ForeignPtr CUChar
   , signatureForeignPtr :: ForeignPtr CUChar
   }
+
+instance Eq SignedMessage where
+  (SignedMessage len1 msg1 sig1) == (SignedMessage len2 msg2 sig2) =
+    unsafeDupablePerformIO $ do
+      result1 <- foreignPtrEq msg1 msg2 len1
+      result2 <- foreignPtrEq sig1 sig2 cryptoSignBytes
+      return $ (len1 == len2) && result1 && result2
+
+instance Ord SignedMessage where
+  compare (SignedMessage len1 msg1 sig1) (SignedMessage len2 msg2 sig2) =
+    unsafeDupablePerformIO $ do
+      result1 <- foreignPtrOrd msg1 msg2 len1
+      result2 <- foreignPtrOrd sig1 sig2 cryptoSignBytes
+      return $ compare len1 len2 <> result1 <> result2
 
 -- | Generate a pair of public and secret key.
 --

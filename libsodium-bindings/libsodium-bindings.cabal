@@ -42,6 +42,7 @@ library
   import:          common
   hs-source-dirs:  src
   exposed-modules:
+    LibSodium.Bindings.AEAD
     LibSodium.Bindings.Comparison
     LibSodium.Bindings.GenericHashing
     LibSodium.Bindings.KeyExchange

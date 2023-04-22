@@ -50,7 +50,28 @@ import Foreign (Ptr)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
--- TODO: Write the purpose of public-key authenticated encryption
+-- Using public-key authenticated encryption, Alice can encrypt a confidential message specifically for Bob, using Bob's public key.
+--
+-- Based on Bob's public key, Alice can compute a shared secret key. Using Alice's public key and his secret key, Bob can compute the same shared secret key.
+-- That shared secret key can be used to verify that the encrypted message was not tampered with before decryption.
+--
+-- To send messages to Bob, Alice only needs Bob's public key. Bob should never share his secret key, even with Alice.
+--
+-- For verification and decryption, Bob only needs Alice's public key, the nonce, and the ciphertext. Alice should never share her secret key either, even with Bob.
+--
+-- Bob can reply to Alice using the same system without needing to generate a distinct key pair.
+--
+-- The nonce doesn't have to be confidential, but it should be used with just one invocation of 'cryptoBoxEasy' for a particular pair of public and secret keys.
+--
+-- One easy way to generate a nonce is to use 'LibSodium.Bindings.Random.randombytesBuf'. Considering the size of the nonce, the risk of a random collision is negligible.
+--
+-- For some applications, if you wish to use nonces to detect missing messages or to ignore replayed messages, it is also acceptable to use a simple
+-- incrementing counter as a nonce.
+-- However, you must ensure that the same value is never reused. Be careful as you may have multiple threads or even hosts generating messages using the same key pairs.
+-- A better alternative is to use the 'LibSodium.Bindings.SecretStream' API.
+--
+-- As stated above, senders can decrypt their own messages and compute a valid authentication tag for any messages encrypted with a given shared secret key.
+-- This is generally not an issue for online protocols. If this is not acceptable, then check out the Sealed Boxes and Key Exchange sections of the documentation.
 
 -- $usage
 --
@@ -97,7 +118,7 @@ foreign import capi "sodium.h crypto_box_seed_keypair"
 --
 -- The pointers to the buffers containing the message to encrypt and the
 -- combination of authentication tag and encrypted message can overlap, making in-place
--- encryption possible. However do not forget that 'cryptoBoxMacbytes' extra bytes are required to prepend the tag.
+-- encryption possible. However do not forget that 'cryptoBoxMacBytes' extra bytes are required to prepend the tag.
 --
 -- /See:/ [crypto_box_easy](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#combined-mode)
 --

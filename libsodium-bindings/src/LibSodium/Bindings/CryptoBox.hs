@@ -74,10 +74,11 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 -- This is generally not an issue for online protocols. If this is not acceptable, then check out the Sealed Boxes and Key Exchange sections of the documentation.
 
 -- $usage
+-- There are three families of APIs exposed:
 --
---
--- If you need to store the authentication tag and the encrypted message in different
--- places, do use the "Detached Mode" API.
+-- 1. Combined Mode: It is the most commonly used entry point to this module.
+-- 2. Detached Mode: If you need to store the authentication tag and encrypted message at different locations
+-- 3. Precalculation Interface: Applications that send several messages to the same recipient or receive several messages from the same sender can improve performance by calculating the shared key only once and reusing it in subsequent operations.
 
 -- === Key Pair Generation ===
 

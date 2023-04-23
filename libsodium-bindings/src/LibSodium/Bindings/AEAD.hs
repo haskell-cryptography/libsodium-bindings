@@ -9,24 +9,26 @@
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module LibSodium.Bindings.AEAD 
+module LibSodium.Bindings.AEAD
   ( -- * Operations
     cryptoAEADXChaCha20Poly1305IETFEncrypt
   , cryptoAEADXChaCha20Poly1305IETFDecrypt
   , cryptoAEADXChaCha20Poly1305IETFEncryptDetached
   , cryptoAEADXChaCha20Poly1305IETFDecryptDetached
+
     -- * Constants
   , cryptoAEADXChaCha20Poly1305IETFKeyBytes
   , cryptoAEADXChaCha20Polt1305IETFPubBytes
   , cryptoAEADXChaCha20Poly1305IETFABytes
   )
-  where
-import Foreign.C.Types (CSize(..), CUChar(..), CULLong(..), CInt(..))
+where
+
+import Foreign.C.Types (CInt (..), CSize (..), CUChar (..), CULLong (..))
 import Foreign.Ptr (Ptr)
 
 -- | This function encrypts a message, and then appends the authentication tag
 -- to the encrypted message.
--- 
+--
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_encrypt](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#combined-mode)
 --
 -- @since 0.0.1.0
@@ -42,14 +44,14 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
     -> CULLong
     -- ^ Message length.
     -> Ptr CUChar
-    -- ^ Non-confidential additional data. Can be null with additional data length of 0 if 
+    -- ^ Non-confidential additional data. Can be null with additional data length of 0 if
     -- no additional data is required.
     -> CULLong
     -- ^ Additional data length.
     -> Ptr CUChar
     -- ^ `nsec`, a parameter not used in this function. Should always be NULL.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES. 
+    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
     -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
     -> Ptr CUChar
     -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
@@ -57,7 +59,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
     -- ^ Returns -1 on failure, 0 on success.
 
 -- | This function verifies that an encrypted ciphertext includes a valid tag.
--- 
+--
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_decrypt](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#combined-mode)
 --
 -- @since 0.0.1.0
@@ -75,22 +77,22 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt"
     -> CULLong
     -- ^ Ciphertext length.
     -> Ptr CUChar
-    -- ^ Non-confidential additional data. Can be null with additional data length of 0 if 
+    -- ^ Non-confidential additional data. Can be null with additional data length of 0 if
     -- no additional data is required.
     -> CULLong
     -- ^ Additional data length.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES. 
+    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
     -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
     -> Ptr CUChar
     -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
     -> IO CInt
     -- ^ Returns -1 on failure, 0 on success.
-   
+
 -- | This is the "detached" version of the encryption function.
 -- The encrypted message and authentication tag are output to different buffers
 -- instead of the tag being appended to the encrypted message.
--- 
+--
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_encrypt_detached](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#detached-mode)
 --
 -- @since 0.0.1.0
@@ -113,7 +115,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt_detache
     -> Ptr CUChar
     -- ^ Not used in this particular construction, should always be NULL.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES. 
+    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
     -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
     -> Ptr CUChar
     -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
@@ -123,9 +125,9 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt_detache
 -- | This is the "detached" version of the decryption function.
 -- Verifies that the authentication tag is valid for the ciphertext, key, nonce,
 -- and additional data.
--- 
+--
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_decrypt_detached](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#detached-mode)
--- 
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt_detached"
   cryptoAEADXChaCha20Poly1305IETFDecryptDetached
@@ -141,10 +143,10 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt_detache
     -- ^ The authentication tag. Has length crypto_aead_xchacha20poly1305_ietf_ABYTES.
     -> Ptr CUChar
     -- ^ Additional, non-confidential data.
-    -> CULLong 
+    -> CULLong
     -- ^ Length of the additional, non-confidential data.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES. 
+    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
     -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
     -> Ptr CUChar
     -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
@@ -156,7 +158,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt_detache
 -- | Recommended length of a key for this construction.
 --
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_KEYBYTES](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#constants)
--- 
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_aead_xchacha20poly1305_ietf_KEYBYTES"
   cryptoAEADXChaCha20Poly1305IETFKeyBytes :: CSize
@@ -164,7 +166,7 @@ foreign import capi "sodium.h value crypto_aead_xchacha20poly1305_ietf_KEYBYTES"
 -- | Recommended length of a nonce for this construction.
 --
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_NPUBBYTES](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#constants)
--- 
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_aead_xchacha20poly1305_ietf_NPUBBYTES"
   cryptoAEADXChaCha20Polt1305IETFPubBytes :: CSize
@@ -172,7 +174,7 @@ foreign import capi "sodium.h value crypto_aead_xchacha20poly1305_ietf_NPUBBYTES
 -- | Recommended length for the authentication tag.
 --
 -- /See also:/ [crypto_aead_xchacha20poly1305_ietf_ABYTES](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#constants)
--- 
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_aead_xchacha20poly1305_ietf_ABYTES"
   cryptoAEADXChaCha20Poly1305IETFABytes :: CSize

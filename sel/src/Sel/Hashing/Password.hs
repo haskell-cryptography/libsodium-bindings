@@ -31,7 +31,7 @@ module Sel.Hashing.Password
   , genSalt
 
     -- * Argon2 Parameters
-  , Argon2Params (..)
+  , Argon2Params (Argon2Params)
   , defaultArgon2Params
   )
 where

@@ -44,7 +44,7 @@ module LibSodium.Bindings.PasswordHashing
 where
 
 import Foreign (Ptr)
-import Foreign.C (CChar (..), CInt (..), CLLong (..), CSize (..), CUChar (..), CULLong (..))
+import Foreign.C (CChar, CInt (CInt), CLLong (CLLong), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
 -- This modules provides an API that can be used both for key derivation using a low-entropy input and password storage.

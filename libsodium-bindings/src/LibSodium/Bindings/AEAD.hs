@@ -23,7 +23,7 @@ module LibSodium.Bindings.AEAD
   )
 where
 
-import Foreign.C.Types (CInt (..), CSize (..), CUChar (..), CULLong (..))
+import Foreign.C.Types (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 import Foreign.Ptr (Ptr)
 
 -- | This function encrypts a message, and then appends the authentication tag

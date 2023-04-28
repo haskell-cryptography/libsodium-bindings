@@ -35,7 +35,7 @@ module LibSodium.Bindings.Secretbox
 where
 
 import Foreign (Ptr)
-import Foreign.C (CChar (..), CInt (..), CSize (..), CUChar (..), CULLong (..))
+import Foreign.C (CChar, CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
 -- This API allows encrypting a message using a secret key and a nonce.

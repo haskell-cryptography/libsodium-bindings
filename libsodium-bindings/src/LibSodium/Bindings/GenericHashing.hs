@@ -35,7 +35,7 @@ module LibSodium.Bindings.GenericHashing
 where
 
 import Foreign (Ptr, allocaBytes)
-import Foreign.C (CInt (..), CSize (..), CUChar (..), CULLong (..))
+import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
 -- This API computes a fixed-length fingerprint for an arbitrarily long message.

@@ -3,7 +3,7 @@
 
 module Sel.Internal where
 
-import Foreign.C.Types (CInt (..), CSize (..))
+import Foreign.C.Types (CInt (CInt), CSize (CSize))
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 import Foreign.Ptr (Ptr)
 

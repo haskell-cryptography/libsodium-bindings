@@ -70,6 +70,7 @@ library
     LibSodium.Bindings.PasswordHashing
     LibSodium.Bindings.Random
     LibSodium.Bindings.Scrypt
+    LibSodium.Bindings.SealedBoxes
     LibSodium.Bindings.Secretbox
     LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory

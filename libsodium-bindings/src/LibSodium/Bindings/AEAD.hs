@@ -49,7 +49,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
     -> CULLong
     -- ^ Additional data length.
     -> Ptr CUChar
-    -- ^ `nsec`, a parameter not used in this function. Should always be NULL.
+    -- ^ @nsec@, a parameter not used in this function. Should always be NULL.
     -> Ptr CUChar
     -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
     -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
@@ -71,7 +71,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt"
     -- ^ Size of computed output. Should be message length plus crypto_aead_xchacha20poly1305_ietf_ABYTES.
     -- If set to NULL, then no bytes will be written to this buffer.
     -> Ptr CUChar
-    -- ^ `nsec`, a parameter not used in this function. Should always be NULL.
+    -- ^ @nsec@, a parameter not used in this function. Should always be NULL.
     -> Ptr CUChar
     -- ^ Ciphertext to decrypt.
     -> CULLong

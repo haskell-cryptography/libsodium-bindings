@@ -37,7 +37,7 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 -- the message later. Furthermore, without additional data, a message cannot be
 -- correlated with the identity of its sender.
 
--- | `cryptoBoxSeal` creates a new key pair for each message and attaches the public
+-- | @cryptoBoxSeal@ creates a new key pair for each message and attaches the public
 --   key to the ciphertext. The secret key is overwritten and is not accessible
 --   after this function returns.
 --
@@ -57,7 +57,7 @@ foreign import capi "sodium.h crypto_box_seal"
     -> IO CInt
     -- ^ Returns 0 on success and -1 on error.
 
--- | `cryptoBoxSealOpen` doesn't require passing the public key of
+-- | @cryptoBoxSealOpen@ doesn't require passing the public key of
 --   the sender as the ciphertext already includes this information.
 --
 --   Key pairs are compatible with operations from 'LibSodium.Bindings.CryptoBox'

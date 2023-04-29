@@ -87,12 +87,12 @@ newHashKey = do
     cryptoGenericHashKeyGen ptr
   pure $ HashKey fPtr
 
--- | The fingerprint computed by `hashByteString`.
+-- | The fingerprint computed by @hashByteString@.
 -- It is produced by the BLAKE2b algorithm, and is
 -- of size 'cryptoGenericHashBytes', as recommended.
 --
 -- You can produce a human-readable string representation
--- of a 'Hash' by using the `display` function.
+-- of a 'Hash' by using the @display@ function.
 --
 -- @since 0.0.1.0
 newtype Hash = Hash (ForeignPtr CUChar)

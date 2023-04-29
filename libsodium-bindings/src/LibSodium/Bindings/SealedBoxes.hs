@@ -20,7 +20,7 @@ module LibSodium.Bindings.SealedBoxes
   ) where
 
 import Foreign (Ptr)
-import Foreign.C (CUChar, CInt(CInt), CULLong(CULLong), CSize(CSize))
+import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introdution
 -- Sealed boxes are designed to anonymously send messages to a recipient

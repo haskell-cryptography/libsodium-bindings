@@ -10,7 +10,7 @@
 -- Maintainer: The Haskell Cryptography Group
 -- Stability: Stable
 -- Portability: GHC only
-module LibSodium.Bindings.Signing
+module LibSodium.Bindings.CryptoSign
   ( -- * Introduction
     -- $introduction
 

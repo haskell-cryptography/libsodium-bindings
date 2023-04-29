@@ -48,7 +48,7 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import qualified Foreign.Marshal.Array as Foreign
 import qualified Foreign.Ptr as Foreign
 import GHC.IO.Handle.Text (memcpy)
-import LibSodium.Bindings.Signing
+import LibSodium.Bindings.CryptoSign
   ( cryptoSignBytes
   , cryptoSignDetached
   , cryptoSignKeyPair
@@ -75,11 +75,17 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 -- @since 0.0.1.0
 newtype PublicKey = PublicKey (ForeignPtr CUChar)
 
+-- |
+--
+-- @since 0.0.1.0
 instance Eq PublicKey where
   (PublicKey pk1) == (PublicKey pk2) =
     unsafeDupablePerformIO $
       foreignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
 
+-- |
+--
+-- @since 0.0.1.0
 instance Ord PublicKey where
   compare (PublicKey pk1) (PublicKey pk2) =
     unsafeDupablePerformIO $
@@ -90,11 +96,17 @@ instance Ord PublicKey where
 -- @since 0.0.1.0
 newtype SecretKey = SecretKey (ForeignPtr CUChar)
 
+-- |
+--
+-- @since 0.0.1.0
 instance Eq SecretKey where
   (SecretKey sk1) == (SecretKey sk2) =
     unsafeDupablePerformIO $
       foreignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
 
+-- |
+--
+-- @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey sk1) (SecretKey sk2) =
     unsafeDupablePerformIO $
@@ -109,6 +121,9 @@ data SignedMessage = SignedMessage
   , signatureForeignPtr :: ForeignPtr CUChar
   }
 
+-- |
+--
+-- @since 0.0.1.0
 instance Eq SignedMessage where
   (SignedMessage len1 msg1 sig1) == (SignedMessage len2 msg2 sig2) =
     unsafeDupablePerformIO $ do
@@ -116,6 +131,9 @@ instance Eq SignedMessage where
       result2 <- foreignPtrEq sig1 sig2 cryptoSignBytes
       return $ (len1 == len2) && result1 && result2
 
+-- |
+--
+-- @since 0.0.1.0
 instance Ord SignedMessage where
   compare (SignedMessage len1 msg1 sig1) (SignedMessage len2 msg2 sig2) =
     unsafeDupablePerformIO $ do

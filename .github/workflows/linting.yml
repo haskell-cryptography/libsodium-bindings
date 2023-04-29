@@ -14,7 +14,8 @@ jobs:
     - uses: fourmolu/fourmolu-action@v8
       with:
         pattern: |
-          src/**/*.hs
+          sel/**/*.hs
+          libsodium-bindings/**/*.hs
   hlint:
     runs-on: ubuntu-latest
     steps:

@@ -64,6 +64,7 @@ library
     LibSodium.Bindings.Comparison
     LibSodium.Bindings.CryptoAuth
     LibSodium.Bindings.CryptoBox
+    LibSodium.Bindings.CryptoSign
     LibSodium.Bindings.GenericHashing
     LibSodium.Bindings.KeyExchange
     LibSodium.Bindings.Main
@@ -75,6 +76,5 @@ library
     LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory
     LibSodium.Bindings.SHA2
-    LibSodium.Bindings.Signing
     LibSodium.Bindings.Utils
     LibSodium.Bindings.XChaCha20

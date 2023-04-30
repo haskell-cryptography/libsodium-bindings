@@ -22,7 +22,7 @@ module LibSodium.Bindings.SealedBoxes
 import Foreign (Ptr)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
--- $introdution
+-- $introduction
 -- Sealed boxes are designed to anonymously send messages to a recipient
 -- given their public key.
 --
@@ -40,6 +40,8 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 -- | @cryptoBoxSeal@ creates a new key pair for each message and attaches the public
 --   key to the ciphertext. The secret key is overwritten and is not accessible
 --   after this function returns.
+--
+-- /See:/ [crypto_box_seal()](https://doc.libsodium.org/public-key_cryptography/sealed_boxes#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_box_seal"
@@ -64,6 +66,8 @@ foreign import capi "sodium.h crypto_box_seal"
 --   module and can be created using 'LibSodium.Bindings.CryptoBox.cryptoBoxKeyPair'
 --   or 'LibSodium.Bindings.CryptoBox.cryptoBoxSeedKeyPair'.
 --
+-- /See:/ [crypto_box_seal_open()](https://doc.libsodium.org/public-key_cryptography/sealed_boxes#usage)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_box_seal_open"
   cryptoBoxSealOpen
@@ -84,7 +88,7 @@ foreign import capi "sodium.h crypto_box_seal_open"
     -- ^ Returns 0 on success and -1 on error.
 
 -- | Size diff in bytes between encrypted and plaintext messages, i.e.
---   cryptoBoxSealbytes = length encryptedMsg - length plaintextMsg
+--   @cryptoBoxSealbytes = length encryptedMsg - length plaintextMsg@
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_SEALBYTES"

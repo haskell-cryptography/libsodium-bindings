@@ -59,6 +59,8 @@ common common-rts-options
 library
   import:          common
   hs-source-dirs:  src
+
+  -- cabal-fmt: expand src/
   exposed-modules:
     LibSodium.Bindings.AEAD
     LibSodium.Bindings.Comparison
@@ -76,5 +78,6 @@ library
     LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory
     LibSodium.Bindings.SHA2
+    LibSodium.Bindings.ShortHash
     LibSodium.Bindings.Utils
     LibSodium.Bindings.XChaCha20

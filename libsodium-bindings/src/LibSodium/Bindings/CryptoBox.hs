@@ -1,5 +1,4 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
 -- Module: LibSodium.Bindings.CryptoBox
@@ -10,34 +9,34 @@
 -- Stability: Stable
 -- Portability: GHC only
 module LibSodium.Bindings.CryptoBox
-  ( -- * Introduction
+  ( -- ** Introduction
     -- $introduction
 
-    -- * Usage
+    -- ** Usage
     -- $usage
 
-    -- * Functions
+    -- ** Functions
 
-    -- ** Key Pair Generation
+    -- *** Key Pair Generation
     cryptoBoxKeyPair
   , cryptoBoxSeedKeyPair
 
-    -- ** Combined Mode
+    -- *** Combined Mode
   , cryptoBoxEasy
   , cryptoBoxOpenEasy
 
-    -- ** Detached Mode
+    -- *** Detached Mode
   , cryptoBoxDetached
   , cryptoBoxOpenDetached
 
-    -- ** Precalculation Interface
+    -- *** Precalculation Interface
   , cryptoBoxBeforeNM
   , cryptoBoxEasyAfterNM
   , cryptoBoxOpenEasyAfterNM
   , cryptoBoxDetachedAfterNM
   , cryptoBoxOpenDetachedAfterNM
 
-    -- * Constants
+    -- ** Constants
   , cryptoBoxPublicKeyBytes
   , cryptoBoxSecretKeyBytes
   , cryptoBoxSeedBytes

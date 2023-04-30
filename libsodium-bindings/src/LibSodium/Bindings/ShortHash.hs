@@ -32,10 +32,9 @@ module LibSodium.Bindings.ShortHash
   , cryptoShortHashSipHashX24Bytes
   ) where
 
-import Data.Coerce (coerce)
 import Data.Word (Word8)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
-import Foreign.Ptr (Ptr)
+import Foreign.Ptr (Ptr, castPtr)
 import LibSodium.Bindings.Random (randombytesBuf)
 
 -- | Create a secret key of size 'cryptoShortHashKeyBytes'.
@@ -81,7 +80,7 @@ cryptoShortHashX24KeyGen
   -- ^ Buffer that will hold the secret key.
   -> IO ()
 cryptoShortHashX24KeyGen ptr =
-  randombytesBuf (coerce ptr :: Ptr Word8) cryptoShortHashSipHashX24KeyBytes
+  randombytesBuf (castPtr ptr :: Ptr Word8) cryptoShortHashSipHashX24KeyBytes
 
 -- | Hash an input message with a secret key to a 128-bit fingerprint.
 --

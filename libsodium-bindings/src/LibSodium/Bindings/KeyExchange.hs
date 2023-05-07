@@ -1,6 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE Trustworthy #-}
 
 -- |
 -- Module: LibSodium.Bindings.KeyExchange

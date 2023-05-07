@@ -47,6 +47,7 @@ foreign import capi "sodium.h crypto_kdf_derive_from_key"
     -> Ptr CUChar
     -- ^ Pointer to the master key, which will be of length 'cryptoKDFKeyBytes'.
     -> IO CInt
+    -- ^ Returns 0 on success and -1 on error.
 
 -- == Constants
 

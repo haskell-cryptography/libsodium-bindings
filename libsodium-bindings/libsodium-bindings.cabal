@@ -68,6 +68,7 @@ library
     LibSodium.Bindings.CryptoBox
     LibSodium.Bindings.CryptoSign
     LibSodium.Bindings.GenericHashing
+    LibSodium.Bindings.KeyDerivation
     LibSodium.Bindings.KeyExchange
     LibSodium.Bindings.Main
     LibSodium.Bindings.PasswordHashing

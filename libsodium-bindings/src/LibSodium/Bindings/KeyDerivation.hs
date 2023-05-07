@@ -2,7 +2,7 @@
 
 -- |
 -- Module: LibSodium.Bindings.KeyDerivation
--- Description: Direct bindings to the key exchange functions implemented in Libsodium
+-- Description: Direct bindings to the key exchange functions implemented in Libsodium. The algorithm used is blake2b.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
@@ -17,7 +17,6 @@ module LibSodium.Bindings.KeyDerivation
   , cryptoKDFDeriveFromKey
 
     -- ** Constants
-  , cryptoKDFPrimitive
   , cryptoKDFBytesMin
   , cryptoKDFBytesMax
   , cryptoKDFKeyBytes
@@ -51,11 +50,8 @@ foreign import capi "sodium.h crypto_kdf_derive_from_key"
 
 -- == Constants
 
--- | The algorithm used by the key derivation algorithm, blake2b.
 --
 -- @since 0.0.1.0
-cryptoKDFPrimitive :: String
-cryptoKDFPrimitive = "blake2b"
 
 -- | Minimum length of a sub-key.
 --

@@ -24,7 +24,7 @@ module Sel.Hashing.Generic
 where
 
 import Control.Monad (void)
-import Data.ByteString (ByteString)
+import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 
@@ -130,12 +130,15 @@ instance Storable Hash where
 instance Display Hash where
   displayBuilder = Builder.fromText . hashToHexText
 
--- | Hash a 'ByteString' with the BLAKE2b algorithm, and an optional key.
+instance Show Hash where
+  show = BS.unpackChars . hashToHexByteString
+
+-- | Hash a 'StrictByteString' with the BLAKE2b algorithm, and an optional key.
 --
 -- Without a 'HashKey', hashing the same data twice will give the same result.
 --
 -- @since 0.0.1.0
-hashByteString :: Maybe HashKey -> ByteString -> IO Hash
+hashByteString :: Maybe HashKey -> StrictByteString -> IO Hash
 hashByteString mHashKey bytestring =
   case mHashKey of
     Just (HashKey fPtr) ->
@@ -155,7 +158,7 @@ hashByteString mHashKey bytestring =
               cryptoGenericHashBytes
               (Foreign.castPtr cString :: Ptr CUChar)
               (fromIntegral cStringLen)
-              (Foreign.castPtr keyPtr)
+              (Foreign.castPtr keyPtr :: Ptr CUChar)
               keyLength
         pure $ Hash hashForeignPtr
 
@@ -165,16 +168,16 @@ hashByteString mHashKey bytestring =
 hashToHexText :: Hash -> Text
 hashToHexText = Base16.encodeBase16 . hashToBinary
 
--- | Convert a 'Hash' to a strict, hexadecimal-encoded 'ByteString'.
+-- | Convert a 'Hash' to a strict, hexadecimal-encoded 'StrictByteString'.
 --
 -- @since 0.0.1.0
-hashToHexByteString :: Hash -> ByteString
+hashToHexByteString :: Hash -> StrictByteString
 hashToHexByteString = Base16.encodeBase16' . hashToBinary
 
--- | Convert a 'Hash' to a strict binary 'ByteString'.
+-- | Convert a 'Hash' to a strict binary 'StrictByteString'.
 --
 -- @since 0.0.1.0
-hashToBinary :: Hash -> ByteString
+hashToBinary :: Hash -> StrictByteString
 hashToBinary (Hash fPtr) =
   BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
   where

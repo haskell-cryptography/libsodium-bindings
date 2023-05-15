@@ -734,11 +734,7 @@ foreign import capi "sodium.h value crypto_hash_sha256_BYTES"
 foreign import capi "sodium.h crypto_hash_sha256_statebytes"
   cryptoHashSHA256StateBytes :: CSize
 
--- | This constant represents the size of a pre-hashed message.
--- It is in use in the @ED25519ph@ multi-part signing system.
---
--- For more information, please consult the documentation of
--- "LibSodium.Bindings.Signing".
+-- | The size of a SHA512-hash message.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_hash_sha512_BYTES"
@@ -756,19 +752,27 @@ foreign import capi "sodium.h crypto_hash_sha512_statebytes"
 foreign import capi "sodium.h crypto_auth_hmacsha256_statebytes"
   cryptoAuthHMACSHA256StateBytes :: CSize
 
--- | @since 0.0.1.0
+-- | The size of a HMAC-SHA-256 hash
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_hmacsha256_BYTES"
   cryptoAuthHMACSHA256Bytes :: CSize
 
--- | @since 0.0.1.0
+-- | The size of a HMAC-SHA-256 key
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_hmacsha256_KEYBYTES"
   cryptoAuthHMACSHA256KeyBytes :: CSize
 
--- | @since 0.0.1.0
+-- | The size of a HMAC-SHA-512 hash
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_hmacsha512_BYTES"
   cryptoAuthHMACSHA512Bytes :: CSize
 
--- | @since 0.0.1.0
+-- | The size of a HMAC-SHA-512 key
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_hmacsha512_KEYBYTES"
   cryptoAuthHMACSHA512KeyBytes :: CSize
 
@@ -778,11 +782,15 @@ foreign import capi "sodium.h value crypto_auth_hmacsha512_KEYBYTES"
 foreign import capi "sodium.h crypto_auth_hmacsha512_statebytes"
   cryptoAuthHMACSHA512StateBytes :: CSize
 
--- | @since 0.0.1.0
+-- | The size of a HMAC-SHA-512256 hash
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_hmacsha512256_BYTES"
   cryptoAuthHMACSHA512256Bytes :: CSize
 
--- | @since 0.0.1.0
+-- | The size of a HMAC-SHA-512256 key
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_hmacsha512256_KEYBYTES"
   cryptoAuthHMACSHA512256KeyBytes :: CSize
 

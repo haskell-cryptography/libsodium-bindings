@@ -1,11 +1,13 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE MultiWayIf #-}
 
 module Sel.Internal where
 
+import Foreign (Ptr)
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
-import Foreign.Ptr (Ptr)
+import LibSodium.Bindings.SecureMemory (sodiumFree, sodiumMalloc)
 
 -- | This calls to C's @memcmp@ function, used in lieu of
 -- libsodium's @memcmp@ in cases when the return code is necessary.
@@ -33,3 +35,13 @@ foreignPtrOrd fptr1 fptr2 size =
               | result == 0 -> EQ
               | result < 0 -> LT
               | otherwise -> GT
+
+-- | Securely allocate an amount of memory with 'sodiumMalloc' and pass
+-- a pointer to the region to the provided action.
+-- The region is deallocated with 'sodiumFree'.
+allocateWith :: CSize -> (Ptr a -> IO b) -> IO b
+allocateWith size action = do
+  !ptr <- sodiumMalloc size
+  !result <- action ptr
+  sodiumFree ptr
+  pure result

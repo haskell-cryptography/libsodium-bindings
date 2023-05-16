@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE KindSignatures #-}
 
 module Sel.Internal where
 
@@ -8,6 +10,8 @@ import Foreign (Ptr)
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 import LibSodium.Bindings.SecureMemory (sodiumFree, sodiumMalloc)
+import Data.Kind (Type)
+import Control.Monad.IO.Class (liftIO, MonadIO)
 
 -- | This calls to C's @memcmp@ function, used in lieu of
 -- libsodium's @memcmp@ in cases when the return code is necessary.
@@ -42,13 +46,15 @@ foreignPtrOrd fptr1 fptr2 size =
 -- Do not try to jailbreak the pointer outside of the action,
 -- this will not be pleasant.
 allocateWith
-  :: CSize
+  :: forall (a :: Type) (b :: Type) (m :: Type -> Type)
+   . MonadIO m
+   => CSize
   -- ^ Amount of memory to allocate
-  -> (Ptr a -> IO b)
+  -> (Ptr a -> m b)
   -- ^ Action to perform on the memory
-  -> IO b
+  -> m b
 allocateWith size action = do
-  !ptr <- sodiumMalloc size
+  !ptr <- liftIO $ sodiumMalloc size
   !result <- action ptr
-  sodiumFree ptr
+  liftIO $ sodiumFree ptr
   pure result

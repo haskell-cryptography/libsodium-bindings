@@ -1,6 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE KindSignatures #-}
 
 -- |
 -- Module: Sel.Hashing.SHA2.SHA512
@@ -46,6 +47,8 @@ import LibSodium.Bindings.SHA2 (CryptoHashSHA512State, cryptoHashSHA512, cryptoH
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
+import Data.Kind (Type)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 
 -- $usage
 --
@@ -188,13 +191,14 @@ newtype Multipart = Multipart (Ptr CryptoHashSHA512State)
 --
 -- @since 0.0.1.0
 withMultipart
-  :: forall a
-   . (Multipart -> IO a)
+  :: forall (a :: Type) (m :: Type -> Type)
+   . MonadIO m
+   => (Multipart -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
-  -> IO a
+  -> m a
 withMultipart action = do
   allocateWith cryptoHashSHA512StateBytes $ \statePtr -> do
-    void $ cryptoHashSHA512Init statePtr
+    void $ liftIO $ cryptoHashSHA512Init statePtr
     action (Multipart statePtr)
 
 -- | Add a message portion to be hashed.

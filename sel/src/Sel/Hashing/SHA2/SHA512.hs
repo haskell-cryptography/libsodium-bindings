@@ -1,7 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE KindSignatures #-}
 
 -- |
 -- Module: Sel.Hashing.SHA2.SHA512
@@ -46,9 +46,9 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import LibSodium.Bindings.SHA2 (CryptoHashSHA512State, cryptoHashSHA512, cryptoHashSHA512Bytes, cryptoHashSHA512Final, cryptoHashSHA512Init, cryptoHashSHA512StateBytes, cryptoHashSHA512Update)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import Sel.Internal
-import Data.Kind (Type)
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Kind (Type)
+import Sel.Internal
 
 -- $usage
 --
@@ -193,7 +193,7 @@ newtype Multipart = Multipart (Ptr CryptoHashSHA512State)
 withMultipart
   :: forall (a :: Type) (m :: Type -> Type)
    . MonadIO m
-   => (Multipart -> m a)
+  => (Multipart -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
   -> m a
 withMultipart action = do

@@ -1,17 +1,17 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE KindSignatures #-}
 
 module Sel.Internal where
 
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Kind (Type)
 import Foreign (Ptr)
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 import LibSodium.Bindings.SecureMemory (sodiumFree, sodiumMalloc)
-import Data.Kind (Type)
-import Control.Monad.IO.Class (liftIO, MonadIO)
 
 -- | This calls to C's @memcmp@ function, used in lieu of
 -- libsodium's @memcmp@ in cases when the return code is necessary.
@@ -48,7 +48,7 @@ foreignPtrOrd fptr1 fptr2 size =
 allocateWith
   :: forall (a :: Type) (b :: Type) (m :: Type -> Type)
    . MonadIO m
-   => CSize
+  => CSize
   -- ^ Amount of memory to allocate
   -> (Ptr a -> m b)
   -- ^ Action to perform on the memory

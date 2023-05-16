@@ -45,7 +45,6 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import LibSodium.Bindings.SHA2 (CryptoHashSHA512State, cryptoHashSHA512, cryptoHashSHA512Bytes, cryptoHashSHA512Final, cryptoHashSHA512Init, cryptoHashSHA512StateBytes, cryptoHashSHA512Update)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import LibSodium.Bindings.SecureMemory (sodiumFree)
 import Sel.Internal
 
 -- $usage
@@ -190,5 +189,4 @@ finaliseMultipart (Multipart statePtr) = do
       cryptoHashSHA512Final
         statePtr
         hashPtr
-  sodiumFree statePtr
   pure $ Hash hashForeignPtr

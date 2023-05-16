@@ -173,7 +173,7 @@ hashText text = hashByteString (Text.encodeUtf8 text)
 -- ...   SHA512.updateMultipart multipartState message1
 -- ...   message2 <- getMessage
 -- ...   SHA512.updateMultipart multipartState message2
--- ...   SHA512.finaliseMultipart multipart
+-- ...   SHA512.finaliseMultipart multipartState
 --
 -- @since 0.0.1.0
 newtype Multipart = Multipart (Ptr CryptoHashSHA512State)

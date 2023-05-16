@@ -162,14 +162,46 @@ hashText :: Text -> IO Hash
 hashText text = hashByteString (Text.encodeUtf8 text)
 
 -- ** Hashing a multi-parts message
+
+-- | 'Multipart' is a cryptographic context for streaming hashing.
+-- This API can be used when a message is too big to fit in memory or when the message is received in portions.
+--
+-- Use it like this:
+--
+-- >>> hash <- SHA512.withMultipart $ \multipartState -> do -- we are in the IO monad
+-- ...   message1 <- getMessage
+-- ...   SHA512.updateMultipart multipartState message1
+-- ...   message2 <- getMessage
+-- ...   SHA512.updateMultipart multipartState message2
+-- ...   SHA512.finaliseMultipart multipart
+--
+-- @since 0.0.1.0
 newtype Multipart = Multipart (Ptr CryptoHashSHA512State)
 
-withMultipart :: forall a. (Multipart -> IO a) -> IO a
+-- | Perform streaming hashing with a 'Multipart' cryptographic context.
+--
+-- Use 'SHA512.updateMultipart' and 'SHA512.finaliseMultipart' inside of the continuation.
+--
+-- The context is safely allocated and deallocated inside of the continuation.
+--
+-- Do not try to jailbreak the context outside of the action, this will not be pleasant.
+--
+-- @since 0.0.1.0
+withMultipart
+  :: forall a
+   . (Multipart -> IO a)
+  -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
+  -> IO a
 withMultipart action = do
   allocateWith cryptoHashSHA512StateBytes $ \statePtr -> do
     void $ cryptoHashSHA512Init statePtr
     action (Multipart statePtr)
 
+-- | Add a message portion to be hashed.
+--
+-- This function should be used within 'withMultipart'.
+--
+-- @since 0.0.1.0
 updateMultipart :: Multipart -> StrictByteString -> IO ()
 updateMultipart (Multipart statePtr) message = do
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
@@ -181,6 +213,11 @@ updateMultipart (Multipart statePtr) message = do
         messagePtr
         messageLen
 
+-- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
+--
+-- This function should be used within 'withMultipart'.
+--
+-- @since 0.0.1.0
 finaliseMultipart :: Multipart -> IO Hash
 finaliseMultipart (Multipart statePtr) = do
   hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA512Bytes)

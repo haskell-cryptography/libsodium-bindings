@@ -15,6 +15,7 @@ spec =
     [ testCase "SHA512 single-message hashing" testSingleHashSHA512
     , testCase "SHA512 multi-part message hashing" testMultipartHashSH512
     , testCase "SHA256 single-message hashing" testSingleHashSHA256
+    , testCase "SHA256 multi-part message hashing" testMultipartHashSH256
     ]
 
 testSingleHashSHA512 :: Assertion
@@ -43,5 +44,16 @@ testSingleHashSHA256 = do
   actual <- SHA256.hashText password
   assertEqual
     "SH256 hashing is consistent"
+    (SHA256.hashToHexByteString actual)
+    "f52fbd32b2b3b86ff88ef6c490628285f482af15ddcb29541f94bcf526a3f6c7"
+
+testMultipartHashSH256 :: Assertion
+testMultipartHashSH256 = do
+  actual <- SHA256.withMultipart $ \multipart -> do
+    SHA256.updateMultipart multipart "hunter"
+    SHA256.updateMultipart multipart "2"
+    SHA256.finaliseMultipart multipart
+  assertEqual
+    "SHA256 hashing is consistent"
     (SHA256.hashToHexByteString actual)
     "f52fbd32b2b3b86ff88ef6c490628285f482af15ddcb29541f94bcf526a3f6c7"

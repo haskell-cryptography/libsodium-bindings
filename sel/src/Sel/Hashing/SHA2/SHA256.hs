@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 -- |
@@ -23,6 +24,10 @@ module Sel.Hashing.SHA2.SHA256
   , hashToHexByteString
 
     -- ** Hashing a multi-parts message
+  , Multipart
+  , withMultipart
+  , updateMultipart
+  , finaliseMultipart
   ) where
 
 import Control.Monad (void)
@@ -36,8 +41,8 @@ import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Internal.Builder as Builder
 import Foreign (ForeignPtr, Ptr, Storable)
 import qualified Foreign
-import Foreign.C (CSize, CUChar, CULLong)
-import LibSodium.Bindings.SHA2 (cryptoHashSHA256, cryptoHashSHA256Bytes)
+import Foreign.C (CChar, CSize, CUChar, CULLong)
+import LibSodium.Bindings.SHA2 (CryptoHashSHA256State, cryptoHashSHA256, cryptoHashSHA256Bytes, cryptoHashSHA256Final, cryptoHashSHA256Init, cryptoHashSHA256StateBytes, cryptoHashSHA256Update)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
@@ -155,3 +160,33 @@ hashToBinary (Hash fPtr) =
     (Foreign.castForeignPtr fPtr)
     0
     (fromIntegral @CSize @Int cryptoHashSHA256Bytes)
+
+-- ** Hashing a multi-parts message
+newtype Multipart = Multipart (Ptr CryptoHashSHA256State)
+
+withMultipart :: forall a. (Multipart -> IO a) -> IO a
+withMultipart action = do
+  allocateWith cryptoHashSHA256StateBytes $ \statePtr -> do
+    void $ cryptoHashSHA256Init statePtr
+    action (Multipart statePtr)
+
+updateMultipart :: Multipart -> StrictByteString -> IO ()
+updateMultipart (Multipart statePtr) message = do
+  BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+    let messagePtr = Foreign.castPtr @CChar @CUChar cString
+    let messageLen = fromIntegral @Int @CULLong cStringLen
+    void $
+      cryptoHashSHA256Update
+        statePtr
+        messagePtr
+        messageLen
+
+finaliseMultipart :: Multipart -> IO Hash
+finaliseMultipart (Multipart statePtr) = do
+  hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA256Bytes)
+  Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
+    void $
+      cryptoHashSHA256Final
+        statePtr
+        hashPtr
+  pure $ Hash hashForeignPtr

@@ -38,8 +38,15 @@ foreignPtrOrd fptr1 fptr2 size =
 
 -- | Securely allocate an amount of memory with 'sodiumMalloc' and pass
 -- a pointer to the region to the provided action.
--- The region is deallocated with 'sodiumFree'.
-allocateWith :: CSize -> (Ptr a -> IO b) -> IO b
+-- The region is deallocated with 'sodiumFree' afterwards.
+-- Do not try to jailbreak the pointer outside of the action,
+-- this will not be pleasant.
+allocateWith
+  :: CSize
+  -- ^ Amount of memory to allocate
+  -> (Ptr a -> IO b)
+  -- ^ Action to perform on the memory
+  -> IO b
 allocateWith size action = do
   !ptr <- sodiumMalloc size
   !result <- action ptr

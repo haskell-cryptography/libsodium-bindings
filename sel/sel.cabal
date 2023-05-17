@@ -4,16 +4,15 @@ version:            0.0.1.0
 category:           Cryptography
 synopsis:           High-level interface to libsodium
 description:
-  This library provides a high-level interface to libsodium, aimed
-  at casual users of cryptographic primitives.
+  A high-level interface to libsodium, aimed at casual users of cryptography.
 
-homepage:           https://github.com/haskell-cryptography/sel
-bug-reports:        https://github.com/haskell-cryptography/sel/issues
+homepage:           https://github.com/haskell-cryptography/libsodium-bindings
+bug-reports:        https://github.com/haskell-cryptography/libsodium-bindings/issues
 author:             Hécate Moonlight, Koz Ross
 maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
 build-type:         Simple
-tested-with:        GHC ==8.10.7 || ==9.0.2 || ==9.2.7 || ==9.4.4
+tested-with:        GHC ==8.10.7 || ==9.0.2 || ==9.2.7 || ==9.4.5
 extra-source-files:
   LICENSE
   README.md
@@ -22,7 +21,7 @@ extra-doc-files:    CHANGELOG.md
 
 source-repository head
   type:     git
-  location: https://github.com/haskell-cryptography/sel
+  location: https://github.com/haskell-cryptography/libsodium-bindings
 
 common common
   ghc-options:

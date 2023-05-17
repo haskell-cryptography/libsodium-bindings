@@ -17,9 +17,11 @@ license:            BSD-3-Clause
 build-type:         Simple
 tested-with:        GHC ==8.10.7 || ==9.0.2 || ==9.2.7 || ==9.4.4
 extra-source-files:
-  CHANGELOG.md
   LICENSE
   README.md
+
+extra-doc-files:
+  CHANGELOG.md
 
 flag use-pkg-config
   description: Use pkg-config to find Libsodium (macOS and linux only).

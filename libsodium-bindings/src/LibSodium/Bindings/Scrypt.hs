@@ -278,7 +278,7 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_
 -- ⚠️  using the sensitive parameters can take up to 2 seconds on a 2.8GHz Core i7 CPU
 -- and require up to 1GiB of dedicated RAM.
 --
--- | @since 0.0.1.0
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_SENSITIVE"
   cryptoPWHashScryptSalsa2018SHA256OpsLimitSensitive :: CSize
 

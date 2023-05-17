@@ -50,7 +50,7 @@ import Foreign.C.Types (CInt (CInt), CSize (CSize))
 -- On operating systems where this feature is implemented, kernel crash dumps
 -- should also be disabled.
 --
--- The 'lock' function wraps @mlock(2)@ and
+-- The 'sodiumMlock' function wraps @mlock(2)@ and
 -- [@VirtualLock()@](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtuallock).
 --
 -- Note: Many systems place limits on the amount of memory that may be locked

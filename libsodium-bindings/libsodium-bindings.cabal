@@ -20,8 +20,7 @@ extra-source-files:
   LICENSE
   README.md
 
-extra-doc-files:
-  CHANGELOG.md
+extra-doc-files:    CHANGELOG.md
 
 flag use-pkg-config
   description: Use pkg-config to find Libsodium (macOS and linux only).

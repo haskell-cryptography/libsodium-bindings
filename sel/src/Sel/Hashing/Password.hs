@@ -54,7 +54,7 @@ import LibSodium.Bindings.Random
 
 -- $introduction
 --
--- This API provides functions for password hashing, backed by the Argon2id algorithm.
+-- This API provides functions for password hashing, backed by the [Argon2id](https://en.wikipedia.org/wiki/Argon2) algorithm.
 --
 -- If you need to deviate from the defaults enforced by this module,
 -- please use the underlying bindings at "LibSodium.Bindings.PasswordHashing".
@@ -149,7 +149,7 @@ passwordHashToByteString (PasswordHash fPtr) =
   where
     hashBytesSize = fromIntegral @CSize @Int cryptoPWHashStrBytes
 
--- | Convert a 'PasswordHash' to a 'Text.
+-- | Convert a 'PasswordHash' to a 'Text'.
 --
 -- @since 0.0.1.0
 passwordHashToText :: PasswordHash -> Text

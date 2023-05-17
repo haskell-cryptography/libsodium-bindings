@@ -37,8 +37,8 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
     :: Ptr CUChar
     -- ^ Output buffer. Contains the encrypted message, authentication tag, and non-confidential additional data.
     -> Ptr CULLong
-    -- ^ Size of computed output. Should be message length plus crypto_aead_xchacha20poly1305_ietf_ABYTES.
-    -- If set to NULL, then no bytes will be written to this buffer.
+    -- ^ Size of computed output. Should be message length plus 'cryptoAEADXChaCha20Poly1305IETFABytes'.
+    -- If set to 'Foreign.Ptr.nullPtr', then no bytes will be written to this buffer.
     -> Ptr CUChar
     -- ^ Message to be encrypted.
     -> CULLong
@@ -49,12 +49,12 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
     -> CULLong
     -- ^ Additional data length.
     -> Ptr CUChar
-    -- ^ @nsec@, a parameter not used in this function. Should always be NULL.
+    -- ^ @nsec@, a parameter not used in this function. Should always be 'Foreign.Ptr.nullPtr'.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
-    -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
+    -- ^ Public nonce of size 'cryptoAEADXChaCha20Polt1305IETFPubBytes'.
+    -- Should never be reused with the same key. Nonces can be generated using 'LibSodium.Bindings.Random.randombytesBuf'.
     -> Ptr CUChar
-    -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
+    -- ^ Secret key of size 'cryptoAEADXChaCha20Poly1305IETFKeyBytes'.
     -> IO CInt
     -- ^ Returns -1 on failure, 0 on success.
 
@@ -66,12 +66,12 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
 foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt"
   cryptoAEADXChaCha20Poly1305IETFDecrypt
     :: Ptr CUChar
-    -- ^ Output buffer. At most, clen minus crypto_aead_xchacha20poly1305_ietf_ABYTES will be put into this.
+    -- ^ Output buffer. At most the cipher text length minus 'cryptoAEADXChaCha20Poly1305IETFABytes' will be put into this.
     -> Ptr CULLong
-    -- ^ Size of computed output. Should be message length plus crypto_aead_xchacha20poly1305_ietf_ABYTES.
-    -- If set to NULL, then no bytes will be written to this buffer.
+    -- ^ Size of computed output. Should be message length plus 'cryptoAEADXChaCha20Poly1305IETFABytes'.
+    -- If set to 'Foreign.Ptr.nullPtr', then no bytes will be written to this buffer.
     -> Ptr CUChar
-    -- ^ @nsec@, a parameter not used in this function. Should always be NULL.
+    -- ^ @nsec@, a parameter not used in this function. Should always be 'Foreign.Ptr.nullPtr'.
     -> Ptr CUChar
     -- ^ Ciphertext to decrypt.
     -> CULLong
@@ -82,10 +82,10 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt"
     -> CULLong
     -- ^ Additional data length.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
-    -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
+    -- ^ Public nonce of size 'cryptoAEADXChaCha20Polt1305IETFPubBytes'.
+    -- Should never be reused with the same key. Nonces can be generated using 'LibSodium.Bindings.Random.randombytesBuf'.
     -> Ptr CUChar
-    -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
+    -- ^ Secret key of size 'cryptoAEADXChaCha20Poly1305IETFKeyBytes'.
     -> IO CInt
     -- ^ Returns -1 on failure, 0 on success.
 
@@ -101,7 +101,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt_detache
     :: Ptr CUChar
     -- ^ Output buffer. Contains the encrypted message with length equal to the message.
     -> Ptr CUChar
-    -- ^ The authentication tag. Has length crypto_aead_xchacha20poly1305_ietf_ABYTES.
+    -- ^ The authentication tag. Has length 'cryptoAEADXChaCha20Poly1305IETFABytes'.
     -> Ptr CULLong
     -- ^ Length of the authentication tag buffer.
     -> Ptr CUChar
@@ -113,12 +113,12 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt_detache
     -> CULLong
     -- ^ Length of the additional, non-confidential data.
     -> Ptr CUChar
-    -- ^ Not used in this particular construction, should always be NULL.
+    -- ^ Not used in this particular construction, should always be 'Foreign.Ptr.nullPtr'.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
-    -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
+    -- ^ Public nonce of size 'cryptoAEADXChaCha20Polt1305IETFPubBytes'.
+    -- Should never be reused with the same key. Nonces can be generated using 'LibSodium.Bindings.Random.randombytesBuf'.
     -> Ptr CUChar
-    -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
+    -- ^ Secret key of size 'cryptoAEADXChaCha20Poly1305IETFKeyBytes'.
     -> IO CInt
     -- ^ Returns -1 on failure, 0 on success.
 
@@ -134,26 +134,26 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt_detache
     :: Ptr CUChar
     -- ^ If the tag is valid, the ciphertext is decrypted and put into this buffer.
     -> Ptr CUChar
-    -- ^ Not used in this particular construction, should always be NULL.
+    -- ^ Not used in this particular construction, should always be 'Foreign.Ptr.nullPtr'.
     -> Ptr CUChar
     -- ^ Ciphertext to be decrypted.
     -> CULLong
     -- ^ Length of the ciphertext.
     -> Ptr CUChar
-    -- ^ The authentication tag. Has length crypto_aead_xchacha20poly1305_ietf_ABYTES.
+    -- ^ The authentication tag. Has length 'cryptoAEADXChaCha20Poly1305IETFABytes'.
     -> Ptr CUChar
     -- ^ Additional, non-confidential data.
     -> CULLong
     -- ^ Length of the additional, non-confidential data.
     -> Ptr CUChar
-    -- ^ Public nonce of size crypto_aead_xchacha20poly1305_ietf_NPUBBYTES.
-    -- Should never be reused with the same key. Nonces can be generated using randombytes_buf().
+    -- ^ Public nonce of size 'cryptoAEADXChaCha20Polt1305IETFPubBytes'.
+    -- Should never be reused with the same key. Nonces can be generated using 'LibSodium.Bindings.Random.randombytesBuf'.
     -> Ptr CUChar
-    -- ^ Secret key of size crypto_aead_xchacha20poly1305_ietf_KEYBYTES.
+    -- ^ Secret key of size 'cryptoAEADXChaCha20Poly1305IETFKeyBytes'.
     -> IO CInt
     -- ^ Returns 0 on success, -1 if tag is not valid.
 
--- * Constants.
+-- == Constants.
 
 -- | Recommended length of a key for this construction.
 --

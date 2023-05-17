@@ -2,13 +2,13 @@
 
 -- |
 --
--- Module: Sel.Hashing.Generic
--- Description: Fingerprint hashing with the BLAKE2b algorithm
+-- Module: Sel.Hashing
+-- Description: Hashing with the BLAKE2b algorithm
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
-module Sel.Hashing.Generic
+module Sel.Hashing
   ( -- * Introduction
     -- $introduction
 
@@ -28,7 +28,6 @@ import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 
--- import qualified Data.ByteString.Unsafe as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text (Text)
 import Data.Text.Display
@@ -45,14 +44,14 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 -- $introduction
 --
 -- This API computes a fixed-length fingerprint for an arbitrarily long message.
--- It is backed by the BLAKE2b algorithm.
+-- It is backed by the [BLAKE2b](https://en.wikipedia.org/wiki/BLAKE_\(hash_function\)) algorithm.
 --
 -- Sample use cases:
 --
 --   * File integrity checking
 --   * Creating unique identifiers to index arbitrarily long data
 --
--- __⚠️ Do not use this module to hash passwords! ⚠️__
+-- __⚠️ Do not use this module to hash passwords! ⚠️__ Please use the "Sel.Hashing.Password" module instead.
 --
 -- If you need to deviate from the defaults enforced by this module,
 -- please use the underlying bindings at "LibSodium.Bindings.GenericHashing".

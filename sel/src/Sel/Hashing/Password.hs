@@ -37,7 +37,7 @@ module Sel.Hashing.Password
 where
 
 import Control.Monad (void)
-import Data.ByteString (ByteString)
+import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
@@ -59,7 +59,7 @@ import LibSodium.Bindings.Random
 -- If you need to deviate from the defaults enforced by this module,
 -- please use the underlying bindings at "LibSodium.Bindings.PasswordHashing".
 
--- |
+-- | A hashed password from the Argon2id algorithm.
 --
 -- @since 0.0.1.0
 newtype PasswordHash = PasswordHash (ForeignPtr CChar)
@@ -68,18 +68,11 @@ newtype PasswordHash = PasswordHash (ForeignPtr CChar)
 instance Display PasswordHash where
   displayBuilder = Builder.fromText . passwordHashToText
 
--- | Hash a UTF8-encoded password with the Argon2id algorithm and
--- a set of pre-defined parameters.
---
--- @since 0.0.1.0
-hashText :: Text -> IO PasswordHash
-hashText text = hashByteString (Text.encodeUtf8 text)
-
 -- | Hash the password with the Argon2id algorithm and
 -- a set of pre-defined parameters.
 --
 -- @since 0.0.1.0
-hashByteString :: ByteString -> IO PasswordHash
+hashByteString :: StrictByteString -> IO PasswordHash
 hashByteString bytestring =
   BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
     hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
@@ -93,12 +86,19 @@ hashByteString bytestring =
           cryptoPWHashMemLimitModerate
     pure $ PasswordHash hashForeignPtr
 
+-- | Hash a UTF8-encoded password with the Argon2id algorithm and
+-- a set of pre-defined parameters.
+--
+-- @since 0.0.1.0
+hashText :: Text -> IO PasswordHash
+hashText text = hashByteString (Text.encodeUtf8 text)
+
 -- | Hash the password with the Argon2id algorithm.
 --
 -- The hash is __not__ encoded in human-readable format.
 --
 -- @since 0.0.1.0
-hashByteStringWithParams :: Argon2Params -> Salt -> ByteString -> IO PasswordHash
+hashByteStringWithParams :: Argon2Params -> Salt -> StrictByteString -> IO PasswordHash
 hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytestring =
   BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
     BS.unsafeUseAsCStringLen argonSalt $ \(saltString, _) -> do
@@ -124,12 +124,12 @@ hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytes
 verifyText :: PasswordHash -> Text -> Bool
 verifyText passwordHash clearTextPassword = verifyByteString passwordHash (Text.encodeUtf8 clearTextPassword)
 
--- | Verify the password hash against a clear 'ByteString' password
+-- | Verify the password hash against a clear 'StrictByteString' password
 --
 -- This function purposefully takes some time to complete, in order to alleviate bruteforce attacks.
 --
 -- @since 0.0.1.0
-verifyByteString :: PasswordHash -> ByteString -> Bool
+verifyByteString :: PasswordHash -> StrictByteString -> Bool
 verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO $ do
   BS.unsafeUseAsCStringLen clearTextPassword $ \(cString, cStringLen) -> do
     Foreign.withForeignPtr fPtr $ \hashPtr -> do
@@ -140,10 +140,10 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
           (fromIntegral @Int @CULLong cStringLen)
       pure $ result == 0
 
--- | Convert a 'PasswordHash' to a 'ByteString'.
+-- | Convert a 'PasswordHash' to a 'StrictByteString'.
 --
 -- @since 0.0.1.0
-passwordHashToByteString :: PasswordHash -> ByteString
+passwordHashToByteString :: PasswordHash -> StrictByteString
 passwordHashToByteString (PasswordHash fPtr) =
   BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
   where
@@ -166,7 +166,7 @@ passwordHashToText = Text.decodeUtf8 . passwordHashToByteString
 -- equal to the constant 'cryptoPWHashSaltBytes'.
 --
 -- @since 0.0.1.0
-newtype Salt = Salt ByteString
+newtype Salt = Salt StrictByteString
 
 -- |
 --

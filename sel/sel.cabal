@@ -42,6 +42,9 @@ library
   exposed-modules:
     Sel.Hashing.Generic
     Sel.Hashing.Password
+    Sel.Hashing.SHA2
+    Sel.Hashing.SHA2.SHA256
+    Sel.Hashing.SHA2.SHA512
     Sel.Signing
 
   other-modules:   Sel.Internal
@@ -61,6 +64,7 @@ test-suite sel-tests
   other-modules:
     Test.Hashing.Generic
     Test.Hashing.Password
+    Test.Hashing.SHA2
     Test.Signing
 
   hs-source-dirs: test

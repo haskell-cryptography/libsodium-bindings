@@ -73,9 +73,9 @@ test-suite sel-tests
     , base
     , base16
     , bytestring
-    , hedgehog
+    , hedgehog ^>=1.2
     , libsodium-bindings
     , sel
-    , tasty
-    , tasty-hunit
+    , tasty ^>=1.4
+    , tasty-hunit ^>=0.10
     , text

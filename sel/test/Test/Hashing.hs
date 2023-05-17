@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Test.Hashing.Generic where
+module Test.Hashing where
 
 import Control.Monad (void)
 
@@ -10,7 +10,7 @@ import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes)
-import Sel.Hashing.Generic
+import Sel.Hashing
 import Test.Tasty
 import Test.Tasty.HUnit
 

@@ -27,12 +27,26 @@ where
 import Foreign (Ptr, Word64, Word8)
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CUChar)
 
+-- $introduction
+--
+-- From a single, high-entropy key, you can derive multiple secret sub-keys.
+--
+-- This API can derive up to 2⁶⁴ keys from a single key and context, and these
+-- sub-keys can have an arbitrary length between 128 (16 bytes) and 512 bits (64 bytes).
+
+-- | Generate a high-entropy key from which the sub-keys will be derived.
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kdf_keygen"
   cryptoKDFKeygen
     :: Ptr Word8
     -- ^ Pointer that will hold the master key of length 'cryptoKDFKeyBytes'
     -> IO ()
 
+-- | Derive a sub-key from a high-entropy secre key with a unique identifier.
+-- The identifier can be any value up to 2⁶⁴-1
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kdf_derive_from_key"
   cryptoKDFDeriveFromKey
     :: Ptr CUChar
@@ -49,9 +63,6 @@ foreign import capi "sodium.h crypto_kdf_derive_from_key"
     -- ^ Returns 0 on success and -1 on error.
 
 -- == Constants
-
---
--- @since 0.0.1.0
 
 -- | Minimum length of a sub-key.
 --

@@ -33,7 +33,7 @@ module Sel.Signing
 where
 
 import Control.Monad (void)
-import Data.ByteString (ByteString)
+import Data.ByteString (StrictByteString)
 import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
 import qualified Data.ByteString.Unsafe as ByteString
 import Foreign
@@ -162,7 +162,7 @@ generateKeyPair = do
 -- | Sign a message.
 --
 -- @since 0.0.1.0
-signMessage :: ByteString -> SecretKey -> IO SignedMessage
+signMessage :: StrictByteString -> SecretKey -> IO SignedMessage
 signMessage message (SecretKey skFPtr) =
   ByteString.unsafeUseAsCStringLen message $ \(cString, messageLength) -> do
     let sigLength = fromIntegral @CSize @Int cryptoSignBytes
@@ -185,7 +185,7 @@ signMessage message (SecretKey skFPtr) =
 -- is a key mismatch.
 --
 -- @since 0.0.1.0
-openMessage :: SignedMessage -> PublicKey -> Maybe ByteString
+openMessage :: SignedMessage -> PublicKey -> Maybe StrictByteString
 openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr} (PublicKey pkForeignPtr) = unsafeDupablePerformIO $
   withForeignPtr pkForeignPtr $ \publicKeyPtr ->
     withForeignPtr signatureForeignPtr $ \signaturePtr -> do
@@ -206,7 +206,7 @@ openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr}
 -- | Get the signature part of a 'SignedMessage'.
 --
 -- @since 0.0.1.0
-getSignature :: SignedMessage -> ByteString
+getSignature :: SignedMessage -> StrictByteString
 getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
   withForeignPtr signatureForeignPtr $ \signaturePtr -> do
     bsPtr <- Foreign.mallocBytes (fromIntegral cryptoSignBytes)
@@ -216,7 +216,7 @@ getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
 -- | Get the message part of a 'SignedMessage' __without verifying the signature__.
 --
 -- @since 0.0.1.0
-unsafeGetMessage :: SignedMessage -> ByteString
+unsafeGetMessage :: SignedMessage -> StrictByteString
 unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupablePerformIO $
   withForeignPtr messageForeignPtr $ \messagePtr -> do
     bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
@@ -226,7 +226,7 @@ unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupable
 -- | Combine a message and a signature into a 'SignedMessage'.
 --
 -- @since 0.0.1.0
-mkSignature :: ByteString -> ByteString -> SignedMessage
+mkSignature :: StrictByteString -> StrictByteString -> SignedMessage
 mkSignature message signature = unsafeDupablePerformIO $
   ByteString.unsafeUseAsCStringLen message $ \(messageStringPtr, messageLength) ->
     ByteString.unsafeUseAsCStringLen signature $ \(signatureStringPtr, _) -> do

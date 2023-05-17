@@ -32,7 +32,7 @@ import Sel.Hashing.SHA2.SHA512
 --
 -- The SHA-2 family of hashing functions is only provided for interoperability with other applications.
 --
--- If you are looking for a generic hash function, do use 'Sel.Hashing.Generic'.
+-- If you are looking for a generic hash function, do use 'Sel.Hashing'.
 --
 -- If you are looking to hash passwords or deriving keys from passwords, do use 'Sel.Hashing.Password',
 -- as the functions of the SHA-2 family are not suitable for this task.

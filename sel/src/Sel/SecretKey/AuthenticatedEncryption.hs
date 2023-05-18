@@ -150,6 +150,10 @@ instance Ord Hash where
       result1 <- foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
       pure $ compare messageLength1 messageLength2 <> result1
 
+-- | Create an authenticated hash from a message, a secret key that must remain secret, and a one-time cryptographic nonce
+-- that must never be re-used with the same secret key to encrypt another message.
+--
+-- @since 0.0.1.0
 encrypt
   :: StrictByteString
   -- ^ Message to encrypt.
@@ -173,6 +177,9 @@ encrypt message (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) =
               secretKeyPtr
     pure $ Hash (fromIntegral @Int @CULLong cStringLen) hashForeignPtr
 
+-- | Decrypt a hashed and authenticated message with the shared secret key and the one-time cryptographic nonce.
+--
+-- @since 0.0.1.0
 decrypt
   :: Hash
   -- ^ Encrypted message you want to decrypt.

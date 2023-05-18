@@ -48,9 +48,18 @@ import Sel.Internal
 -- Poly1305 MAC hash.
 
 -- $usage
--- TODO
+--
+-- > import qualified Sel.SecretKey.AuthenticatedEncryption as AuthenticatedEncryption
+-- >
+-- > main = do
+-- >   -- We get the secretKey from the other party or with 'newSecretKey'.
+-- >   -- We get the nonce from the other party or with 'newNonce'. Do not reuse it with the same secret key!
+-- >   encryptedMessage <- AuthenticatedEncryption.encrypt "hello hello" secretKey nonce
+-- >   let result = AuthenticatedEncryption.decrypt encryptedMessage secretKey nonce
+-- >   print result
+-- >   -- "Just \"hello hello\""
 
--- |
+-- | A secret key of size 'cryptoSecretboxKeyBytes'.
 --
 -- @since 0.0.1.0
 newtype SecretKey = SecretKey (ForeignPtr CUChar)
@@ -71,7 +80,9 @@ instance Ord SecretKey where
     unsafeDupablePerformIO $
       foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
 
--- |
+-- | A random number that must only be used once per exchanged message.
+-- It does not have to be confidential.
+-- It is of size 'cryptoSecretboxNonceBytes'.
 --
 -- @since 0.0.1.0
 newtype Nonce = Nonce (ForeignPtr CUChar)
@@ -92,7 +103,7 @@ instance Ord Nonce where
     unsafeDupablePerformIO $
       foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
 
--- |
+-- | Generate a new random secret key.
 --
 -- @since 0.0.1.0
 newSecretKey :: IO SecretKey
@@ -102,7 +113,8 @@ newSecretKey = do
     cryptoSecretboxKeygen ptr
   pure $ SecretKey fPtr
 
--- |
+-- | Generate a new random nonce.
+-- Only use it once per exchanged message.
 --
 -- @since 0.0.1.0
 newNonce :: IO Nonce
@@ -112,7 +124,7 @@ newNonce = do
     randombytesBuf (Foreign.castPtr @CUChar @Word8 ptr) cryptoSecretboxNonceBytes
   pure $ Nonce fPtr
 
--- |
+-- | A ciphertext consisting of an encrypted message and an authentication tag.
 --
 -- @since 0.0.1.0
 data Hash = Hash
@@ -140,11 +152,11 @@ instance Ord Hash where
 
 encrypt
   :: StrictByteString
-  -- ^ Message to encrypt
+  -- ^ Message to encrypt.
   -> SecretKey
-  -- ^ Secret key generated with 'newSecretKey'
+  -- ^ Secret key generated with 'newSecretKey'.
   -> Nonce
-  -- ^ One-time use number generated with 'newNonce'
+  -- ^ One-time use number generated with 'newNonce'.
   -> IO Hash
 encrypt message (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) =
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
@@ -163,11 +175,11 @@ encrypt message (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) =
 
 decrypt
   :: Hash
-  -- ^ Encrypted message
+  -- ^ Encrypted message you want to decrypt.
   -> SecretKey
-  -- ^ Secret key used for encrypting the original message
+  -- ^ Secret key used for encrypting the original message.
   -> Nonce
-  -- ^ Nonce used for encrypting the original message
+  -- ^ Nonce used for encrypting the original message.
   -> Maybe StrictByteString
 decrypt Hash{messageLength, hashForeignPtr} (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) = unsafeDupablePerformIO $ do
   messagePtr <- Foreign.mallocBytes (fromIntegral @CULLong @Int messageLength)

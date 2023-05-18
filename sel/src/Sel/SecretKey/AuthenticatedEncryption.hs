@@ -16,32 +16,57 @@ module Sel.SecretKey.AuthenticatedEncryption
 
     -- ** Usage
     -- $usage
+
+    -- ** Secret Key
     SecretKey
   , newSecretKey
+  , secretKeyFromByteString
+  , secretKeyToBinary
+  , secretKeyToHexByteString
+  , secretKeyToHexText
+
+    -- ** Nonce
   , Nonce
+  , nonceFromByteString
+  , nonceToBinary
+  , nonceToHexByteString
+  , nonceToHexText
+
+    -- ** Hash
   , Hash
+  , hashFromByteString
+  , hashToBinary
+  , hashToHexByteString
+  , hashToHexText
+
+    -- ** Encryption and Decryption
   , encrypt
   , decrypt
   ) where
 
+import Control.Monad (void)
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString.Base16 as Base16
+import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
+import Data.Text (Text)
+import Data.Text.Display (Display, displayBuilder)
+import qualified Data.Text.Lazy.Builder as Builder
+import Data.Word (Word8)
 import Foreign (ForeignPtr)
 import qualified Foreign
-import Foreign.C (CChar, CUChar, CULLong)
+import Foreign.C (CChar, CSize, CUChar, CULLong)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import Control.Monad (void)
-import Data.Word (Word8)
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.Secretbox (cryptoSecretboxEasy, cryptoSecretboxKeyBytes, cryptoSecretboxKeygen, cryptoSecretboxMACBytes, cryptoSecretboxNonceBytes, cryptoSecretboxOpenEasy)
 import Sel.Internal
 
 -- $introduction
--- Authenticated Encryption is the action of encrypting a message using a secret key
--- and a one-time cryptographic number ("nonce"). The resulting ciphertext is accompanied
--- by an authentication tag.
+-- "Authenticated Encryption" uses a secret key along with a single-use number
+-- called a "nonce" to encrypt a message.
+-- The resulting hash is accompanied by an authentication tag.
 --
 -- Encryption is done with the XSalsa20 stream cipher and authentication is done with the
 -- Poly1305 MAC hash.
@@ -80,6 +105,67 @@ instance Ord SecretKey where
     unsafeDupablePerformIO $
       foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
 
+-- | ⚠️  Be prudent with what you do with it!
+--
+-- @since 0.0.1.0
+instance Display SecretKey where
+  displayBuilder = Builder.fromText . secretKeyToHexText
+
+-- | ⚠️  Be prudent with what you do with it!
+--
+-- @since 0.0.1.0
+instance Show SecretKey where
+  show = BS.unpackChars . secretKeyToHexByteString
+
+-- | Generate a new random secret key.
+--
+-- @since 0.0.1.0
+newSecretKey :: IO SecretKey
+newSecretKey = do
+  fPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretboxKeyBytes)
+  Foreign.withForeignPtr fPtr $ \ptr ->
+    cryptoSecretboxKeygen ptr
+  pure $ SecretKey fPtr
+
+-- | Create a 'SecretKey' from a 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk.
+--
+-- @since 0.0.1.0
+secretKeyFromByteString :: StrictByteString -> SecretKey
+secretKeyFromByteString bytestring = unsafeDupablePerformIO $
+  BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
+    secretKeyForeignPtr <- BS.mallocByteString @CChar (fromIntegral cryptoSecretboxKeyBytes)
+    Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
+      Foreign.copyArray outsideSecretKeyPtr secretKeyPtr (fromIntegral cryptoSecretboxKeyBytes)
+    pure $ SecretKey (Foreign.castForeignPtr @CChar @CUChar secretKeyForeignPtr)
+
+-- | Convert a 'SecretKey' to a strict, hexadecimal-encoded 'Text'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+secretKeyToHexText :: SecretKey -> Text
+secretKeyToHexText = Base16.encodeBase16 . secretKeyToBinary
+
+-- | Convert a 'SecretKey' to a strict, hexadecimal-encoded 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+secretKeyToHexByteString :: SecretKey -> StrictByteString
+secretKeyToHexByteString = Base16.encodeBase16' . secretKeyToBinary
+
+-- | Convert a 'SecretKey' to a strict binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+secretKeyToBinary :: SecretKey -> StrictByteString
+secretKeyToBinary (SecretKey secretKeyForeignPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 secretKeyForeignPtr)
+    (fromIntegral @CSize @Int cryptoSecretboxKeyBytes)
+
 -- | A random number that must only be used once per exchanged message.
 -- It does not have to be confidential.
 -- It is of size 'cryptoSecretboxNonceBytes'.
@@ -103,15 +189,17 @@ instance Ord Nonce where
     unsafeDupablePerformIO $
       foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
 
--- | Generate a new random secret key.
+-- | ⚠️  Be prudent with what you do with it!
 --
 -- @since 0.0.1.0
-newSecretKey :: IO SecretKey
-newSecretKey = do
-  fPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretboxKeyBytes)
-  Foreign.withForeignPtr fPtr $ \ptr ->
-    cryptoSecretboxKeygen ptr
-  pure $ SecretKey fPtr
+instance Display Nonce where
+  displayBuilder = Builder.fromText . nonceToHexText
+
+-- | ⚠️  Be prudent with what you do with it!
+--
+-- @since 0.0.1.0
+instance Show Nonce where
+  show = BS.unpackChars . nonceToHexByteString
 
 -- | Generate a new random nonce.
 -- Only use it once per exchanged message.
@@ -123,6 +211,45 @@ newNonce = do
   Foreign.withForeignPtr fPtr $ \ptr ->
     randombytesBuf (Foreign.castPtr @CUChar @Word8 ptr) cryptoSecretboxNonceBytes
   pure $ Nonce fPtr
+
+-- | Create a 'Nonce' from a 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk.
+--
+-- @since 0.0.1.0
+nonceFromByteString :: StrictByteString -> Nonce
+nonceFromByteString bytestring = unsafeDupablePerformIO $
+  BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
+    nonceForeignPtr <- BS.mallocByteString @CChar (fromIntegral cryptoSecretboxNonceBytes)
+    Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
+      Foreign.copyArray outsideNoncePtr noncePtr (fromIntegral cryptoSecretboxNonceBytes)
+    pure $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+
+-- | Convert a 'Nonce' to a strict, hexadecimal-encoded 'Text'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+nonceToHexText :: Nonce -> Text
+nonceToHexText = Base16.encodeBase16 . nonceToBinary
+
+-- | Convert a 'Nonce' to a strict, hexadecimal-encoded 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+nonceToHexByteString :: Nonce -> StrictByteString
+nonceToHexByteString = Base16.encodeBase16' . nonceToBinary
+
+-- | Convert a 'Nonce' to a strict binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+nonceToBinary :: Nonce -> StrictByteString
+nonceToBinary (Nonce nonceForeignPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 nonceForeignPtr)
+    (fromIntegral @CSize @Int cryptoSecretboxKeyBytes)
 
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --
@@ -150,8 +277,61 @@ instance Ord Hash where
       result1 <- foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
       pure $ compare messageLength1 messageLength2 <> result1
 
--- | Create an authenticated hash from a message, a secret key that must remain secret, and a one-time cryptographic nonce
--- that must never be re-used with the same secret key to encrypt another message.
+-- | ⚠️  Be prudent with what you do with it!
+--
+-- @since 0.0.1.0
+instance Display Hash where
+  displayBuilder = Builder.fromText . hashToHexText
+
+-- | ⚠️  Be prudent with what you do with it!
+--
+-- @since 0.0.1.0
+instance Show Hash where
+  show = BS.unpackChars . hashToHexByteString
+
+-- | Create a 'Hash' from a 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk.
+--
+-- @since 0.0.1.0
+hashFromByteString :: StrictByteString -> Hash
+hashFromByteString bytestring = unsafeDupablePerformIO $
+  BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
+    hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength
+    Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
+      Foreign.copyArray outsideHashPtr hashPtr outsideHashLength
+    pure $
+      Hash
+        (fromIntegral @Int @CULLong outsideHashLength)
+        (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+
+-- | Convert a 'Hash' to a strict, hexadecimal-encoded 'Text'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+hashToHexText :: Hash -> Text
+hashToHexText = Base16.encodeBase16 . hashToBinary
+
+-- | Convert a 'Hash' to a strict, hexadecimal-encoded 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+hashToHexByteString :: Hash -> StrictByteString
+hashToHexByteString = Base16.encodeBase16' . hashToBinary
+
+-- | Convert a 'Hash' to a strict binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+hashToBinary :: Hash -> StrictByteString
+hashToBinary (Hash messageLength fPtr) =
+  BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) (fromIntegral messageLength + fromIntegral cryptoSecretboxMACBytes)
+
+-- | Create an authenticated hash from a message, a secret key,
+-- and a one-time cryptographic nonce that must never be re-used with the same
+-- secret key to encrypt another message.
 --
 -- @since 0.0.1.0
 encrypt

@@ -27,7 +27,6 @@ import Control.Monad (void)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
-
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text (Text)
 import Data.Text.Display
@@ -37,9 +36,10 @@ import qualified Foreign
 import Foreign.C (CSize, CUChar)
 import Foreign.ForeignPtr
 import Foreign.Storable
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
 import Sel.Internal
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
@@ -96,16 +96,25 @@ newHashKey = do
 -- @since 0.0.1.0
 newtype Hash = Hash (ForeignPtr CUChar)
 
+-- |
+--
+-- @since 0.0.1.0
 instance Eq Hash where
   (Hash h1) == (Hash h2) =
     unsafeDupablePerformIO $
       foreignPtrEq h1 h2 cryptoGenericHashBytes
 
+-- |
+--
+-- @since 0.0.1.0
 instance Ord Hash where
   compare (Hash h1) (Hash h2) =
     unsafeDupablePerformIO $
       foreignPtrOrd h1 h2 cryptoGenericHashBytes
 
+-- |
+--
+-- @since 0.0.1.0
 instance Storable Hash where
   sizeOf :: Hash -> Int
   sizeOf _ = fromIntegral cryptoGenericHashBytes
@@ -126,9 +135,15 @@ instance Storable Hash where
       Foreign.copyArray hashPtr (Foreign.castPtr ptr) (fromIntegral cryptoGenericHashKeyBytes)
     pure $ Hash hashfPtr
 
+-- |
+--
+-- @since 0.0.1.0
 instance Display Hash where
   displayBuilder = Builder.fromText . hashToHexText
 
+-- |
+--
+-- @since 0.0.1.0
 instance Show Hash where
   show = BS.unpackChars . hashToHexByteString
 
@@ -161,7 +176,7 @@ hashByteString mHashKey bytestring =
               keyLength
         pure $ Hash hashForeignPtr
 
--- | Convert a 'Hash' to a strict hexadecimal 'Text'.
+-- | Convert a 'Hash' to a strict, hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.1.0
 hashToHexText :: Hash -> Text

@@ -16,8 +16,7 @@ spec =
 testEncryptMessage :: Assertion
 testEncryptMessage = do
   secretKey <- newSecretKey
-  nonce <- newNonce
-  encryptedMessage <- encrypt "hello hello" secretKey nonce
+  (nonce, encryptedMessage) <- encrypt "hello hello" secretKey
   let result = decrypt encryptedMessage secretKey nonce
   assertEqual
     "Message is well-opened with the correct key and nonce"

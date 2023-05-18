@@ -19,7 +19,6 @@ module Sel.SecretKey.AuthenticatedEncryption
     SecretKey
   , newSecretKey
   , Nonce
-  , newNonce
   , Hash
   , encrypt
   , decrypt
@@ -53,8 +52,9 @@ import Sel.Internal
 -- >
 -- > main = do
 -- >   -- We get the secretKey from the other party or with 'newSecretKey'.
--- >   -- We get the nonce from the other party or with 'newNonce'. Do not reuse it with the same secret key!
--- >   encryptedMessage <- AuthenticatedEncryption.encrypt "hello hello" secretKey nonce
+-- >   -- We get the nonce from the other party with the message, or with 'encrypt' and our own message.
+-- >   -- Do not reuse a nonce with the same secret key!
+-- >   (nonce, encryptedMessage) <- AuthenticatedEncryption.encrypt "hello hello" secretKey
 -- >   let result = AuthenticatedEncryption.decrypt encryptedMessage secretKey nonce
 -- >   print result
 -- >   -- "Just \"hello hello\""
@@ -116,7 +116,7 @@ newSecretKey = do
 -- | Generate a new random nonce.
 -- Only use it once per exchanged message.
 --
--- @since 0.0.1.0
+-- Do not use this outside of hash creation!
 newNonce :: IO Nonce
 newNonce = do
   (fPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretboxNonceBytes)
@@ -159,11 +159,10 @@ encrypt
   -- ^ Message to encrypt.
   -> SecretKey
   -- ^ Secret key generated with 'newSecretKey'.
-  -> Nonce
-  -- ^ One-time use number generated with 'newNonce'.
-  -> IO Hash
-encrypt message (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) =
+  -> IO (Nonce, Hash)
+encrypt message (SecretKey secretKeyForeignPtr) =
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+    (Nonce nonceForeignPtr) <- newNonce
     hashForeignPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoSecretboxMACBytes)
     Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
       Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
@@ -175,7 +174,8 @@ encrypt message (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) =
               (fromIntegral @Int @CULLong cStringLen)
               noncePtr
               secretKeyPtr
-    pure $ Hash (fromIntegral @Int @CULLong cStringLen) hashForeignPtr
+    let hash = Hash (fromIntegral @Int @CULLong cStringLen) hashForeignPtr
+    pure (Nonce nonceForeignPtr, hash)
 
 -- | Decrypt a hashed and authenticated message with the shared secret key and the one-time cryptographic nonce.
 --

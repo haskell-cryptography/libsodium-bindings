@@ -47,6 +47,7 @@ library
     Sel.Hashing.SHA2
     Sel.Hashing.SHA2.SHA256
     Sel.Hashing.SHA2.SHA512
+    Sel.SecretKey.AuthenticatedEncryption
     Sel.Signing
 
   other-modules:   Sel.Internal
@@ -67,6 +68,7 @@ test-suite sel-tests
     Test.Hashing
     Test.Hashing.Password
     Test.Hashing.SHA2
+    Test.SecretKey.AuthenticatedEncryption
     Test.Signing
 
   hs-source-dirs: test

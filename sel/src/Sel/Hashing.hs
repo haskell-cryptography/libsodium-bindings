@@ -9,10 +9,10 @@
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
 module Sel.Hashing
-  ( -- * Introduction
+  ( -- ** Introduction
     -- $introduction
 
-    -- * Operations
+    -- ** Operations
     HashKey
   , newHashKey
   , Hash

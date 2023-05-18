@@ -7,7 +7,9 @@ description:
   A high-level interface to libsodium, aimed at casual users of cryptography.
 
 homepage:           https://github.com/haskell-cryptography/libsodium-bindings
-bug-reports:        https://github.com/haskell-cryptography/libsodium-bindings/issues
+bug-reports:
+  https://github.com/haskell-cryptography/libsodium-bindings/issues
+
 author:             Hécate Moonlight, Koz Ross
 maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
@@ -72,9 +74,9 @@ test-suite sel-tests
     , base
     , base16
     , bytestring
-    , hedgehog ^>=1.2
+    , hedgehog            ^>=1.2
     , libsodium-bindings
     , sel
-    , tasty ^>=1.4
-    , tasty-hunit ^>=0.10
+    , tasty               ^>=1.4
+    , tasty-hunit         ^>=0.10
     , text

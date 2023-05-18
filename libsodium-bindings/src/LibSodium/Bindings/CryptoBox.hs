@@ -83,7 +83,7 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- | Generate a random secret key and the corresponding public key.
 --
--- /See:/ [crypto_box_keypair](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#key-pair-generation)
+-- /See:/ [crypto_box_keypair()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#key-pair-generation)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_box_keypair"
@@ -98,7 +98,7 @@ foreign import capi "sodium.h crypto_box_keypair"
 -- | Generate a random secret key and the corresponding public key in a deterministic manner
 -- from a single key that acts as a seed.
 --
--- /See:/ [crypto_box_seed_keypair](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#key-pair-generation)
+-- /See:/ [crypto_box_seed_keypair()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#key-pair-generation)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_box_seed_keypair"
@@ -120,7 +120,7 @@ foreign import capi "sodium.h crypto_box_seed_keypair"
 -- combination of authentication tag and encrypted message can overlap, making in-place
 -- encryption possible. However do not forget that 'cryptoBoxMacBytes' extra bytes are required to prepend the tag.
 --
--- /See:/ [crypto_box_easy](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#combined-mode)
+-- /See:/ [crypto_box_easy()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#combined-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_easy"
@@ -148,7 +148,7 @@ foreign import capi "crypto_box_easy"
 -- combination of authentication tag and encrypted message can overlap, making in-place
 -- decryption possible.
 --
--- /See:/ [crypto_box_open_easy](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#combined-mode)
+-- /See:/ [crypto_box_open_easy()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#combined-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_open_easy"
@@ -171,7 +171,7 @@ foreign import capi "crypto_box_open_easy"
 -- | Encrypt a message in the same way as 'cryptoBoxEasy' with the
 -- the authentication tag and the encrypted message held in separate buffers.
 --
--- /See:/ [crypto_box_detached](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#detached-mode)
+-- /See:/ [crypto_box_detached()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#detached-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_detached"
@@ -197,7 +197,7 @@ foreign import capi "crypto_box_detached"
 -- | Decrypt a message in the same way as 'cryptoBoxEasy' with the
 -- the authentication tag and the encrypted message held in separate buffers.
 --
--- /See:/ [crypto_box_open_detached](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#detached-mode)
+-- /See:/ [crypto_box_open_detached()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#detached-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_open_detached"
@@ -222,7 +222,7 @@ foreign import capi "crypto_box_open_detached"
 -- | Compute a shared secret key of size 'cryptoBoxBeforeNMBytes'
 -- given a public key and a secret key.
 --
--- /See:/ [crypto_box_beforenm](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
+-- /See:/ [crypto_box_beforenm()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_beforenm"
@@ -238,7 +238,7 @@ foreign import capi "crypto_box_beforenm"
 
 -- | Encrypt a message using the public key of the recipient, a cryptographic nonce and a shared secret key.
 --
--- /See:/ [crypto_box_easy_afternm](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
+-- /See:/ [crypto_box_easy_afternm()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_easy_afternm"
@@ -258,7 +258,7 @@ foreign import capi "crypto_box_easy_afternm"
 
 -- | Decrypt a message using the public key of the recipient, a cryptographic nonce and a shared secret key.
 --
--- /See:/ [crypto_box_open_easy_afternm](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
+-- /See:/ [crypto_box_open_easy_afternm()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_open_easy_afternm"
@@ -280,7 +280,7 @@ foreign import capi "crypto_box_open_easy_afternm"
 -- the authentication tag and the encrypted message held in separate buffers, with the difference
 -- that a precalculated, shared secret key is used instead of a public/secret key pair.
 --
--- /See:/ [crypto_box_open_easy_afternm](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
+-- /See:/ [crypto_box_detached_afternm()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_detached_afternm"
@@ -302,7 +302,7 @@ foreign import capi "crypto_box_detached_afternm"
 
 -- | Decrypt a message using the public key of the recipient, a cryptographic nonce and a shared secret key.
 --
--- /See:/ [crypto_box_open_easy_afternm](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
+-- /See:/ [crypto_box_open_detached_afternm()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#precalculation-interface)
 --
 -- @since 0.0.1.0
 foreign import capi "crypto_box_open_detached_afternm"
@@ -325,31 +325,49 @@ foreign import capi "crypto_box_open_detached_afternm"
 -- === Constants
 
 -- |
---  @since 0.0.1.0
+--
+-- /See:/ [crypto_box_PUBLICKEYBYTES](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_PUBLICKEYBYTES"
   cryptoBoxPublicKeyBytes :: CSize
 
 -- |
+--
+-- /See:/ [crypto_box_SECRETKEYBYTES](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_SECRETKEYBYTES"
   cryptoBoxSecretKeyBytes :: CSize
 
 -- |
+--
+-- /See:/ [crypto_box_SEEDBYTES](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_SEEDBYTES"
   cryptoBoxSeedBytes :: CSize
 
 -- |
+--
+-- /See:/ [crypto_box_MACBYTES](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_MACBYTES"
   cryptoBoxMacBytes :: CSize
 
 -- |
+--
+-- /See:/ [crypto_box_NONCEBYTES](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_NONCEBYTES"
   cryptoBoxNonceBytes :: CSize
 
 -- |
+--
+-- /See:/ [crypto_box_BEFORENMBYTES](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_BEFORENMBYTES"
   cryptoBoxBeforeNMBytes :: CSize

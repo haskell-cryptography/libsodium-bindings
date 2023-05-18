@@ -12,15 +12,15 @@
 --
 -- Direct bindings to XChaCha20 primitives.
 module LibSodium.Bindings.XChaCha20
-  ( -- * Constants
-    cryptoStreamXChaCha20KeyBytes
-  , cryptoStreamXChaCha20NonceBytes
-
-    -- * Functions
-  , cryptoStreamXChaCha20
+  ( -- * Functions
+    cryptoStreamXChaCha20
   , cryptoStreamXChaCha20Xor
   , cryptoStreamXChaCha20XorIC
   , cryptoStreamXChaCha20Keygen
+
+    -- * Constants
+  , cryptoStreamXChaCha20KeyBytes
+  , cryptoStreamXChaCha20NonceBytes
   )
 where
 
@@ -43,9 +43,7 @@ import Foreign.Ptr (Ptr)
 -- fail](https://github.com/jedisct1/libsodium/discussions/1148#discussioncomment-1979161),
 -- although its documentation does not explain this.
 --
--- = Corresponds to
---
--- [@crypto_stream_xchacha20@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
+-- /See:/ [crypto_stream_xchacha20()](https://doc.libsodium.org/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20"
@@ -80,9 +78,7 @@ foreign import capi "sodium.h crypto_stream_xchacha20"
 -- produce in-place encryption. However, if they are /not/ the same, they must
 -- be non-overlapping.
 --
--- = Corresponds to
---
--- [@crypto_stream_xchacha20_xor@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
+-- /See:/ [crypto_stream_xchacha20_xor()](https://doc.libsodium.org/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20_xor"
@@ -107,9 +103,7 @@ foreign import capi "sodium.h crypto_stream_xchacha20_xor"
 -- See the documentation of 'cryptoStreamXChaCha20Xor' for caveats on the use of
 -- this function.
 --
--- = Corresponds to
---
--- [@crypto_stream_xchacha20_xor_ic@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
+-- /See:/ [crypto_stream_xchacha20_xor_ic()](https://doc.libsodium.org/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20_xor_ic"
@@ -132,9 +126,7 @@ foreign import capi "sodium.h crypto_stream_xchacha20_xor_ic"
 -- | Generate a random XChaCha20 secret key. This will always write
 -- 'cryptoStreamXChaCha20KeyBytes' to the out-parameter.
 --
--- = Corresponds to
---
--- [@crypto_stream_xchacha20_keygen@](https://libsodium.gitbook.io/doc/advanced/stream_ciphers/xchacha20#usage)
+-- /See:/ [crypto_stream_xchacha20_keygen()](https://doc.libsodium.org/advanced/stream_ciphers/xchacha20#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_stream_xchacha20_keygen"
@@ -146,11 +138,15 @@ foreign import capi "sodium.h crypto_stream_xchacha20_keygen"
 
 -- | The number of bytes in an XChaCha20 secret key.
 --
+-- /See:/ [crypto_stream_xchacha20_KEYBYTES](https://doc.libsodium.org/advanced/stream_ciphers/xchacha20#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_stream_xchacha20_KEYBYTES"
   cryptoStreamXChaCha20KeyBytes :: CSize
 
 -- | The number of bytes in an XChaCha20 nonce.
+--
+-- /See:/ [crypto_stream_xchacha20_NONCEBYTES](https://doc.libsodium.org/advanced/stream_ciphers/xchacha20#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_stream_xchacha20_NONCEBYTES"

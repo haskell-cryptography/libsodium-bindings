@@ -110,7 +110,7 @@ withCryptoSecretStreamXChaCha20Poly1305State action = allocaBytes (fromIntegral 
 -- the secretstream API can use any secret key whose size is
 -- 'cryptoSecretStreamXChaCha20Poly1305KeyBytes' bytes.
 --
--- /See:/ [crypto_secretstream_xchacha20poly1305_keygen](https://doc.libsodium.org/secret-key_cryptography/secretstream#encryption)
+-- /See:/ [crypto_secretstream_xchacha20poly1305_keygen()](https://doc.libsodium.org/secret-key_cryptography/secretstream#encryption)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_keygen"
@@ -121,7 +121,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_keygen"
 
 -- | Initialise the cryptographic state using the secret key, then stores the stream header into the header buffer
 --
--- /See:/ [crypto_secretstream_xchacha20poly1305_init_push](https://doc.libsodium.org/secret-key_cryptography/secretstream#encryption)
+-- /See:/ [crypto_secretstream_xchacha20poly1305_init_push()](https://doc.libsodium.org/secret-key_cryptography/secretstream#encryption)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_init_push"
@@ -140,7 +140,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_init_push"
 -- Additional data can be optionally provided.
 -- The maximum length of an individual message is 'cryptoSecretStreamXChaCha20Poly1305MessageBytesMax' bytes (~ 256 GB).
 --
--- /See:/ [crypto_secretstream_xchacha20poly1305_push](https://doc.libsodium.org/secret-key_cryptography/secretstream#encryption)
+-- /See:/ [crypto_secretstream_xchacha20poly1305_push()](https://doc.libsodium.org/secret-key_cryptography/secretstream#encryption)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_push"
@@ -172,7 +172,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_push"
 --
 -- @since 0.0.1.0
 --
--- /See:/ [crypto_secretstream_xchacha20poly1305_init_pull](https://doc.libsodium.org/secret-key_cryptography/secretstream#decryption)
+-- /See:/ [crypto_secretstream_xchacha20poly1305_init_pull()](https://doc.libsodium.org/secret-key_cryptography/secretstream#decryption)
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_init_pull"
   cryptoSecretStreamXChaCha20Poly1305InitPull
     :: Ptr CryptoSecretStreamXChaCha20Poly1305State
@@ -189,7 +189,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_init_pull"
 -- Applications will typically call this function in a loop, until a message with the
 -- 'cryptoSecretStreamXChaCha20Poly1305TagFinal' tag is found.
 --
--- /See:/ [crypto_secretstream_xchacha20poly1305_pull](https://doc.libsodium.org/secret-key_cryptography/secretstream#decryption)
+-- /See:/ [crypto_secretstream_xchacha20poly1305_pull()](https://doc.libsodium.org/secret-key_cryptography/secretstream#decryption)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_pull"
@@ -228,7 +228,7 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_pull"
 -- If this function is used to create an encrypted stream, the decryption process must call
 -- that function at the exact same stream location.
 --
--- /See:/ [crypto_secretstream_xchacha20poly1305_rekey](https://doc.libsodium.org/secret-key_cryptography/secretstream#rekeying)
+-- /See:/ [crypto_secretstream_xchacha20poly1305_rekey()](https://doc.libsodium.org/secret-key_cryptography/secretstream#rekeying)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_rekey"
@@ -241,11 +241,15 @@ foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_rekey"
 
 -- | Size of the secret key
 --
+-- /See:/ [crypto_secretstream_xchacha20poly1305_KEYBYTES](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_KEYBYTES"
   cryptoSecretStreamXChaCha20Poly1305KeyBytes :: CSize
 
 -- | Size of the encryption header
+--
+-- /See:/ [crypto_secretstream_xchacha20poly1305_HEADERBYTES](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_HEADERBYTES"
@@ -253,11 +257,15 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_HEADER
 
 -- | Size of an opaque 'CryptoSecretStreamXChaCha20Poly1305State'
 --
+-- /See:/ [crypto_secretstream_xchacha20poly1305_statebytes](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_secretstream_xchacha20poly1305_statebytes"
   cryptoSecretStreamXChaCha20Poly1305StateBytes :: CSize
 
 -- | Size of an authentication tag in bytes
+--
+-- /See:/ [crypto_secretstream_xchacha20poly1305_ABYTES](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_ABYTES"
@@ -265,11 +273,15 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_ABYTES
 
 -- | Maximum length of an invidual message in bytes (~ 256 GB)
 --
+-- /See:/ [crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX"
   cryptoSecretStreamXChaCha20Poly1305MessageBytesMax :: CSize
 
 -- | Most common tag, add no information about the nature of the message
+--
+-- /See:/ [crypto_secretstream_xchacha20poly1305_TAG_MESSAGE](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_MESSAGE"
@@ -277,17 +289,23 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_ME
 
 -- | Indicates that the message marks the end of a set of messages, but not the end of the stream
 --
+-- /See:/ [crypto_secretstream_xchacha20poly1305_TAG_PUSH](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_PUSH"
   cryptoSecretStreamXChaCha20Poly1305TagPush :: CSize
 
 -- | "forget" the secret key used to encrypt this message and the previous ones, and derive a new secret key.
 --
+-- /See:/ [crypto_secretstream_xchacha20poly1305_TAG_REKEY](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_REKEY"
   cryptoSecretStreamXChaCha20Poly1305TagRekey :: CSize
 
 -- | Marks the end of the stream, and erases the secret key used to encrypt the previous sequence.
+--
+-- /See:/ [crypto_secretstream_xchacha20poly1305_TAG_FINAL](https://doc.libsodium.org/secret-key_cryptography/secretstream#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_FINAL"

@@ -75,7 +75,7 @@ secureMainWithError badPath goodPath = do
 -- before any use of any other functionality, but multiple calls to this
 -- function are not harmful (just redundant).
 --
--- /See:/ [@sodium_init@](https://libsodium.gitbook.io/doc/usage)
+-- /See:/ [sodium_init()](https://doc.libsodium.org/usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_init"

@@ -55,7 +55,7 @@ import Foreign.C
 
 -- | Compute a tag for the provided message and key.
 --
--- /See:/ [Secret Key Authentication](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#usage)
+-- /See:/ [crypto_auth()](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth"
@@ -72,7 +72,7 @@ foreign import capi "sodium.h crypto_auth"
 
 -- | Verify that the tag is valid for the provided message and secret key.
 --
--- /See:/ [Secret Key Authentication](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#usage)
+-- /See:/ [crypto_auth_verify()](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_verify"
@@ -94,7 +94,7 @@ foreign import capi "sodium.h crypto_auth_verify"
 -- improves code clarity and can prevent misuse by ensuring that the provided
 -- key length is always be correct.
 --
--- /See:/ [Secret Key Authentication](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#usage)
+-- /See:/ [crypto_auth_keygen()](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_keygen"
@@ -107,11 +107,15 @@ foreign import capi "sodium.h crypto_auth_keygen"
 
 -- | Size of the secret key
 --
+-- /See:/ [crypto_auth_KEYBYTES](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_KEYBYTES"
   cryptoAuthKeyBytes :: CSize
 
 -- | Size of the tag
+--
+-- /See:/ [crypto_auth_BYTES](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_auth_BYTES"

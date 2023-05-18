@@ -249,7 +249,7 @@ withSignState action = do
 --
 -- It must be called before the first 'cryptoSignUpdate' call.
 --
--- /See:/ [crypto_sign_init](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
+-- /See:/ [crypto_sign_init()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_init"
@@ -264,7 +264,7 @@ foreign import capi "sodium.h crypto_sign_init"
 -- After all parts have been supplied, 'cryptoSignFinalCreate' or 'cryptoSignFinalVerify'
 -- can be used.
 --
--- /See:/ [crypto_sign_update](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
+-- /See:/ [crypto_sign_update()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_update"
@@ -287,7 +287,7 @@ foreign import capi "sodium.h crypto_sign_update"
 -- a signature as 'cryptoSignBytes' bytes long;
 -- shorter signatures will be transparently padded with zeros if necessary.
 --
--- /See:/ [crypto_sign_final_create](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
+-- /See:/ [crypto_sign_final_create()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_final_create"
@@ -306,7 +306,7 @@ foreign import capi "sodium.h crypto_sign_final_create"
 -- | Verify that the signature is valid using the public key
 -- for the message whose content has been previously supplied using 'cryptoSignUpdate'.
 --
--- /See:/ [crypto_sign_final_verify](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
+-- /See:/ [crypto_sign_final_verify()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#multi-part-messages)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_final_verify"
@@ -324,7 +324,7 @@ foreign import capi "sodium.h crypto_sign_final_verify"
 -- secret key secret key and copies it into the buffer holding the seed.
 -- The size of the seed will be equal to 'cryptoSignSeedBytes'.
 --
--- /See:/ [crypto_sign_ed25519_sk_to_seed](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#extracting-the-seed-and-the-public-key-from-the-secret-key)
+-- /See:/ [crypto_sign_ed25519_sk_to_seed()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#extracting-the-seed-and-the-public-key-from-the-secret-key)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_ed25519_sk_to_seed"
@@ -340,7 +340,7 @@ foreign import capi "sodium.h crypto_sign_ed25519_sk_to_seed"
 -- and copies it into public key.
 -- The size of public key will be equal to 'cryptoSignPublicKeyBytes'.
 --
--- /See:/ [crypto_sign_ed25519_sk_to_pk](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#extracting-the-seed-and-the-public-key-from-the-secret-key)
+-- /See:/ [crypto_sign_ed25519_sk_to_pk()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#extracting-the-seed-and-the-public-key-from-the-secret-key)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_ed25519_sk_to_pk"
@@ -358,22 +358,40 @@ foreign import capi "sodium.h crypto_sign_ed25519_sk_to_pk"
 
 -- | The amount of memory needed to store a 'CryptoSignState'.
 --
+-- /See:/ [crypto_sign_statebytes](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#constants)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_sign_statebytes"
   cryptoSignStateBytes :: CSize
 
--- | @since 0.0.1.0
+-- |
+--
+-- /See:/ [crypto_sign_PUBLICKEYBYTES](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_sign_PUBLICKEYBYTES"
   cryptoSignPublicKeyBytes :: CSize
 
--- | @since 0.0.1.0
+-- |
+--
+-- /See:/ [crypto_sign_SECRETKEYBYTES](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_sign_SECRETKEYBYTES"
   cryptoSignSecretKeyBytes :: CSize
 
--- | @since 0.0.1.0
+-- |
+--
+-- /See:/ [crypto_sign_BYTES](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_sign_BYTES"
   cryptoSignBytes :: CSize
 
--- | @since 0.0.1.0
+-- |
+--
+-- /See:/ [crypto_sign_SEEDBYTES](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_sign_SEEDBYTES"
   cryptoSignSeedBytes :: CSize

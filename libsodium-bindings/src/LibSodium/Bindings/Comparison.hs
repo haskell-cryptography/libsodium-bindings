@@ -23,9 +23,7 @@ import Foreign.Ptr (Ptr)
 -- | Compares the given amount of bytes at the given locations for equality.
 -- Constant-time for any given length.
 --
--- = Corresponds to
---
--- [@sodium_memcmp@](https://libsodium.gitbook.io/doc/helpers#constant-time-test-for-equality)
+-- /See:/ [sodium_memcmp()](https://doc.libsodium.org/helpers#constant-time-test-for-equality)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memcmp"
@@ -42,9 +40,7 @@ foreign import capi "sodium.h sodium_memcmp"
 -- | Checks if the given number of bytes at the given location are all equal to
 -- zero. Constant-time for any given length.
 --
--- = Corresponds to
---
--- [@sodium_is_zero@](https://libsodium.gitbook.io/doc/helpers#testing-for-all-zeros)
+-- /See:/ [sodium_is_zero()](https://doc.libsodium.org/helpers#testing-for-all-zeros)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_is_zero"

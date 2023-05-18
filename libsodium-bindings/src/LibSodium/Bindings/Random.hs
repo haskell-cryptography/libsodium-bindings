@@ -27,9 +27,7 @@ import Foreign.Ptr (Ptr)
 
 -- | Produces an unpredictable four-byte value.
 --
--- = Corresponds to
---
--- [@randombytes_random@](https://libsodium.gitbook.io/doc/generating_random_data#usage)
+-- /See:/ [randombytes_random()](https://doc.libsodium.org/generating_random_data#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_random"
@@ -39,9 +37,7 @@ foreign import capi "sodium.h randombytes_random"
 -- function guarantees a uniform distribution on results, even if the upper
 -- limit is not a power of 2.
 --
--- = Corresponds to
---
--- [@randombytes_uniform@](https://libsodium.gitbook.io/doc/generating_random_data#usage)
+-- /See:/ [randombytes_uniform()](https://doc.libsodium.org/generating_random_data#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_uniform"
@@ -52,9 +48,7 @@ foreign import capi "sodium.h randombytes_uniform"
 
 -- | Fills a buffer of the given size with unpredictable bytes.
 --
--- = Corresponds to
---
--- [@randombytes_buf@](https://libsodium.gitbook.io/doc/generating_random_data#usage)
+-- /See:/ [randombytes_buf()](https://doc.libsodium.org/generating_random_data#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h randombytes_buf"

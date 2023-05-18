@@ -29,7 +29,7 @@ import Foreign.Ptr (Ptr)
 -- | This function encrypts a message, and then appends the authentication tag
 -- to the encrypted message.
 --
--- /See also:/ [crypto_aead_xchacha20poly1305_ietf_encrypt](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#combined-mode)
+-- /See also:/ [crypto_aead_xchacha20poly1305_ietf_encrypt()](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#combined-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
@@ -60,7 +60,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt"
 
 -- | This function verifies that an encrypted ciphertext includes a valid tag.
 --
--- /See also:/ [crypto_aead_xchacha20poly1305_ietf_decrypt](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#combined-mode)
+-- /See also:/ [crypto_aead_xchacha20poly1305_ietf_decrypt()](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#combined-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt"
@@ -93,7 +93,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt"
 -- The encrypted message and authentication tag are output to different buffers
 -- instead of the tag being appended to the encrypted message.
 --
--- /See also:/ [crypto_aead_xchacha20poly1305_ietf_encrypt_detached](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#detached-mode)
+-- /See also:/ [crypto_aead_xchacha20poly1305_ietf_encrypt_detached()](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#detached-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt_detached"
@@ -126,7 +126,7 @@ foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_encrypt_detache
 -- Verifies that the authentication tag is valid for the ciphertext, key, nonce,
 -- and additional data.
 --
--- /See also:/ [crypto_aead_xchacha20poly1305_ietf_decrypt_detached](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#detached-mode)
+-- /See also:/ [crypto_aead_xchacha20poly1305_ietf_decrypt_detached()](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction#detached-mode)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_aead_xchacha20poly1305_ietf_decrypt_detached"

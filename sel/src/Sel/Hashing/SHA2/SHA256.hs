@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -45,6 +46,8 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import LibSodium.Bindings.SHA2 (CryptoHashSHA256State, cryptoHashSHA256, cryptoHashSHA256Bytes, cryptoHashSHA256Final, cryptoHashSHA256Init, cryptoHashSHA256StateBytes, cryptoHashSHA256Update)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
+import Control.Monad.IO.Class (MonadIO (liftIO))
+import Data.Kind (Type)
 import Sel.Internal
 
 -- $usage
@@ -188,13 +191,14 @@ newtype Multipart = Multipart (Ptr CryptoHashSHA256State)
 --
 -- @since 0.0.1.0
 withMultipart
-  :: forall a
-   . (Multipart -> IO a)
+  :: forall (a :: Type) (m :: Type -> Type)
+   . MonadIO m
+  => (Multipart -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
-  -> IO a
+  -> m a
 withMultipart action = do
   allocateWith cryptoHashSHA256StateBytes $ \statePtr -> do
-    void $ cryptoHashSHA256Init statePtr
+    void $ liftIO $ cryptoHashSHA256Init statePtr
     action (Multipart statePtr)
 
 -- | Add a message portion to be hashed.

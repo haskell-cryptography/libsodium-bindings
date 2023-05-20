@@ -28,7 +28,7 @@ module Sel.SecretKey.AuthenticatedEncryption
     -- ** Nonce
   , Nonce
   , nonceFromByteString
-  , unsafeNonceToHexByteString
+  , nonceToHexByteString
 
     -- ** Hash
   , Hash
@@ -44,11 +44,12 @@ module Sel.SecretKey.AuthenticatedEncryption
 
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
-import Data.Text.Display (Display (displayBuilder), OpaqueInstance (..))
+import Data.Text.Display (Display (displayBuilder), OpaqueInstance (..), ShowInstance (..))
 import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
 import Foreign (ForeignPtr)
@@ -132,9 +133,13 @@ newSecretKey = do
 secretKeyFromByteString :: StrictByteString -> SecretKey
 secretKeyFromByteString bytestring = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
-    secretKeyForeignPtr <- BS.mallocByteString @CChar (fromIntegral cryptoSecretboxKeyBytes)
+    secretKeyForeignPtr <-
+      BS.mallocByteString @CChar (fromIntegral cryptoSecretboxKeyBytes)
     Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
-      Foreign.copyArray outsideSecretKeyPtr secretKeyPtr (fromIntegral cryptoSecretboxKeyBytes)
+      Foreign.copyArray
+        outsideSecretKeyPtr
+        secretKeyPtr
+        (fromIntegral cryptoSecretboxKeyBytes)
     pure $ SecretKey (Foreign.castForeignPtr @CChar @CUChar secretKeyForeignPtr)
 
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
@@ -160,7 +165,7 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
       -- ^ @since 0.0.1.0
       -- > display secretKey == "[REDACTED]"
     )
-    via (OpaqueInstance "[REDACTED]" Nonce)
+    via (ShowInstance Nonce)
 
 -- |
 --
@@ -178,11 +183,11 @@ instance Ord Nonce where
     unsafeDupablePerformIO $
       foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
 
--- | > show hash == "[REDACTED]"
+-- |
 --
 -- @since 0.0.1.0
 instance Show Nonce where
-  show _ = "[REDACTED]"
+  show = show . nonceToHexByteString
 
 -- | Generate a new random nonce.
 -- Only use it once per exchanged message.
@@ -202,18 +207,22 @@ newNonce = do
 nonceFromByteString :: StrictByteString -> Nonce
 nonceFromByteString bytestring = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
-    nonceForeignPtr <- BS.mallocByteString @CChar (fromIntegral cryptoSecretboxNonceBytes)
+    nonceForeignPtr <-
+      BS.mallocByteString
+        @CChar
+        (fromIntegral cryptoSecretboxNonceBytes)
     Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
-      Foreign.copyArray outsideNoncePtr noncePtr (fromIntegral cryptoSecretboxNonceBytes)
+      Foreign.copyArray
+        outsideNoncePtr
+        noncePtr
+        (fromIntegral cryptoSecretboxNonceBytes)
     pure $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
 
 -- | Convert a 'Nonce' to a hexadecimal-encoded 'StrictByteString'.
 --
--- ⚠️  Be prudent as to where you store it!
---
 -- @since 0.0.1.0
-unsafeNonceToHexByteString :: Nonce -> StrictByteString
-unsafeNonceToHexByteString (Nonce nonceForeignPtr) =
+nonceToHexByteString :: Nonce -> StrictByteString
+nonceToHexByteString (Nonce nonceForeignPtr) =
   Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 nonceForeignPtr)
@@ -233,7 +242,11 @@ data Hash = Hash
 instance Eq Hash where
   (Hash messageLength1 hk1) == (Hash messageLength2 hk2) =
     unsafeDupablePerformIO $ do
-      result1 <- foreignPtrEq hk1 hk2 (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
+      result1 <-
+        foreignPtrEq
+          hk1
+          hk2
+          (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
       pure $ (messageLength1 == messageLength2) && result1
 
 -- |
@@ -262,16 +275,20 @@ instance Show Hash where
 -- of the encrypted message and the authentication tag.
 --
 -- @since 0.0.1.0
-hashFromByteString :: StrictByteString -> Hash
-hashFromByteString bytestring = unsafeDupablePerformIO $
-  BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
-    hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength
-    Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-      Foreign.copyArray outsideHashPtr hashPtr outsideHashLength
-    pure $
-      Hash
-        (fromIntegral @Int @CULLong outsideHashLength)
-        (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+hashFromByteString :: StrictByteString -> Maybe Hash
+hashFromByteString bytestring =
+  if BS.length bytestring < fromIntegral cryptoSecretboxMACBytes
+    then Nothing
+    else unsafeDupablePerformIO $
+      BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
+        hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength
+        Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
+          Foreign.copyArray outsideHashPtr hashPtr outsideHashLength
+        pure $
+          Just $
+            Hash
+              (fromIntegral @Int @CULLong outsideHashLength)
+              (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
 
 -- | Convert a 'Hash' to a hexadecimal-encoded 'Text'.
 --
@@ -296,7 +313,9 @@ hashToHexByteString = Base16.encodeBase16' . hashToBinary
 -- @since 0.0.1.0
 hashToBinary :: Hash -> StrictByteString
 hashToBinary (Hash messageLength fPtr) =
-  BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) (fromIntegral messageLength + fromIntegral cryptoSecretboxMACBytes)
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr fPtr)
+    (fromIntegral messageLength + fromIntegral cryptoSecretboxMACBytes)
 
 -- | Create an authenticated hash from a message, a secret key,
 -- and a one-time cryptographic nonce that must never be re-used with the same
@@ -312,7 +331,9 @@ encrypt
 encrypt message (SecretKey secretKeyForeignPtr) =
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     (Nonce nonceForeignPtr) <- newNonce
-    hashForeignPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoSecretboxMACBytes)
+    hashForeignPtr <-
+      Foreign.mallocForeignPtrBytes
+        (cStringLen + fromIntegral cryptoSecretboxMACBytes)
     Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
       Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
         Foreign.withForeignPtr nonceForeignPtr $ \noncePtr -> do
@@ -354,4 +375,6 @@ decrypt Hash{messageLength, hashForeignPtr} (SecretKey secretKeyForeignPtr) (Non
           _ -> do
             bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
             memcpy bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLength)
-            Just <$> BS.unsafePackMallocCStringLen (Foreign.castPtr @CChar bsPtr, fromIntegral messageLength)
+            Just
+              <$> BS.unsafePackMallocCStringLen
+                (Foreign.castPtr @CChar bsPtr, fromIntegral messageLength)

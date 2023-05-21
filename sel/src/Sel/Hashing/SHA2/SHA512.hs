@@ -1,5 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -179,7 +181,9 @@ hashText text = hashByteString (Text.encodeUtf8 text)
 -- ...   SHA512.finaliseMultipart multipartState
 --
 -- @since 0.0.1.0
-newtype Multipart = Multipart (Ptr CryptoHashSHA512State)
+newtype Multipart s = Multipart (Ptr CryptoHashSHA512State)
+
+type role Multipart nominal
 
 -- | Perform streaming hashing with a 'Multipart' cryptographic context.
 --
@@ -193,7 +197,7 @@ newtype Multipart = Multipart (Ptr CryptoHashSHA512State)
 withMultipart
   :: forall (a :: Type) (m :: Type -> Type)
    . MonadIO m
-  => (Multipart -> m a)
+  => (forall s. Multipart s -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
   -> m a
 withMultipart action = do
@@ -206,7 +210,7 @@ withMultipart action = do
 -- This function should be used within 'withMultipart'.
 --
 -- @since 0.0.1.0
-updateMultipart :: Multipart -> StrictByteString -> IO ()
+updateMultipart :: Multipart s -> StrictByteString -> IO ()
 updateMultipart (Multipart statePtr) message = do
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     let messagePtr = Foreign.castPtr @CChar @CUChar cString
@@ -222,7 +226,7 @@ updateMultipart (Multipart statePtr) message = do
 -- This function should be used within 'withMultipart'.
 --
 -- @since 0.0.1.0
-finaliseMultipart :: Multipart -> IO Hash
+finaliseMultipart :: Multipart s -> IO Hash
 finaliseMultipart (Multipart statePtr) = do
   hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA512Bytes)
   Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->

@@ -30,7 +30,6 @@ module Sel.Hashing.SHA2.SHA512
   , Multipart
   , withMultipart
   , updateMultipart
-  , finaliseMultipart
   ) where
 
 import Control.Monad (void)
@@ -178,7 +177,6 @@ hashText text = hashByteString (Text.encodeUtf8 text)
 -- ...   SHA512.updateMultipart multipartState message1
 -- ...   message2 <- getMessage
 -- ...   SHA512.updateMultipart multipartState message2
--- ...   SHA512.finaliseMultipart multipartState
 --
 -- @since 0.0.1.0
 newtype Multipart s = Multipart (Ptr CryptoHashSHA512State)
@@ -199,11 +197,28 @@ withMultipart
    . MonadIO m
   => (forall s. Multipart s -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
-  -> m a
+  -> m Hash
 withMultipart action = do
   allocateWith cryptoHashSHA512StateBytes $ \statePtr -> do
     void $ liftIO $ cryptoHashSHA512Init statePtr
-    action (Multipart statePtr)
+    let part = Multipart statePtr
+    action part
+    liftIO $ finaliseMultipart part
+
+-- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
+--
+-- This function is only used within 'withMultipart'.
+--
+-- @since 0.0.1.0
+finaliseMultipart :: Multipart s -> IO Hash
+finaliseMultipart (Multipart statePtr) = do
+  hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA512Bytes)
+  Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
+    void $
+      cryptoHashSHA512Final
+        statePtr
+        hashPtr
+  pure $ Hash hashForeignPtr
 
 -- | Add a message portion to be hashed.
 --
@@ -220,18 +235,3 @@ updateMultipart (Multipart statePtr) message = do
         statePtr
         messagePtr
         messageLen
-
--- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
---
--- This function should be used within 'withMultipart'.
---
--- @since 0.0.1.0
-finaliseMultipart :: Multipart s -> IO Hash
-finaliseMultipart (Multipart statePtr) = do
-  hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA512Bytes)
-  Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
-    void $
-      cryptoHashSHA512Final
-        statePtr
-        hashPtr
-  pure $ Hash hashForeignPtr

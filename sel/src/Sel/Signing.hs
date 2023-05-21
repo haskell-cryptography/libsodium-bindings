@@ -181,8 +181,8 @@ signMessage message (SecretKey skFPtr) =
               skPtr
     pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr
 
--- | Open a signed message with the signatory's public key. The function returns 'Nothing' if there
--- is a key mismatch.
+-- | Open a signed message with the signatory's public key.
+-- The function returns 'Nothing' if there is a key mismatch.
 --
 -- @since 0.0.1.0
 openMessage :: SignedMessage -> PublicKey -> Maybe StrictByteString

@@ -130,17 +130,20 @@ newSecretKey = do
 -- usually from the network or disk.
 --
 -- @since 0.0.1.0
-secretKeyFromByteString :: StrictByteString -> SecretKey
-secretKeyFromByteString bytestring = unsafeDupablePerformIO $
-  BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
-    secretKeyForeignPtr <-
-      BS.mallocByteString @CChar (fromIntegral cryptoSecretboxKeyBytes)
-    Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
-      Foreign.copyArray
-        outsideSecretKeyPtr
-        secretKeyPtr
-        (fromIntegral cryptoSecretboxKeyBytes)
-    pure $ SecretKey (Foreign.castForeignPtr @CChar @CUChar secretKeyForeignPtr)
+secretKeyFromByteString :: StrictByteString -> Maybe SecretKey
+secretKeyFromByteString bytestring =
+  if BS.length bytestring < fromIntegral cryptoSecretboxKeyBytes
+    then Nothing
+    else unsafeDupablePerformIO $
+      BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
+        secretKeyForeignPtr <-
+          BS.mallocByteString @CChar (fromIntegral cryptoSecretboxKeyBytes)
+        Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
+          Foreign.copyArray
+            outsideSecretKeyPtr
+            secretKeyPtr
+            (fromIntegral cryptoSecretboxKeyBytes)
+        pure $ Just $ SecretKey (Foreign.castForeignPtr @CChar @CUChar secretKeyForeignPtr)
 
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
 --

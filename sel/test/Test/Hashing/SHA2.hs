@@ -32,7 +32,6 @@ testMultipartHashSH512 = do
   actual <- SHA512.withMultipart $ \multipart -> do
     SHA512.updateMultipart multipart "hunter"
     SHA512.updateMultipart multipart "2"
-    SHA512.finaliseMultipart multipart
   assertEqual
     "SHA512 hashing is consistent"
     (SHA512.hashToHexByteString actual)
@@ -52,7 +51,6 @@ testMultipartHashSH256 = do
   actual <- SHA256.withMultipart $ \multipart -> do
     SHA256.updateMultipart multipart "hunter"
     SHA256.updateMultipart multipart "2"
-    SHA256.finaliseMultipart multipart
   assertEqual
     "SHA256 hashing is consistent"
     (SHA256.hashToHexByteString actual)

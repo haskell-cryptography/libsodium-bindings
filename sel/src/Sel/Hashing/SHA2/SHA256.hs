@@ -30,7 +30,6 @@ module Sel.Hashing.SHA2.SHA256
   , Multipart
   , withMultipart
   , updateMultipart
-  , finaliseMultipart
   ) where
 
 import Control.Monad (void)
@@ -178,7 +177,6 @@ hashToBinary (Hash fPtr) =
 -- ...   SHA256.updateMultipart multipartState message1
 -- ...   message2 <- getMessage
 -- ...   SHA256.updateMultipart multipartState message2
--- ...   SHA256.finaliseMultipart multipart
 --
 -- @since 0.0.1.0
 newtype Multipart s = Multipart (Ptr CryptoHashSHA256State)
@@ -187,9 +185,10 @@ type role Multipart nominal
 
 -- | Perform streaming hashing with a 'Multipart' cryptographic context.
 --
--- Use 'SHA256.updateMultipart' and 'SHA256.finaliseMultipart' inside of the continuation.
+-- Use 'SHA256.updateMultipart' within the continuation.
 --
--- The context is safely allocated and deallocated inside of the continuation.
+-- The context is safely allocated first, then the continuation is run
+-- and then it is deallocated after that.
 --
 -- Do not try to jailbreak the context outside of the action, this will not be pleasant.
 --
@@ -199,11 +198,28 @@ withMultipart
    . MonadIO m
   => (forall s. Multipart s -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
-  -> m a
-withMultipart action = do
+  -> m Hash
+withMultipart actions = do
   allocateWith cryptoHashSHA256StateBytes $ \statePtr -> do
     void $ liftIO $ cryptoHashSHA256Init statePtr
-    action (Multipart statePtr)
+    let part = Multipart statePtr
+    actions part
+    liftIO (finaliseMultipart part)
+
+-- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
+--
+--  this function is only used within 'withMultiPart'
+--
+--  @since 0.0.1.0
+finaliseMultipart :: Multipart s -> IO Hash
+finaliseMultipart (Multipart statePtr) = do
+  hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA256Bytes)
+  Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
+    void $
+      cryptoHashSHA256Final
+        statePtr
+        hashPtr
+  pure $ Hash hashForeignPtr
 
 -- | Add a message portion to be hashed.
 --
@@ -220,18 +236,3 @@ updateMultipart (Multipart statePtr) message = do
         statePtr
         messagePtr
         messageLen
-
--- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
---
--- This function should be used within 'withMultipart'.
---
--- @since 0.0.1.0
-finaliseMultipart :: Multipart s -> IO Hash
-finaliseMultipart (Multipart statePtr) = do
-  hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA256Bytes)
-  Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
-    void $
-      cryptoHashSHA256Final
-        statePtr
-        hashPtr
-  pure $ Hash hashForeignPtr

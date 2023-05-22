@@ -23,7 +23,6 @@ module Sel.Hashing.SHA2
   , Multipart
   , withMultipart
   , updateMultipart
-  , finaliseMultipart
   ) where
 
 import Sel.Hashing.SHA2.SHA512

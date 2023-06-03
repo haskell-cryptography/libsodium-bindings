@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 
 -- |
--- Module: LibSodium.Bindings.ShortHash
+-- Module: LibSodium.Bindings.ShortHashing
 -- Description: Short but unpredictable hashes based on SipHash-2-4.
 -- Copyright: (C) Hécate Moonlight
 -- License: BSD-3-Clause
@@ -18,7 +18,7 @@
 -- Note however that the output of 'cryptoShortHash' is only 64 bit. Therefore, it should not be considered resistant to collisions.
 --
 -- The 'cryptoShortHashX24' function has a 128-bit output which is more resistant to collisions.
-module LibSodium.Bindings.ShortHash
+module LibSodium.Bindings.ShortHashing
   ( -- ** Functions
     cryptoShortHashKeyGen
   , cryptoShortHash

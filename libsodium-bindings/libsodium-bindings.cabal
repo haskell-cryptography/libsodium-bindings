@@ -63,6 +63,7 @@ library
 
   -- cabal-fmt: expand src/
   exposed-modules:
+    LibSodium.Bindings
     LibSodium.Bindings.AEAD
     LibSodium.Bindings.Comparison
     LibSodium.Bindings.CryptoAuth
@@ -80,6 +81,6 @@ library
     LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory
     LibSodium.Bindings.SHA2
-    LibSodium.Bindings.ShortHash
+    LibSodium.Bindings.ShortHashing
     LibSodium.Bindings.Utils
     LibSodium.Bindings.XChaCha20

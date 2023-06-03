@@ -3,7 +3,7 @@
 -- |
 --
 -- Module: LibSodium.Bindings.AEAD
--- Description: Bindings to AEAD constructions, specifically XChaCha20.
+-- Description: Bindings to AEAD constructions with XChaCha20-Poly1305-IETF.
 -- Copyright: (C) Hécate Moonlight 2023
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group

@@ -3,6 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_HADDOCK hide #-}
 
 module Sel.Internal where
 

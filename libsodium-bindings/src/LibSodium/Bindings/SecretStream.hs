@@ -277,7 +277,7 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_ABYTES
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX"
-  cryptoSecretStreamXChaCha20Poly1305MessageBytesMax :: CSize
+  cryptoSecretStreamXChaCha20Poly1305MessageBytesMax :: CUChar
 
 -- | Most common tag, add no information about the nature of the message
 --
@@ -285,7 +285,7 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_MESSAG
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_MESSAGE"
-  cryptoSecretStreamXChaCha20Poly1305TagMessage :: CSize
+  cryptoSecretStreamXChaCha20Poly1305TagMessage :: CUChar
 
 -- | Indicates that the message marks the end of a set of messages, but not the end of the stream
 --
@@ -293,7 +293,7 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_ME
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_PUSH"
-  cryptoSecretStreamXChaCha20Poly1305TagPush :: CSize
+  cryptoSecretStreamXChaCha20Poly1305TagPush :: CUChar
 
 -- | "forget" the secret key used to encrypt this message and the previous ones, and derive a new secret key.
 --
@@ -301,7 +301,7 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_PU
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_REKEY"
-  cryptoSecretStreamXChaCha20Poly1305TagRekey :: CSize
+  cryptoSecretStreamXChaCha20Poly1305TagRekey :: CUChar
 
 -- | Marks the end of the stream, and erases the secret key used to encrypt the previous sequence.
 --
@@ -309,4 +309,4 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_RE
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_TAG_FINAL"
-  cryptoSecretStreamXChaCha20Poly1305TagFinal :: CSize
+  cryptoSecretStreamXChaCha20Poly1305TagFinal :: CUChar

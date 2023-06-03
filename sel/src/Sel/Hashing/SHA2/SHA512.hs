@@ -33,10 +33,12 @@ module Sel.Hashing.SHA2.SHA512
   ) where
 
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
+import Data.Kind (Type)
 import Data.Text (Text)
 import Data.Text.Display (Display (..))
 import qualified Data.Text.Encoding as Text
@@ -44,11 +46,9 @@ import qualified Data.Text.Internal.Builder as Builder
 import Foreign (ForeignPtr, Ptr, Storable)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
-import LibSodium.Bindings.SHA2 (CryptoHashSHA512State, cryptoHashSHA512, cryptoHashSHA512Bytes, cryptoHashSHA512Final, cryptoHashSHA512Init, cryptoHashSHA512StateBytes, cryptoHashSHA512Update)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import Data.Kind (Type)
+import LibSodium.Bindings.SHA2 (CryptoHashSHA512State, cryptoHashSHA512, cryptoHashSHA512Bytes, cryptoHashSHA512Final, cryptoHashSHA512Init, cryptoHashSHA512StateBytes, cryptoHashSHA512Update)
 import Sel.Internal
 
 -- $usage
@@ -195,10 +195,10 @@ type role Multipart nominal
 withMultipart
   :: forall (a :: Type) (m :: Type -> Type)
    . MonadIO m
-  => (forall s. Multipart s -> m a)
+  => (forall (s :: Type). Multipart s -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
   -> m Hash
-withMultipart action = do
+withMultipart action =
   allocateWith cryptoHashSHA512StateBytes $ \statePtr -> do
     void $ liftIO $ cryptoHashSHA512Init statePtr
     let part = Multipart statePtr

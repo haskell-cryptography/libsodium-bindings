@@ -196,7 +196,7 @@ type role Multipart nominal
 withMultipart
   :: forall (a :: Type) (m :: Type -> Type)
    . MonadIO m
-  => (forall s. Multipart s -> m a)
+  => (forall (s :: Type). Multipart s -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
   -> m Hash
 withMultipart actions = do
@@ -208,7 +208,7 @@ withMultipart actions = do
 
 -- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
 --
---  this function is only used within 'withMultiPart'
+--  this function is only used within 'withMultipart'
 --
 --  @since 0.0.1.0
 finaliseMultipart :: Multipart s -> IO Hash

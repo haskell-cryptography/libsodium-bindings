@@ -68,6 +68,7 @@ import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
+import qualified GHC.ForeignPtr as Foreign
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
@@ -154,10 +155,18 @@ data CipherText
 -- @since 0.0.1.0
 cipherTextFromByteString :: StrictByteString -> Maybe CipherText
 cipherTextFromByteString bytestring =
-  let (foreignPtr, bsLength) = BS.toForeignPtr0 bytestring
-   in if bsLength > fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305ABytes
-        then Just $ CipherText (Foreign.castForeignPtr @Word8 @CUChar foreignPtr) (fromIntegral @Int @CSize bsLength)
-        else Nothing
+  if BS.length bytestring > fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
+    then unsafeDupablePerformIO $ do
+      cipherForeignPtr <- Foreign.mallocPlainForeignPtrBytes (BS.length bytestring)
+      Foreign.withForeignPtr cipherForeignPtr $ \cipherPtr ->
+        BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
+          memcpy (Foreign.castPtr cipherPtr) cString (fromIntegral cStringLen)
+          pure $
+            Just $
+              CipherText
+                cipherForeignPtr
+                (fromIntegral @Int @CSize cStringLen)
+    else Nothing
 
 -- | Convert a 'CipherText' to a binary 'StrictByteString'.
 --
@@ -269,7 +278,7 @@ data StreamTag
     Rekey
   | -- | Marks the end of the stream, and erases the secret key used to encrypt the previous sequence.
     Final
-  deriving
+  deriving stock
     ( Eq
       -- ^ @since 0.0.1.0
     , Show
@@ -304,7 +313,7 @@ data StreamResult = StreamResult
   , mStreamTag :: Maybe StreamTag
   , mAdditionalData :: Maybe StrictByteString
   }
-  deriving
+  deriving stock
     ( Eq
       -- ^ @since 0.0.1.0
     , Show
@@ -326,7 +335,7 @@ data EncryptedStreamError
   | InvalidCipherText
   | InputStreamInitError
   | InputStreamPushError
-  deriving
+  deriving stock
     ( Eq
       -- ^ @since 0.0.1.0
     , Show
@@ -417,7 +426,7 @@ encryptStream
   :: forall (m :: Type -> Type)
    . MonadIO m
   => (forall (s :: Type). Multipart s -> IO [CipherText])
-    -- ^ Continuation in which the stream gets encrypted
+  -- ^ Continuation in which the stream gets encrypted
   -> m (Header, SecretKey, [CipherText])
 encryptStream action = do
   (SecretKey secretKeyFPtr) <- liftIO newSecretKey

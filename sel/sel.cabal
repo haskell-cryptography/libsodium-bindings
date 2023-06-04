@@ -41,19 +41,17 @@ common test-options
 library
   import:          common
   hs-source-dirs:  src
-
-  -- cabal-fmt: expand src/
   exposed-modules:
     Sel.Hashing
     Sel.Hashing.Password
     Sel.Hashing.SHA2
     Sel.Hashing.SHA2.SHA256
     Sel.Hashing.SHA2.SHA512
-    Sel.Internal
     Sel.SecretKey.AuthenticatedEncryption
     Sel.SecretKey.EncryptedStream
     Sel.Signing
 
+  other-modules:   Sel.Internal
   build-depends:
     , base                >=4.14     && <5
     , base16              ^>=0.3
@@ -67,14 +65,12 @@ test-suite sel-tests
   import:         test-options
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
-
-  -- cabal-fmt: expand test/
   other-modules:
-    Main
     Test.Hashing
     Test.Hashing.Password
     Test.Hashing.SHA2
     Test.SecretKey.AuthenticatedEncryption
+    Test.SecretKey.EncryptedStream
     Test.Signing
 
   hs-source-dirs: test

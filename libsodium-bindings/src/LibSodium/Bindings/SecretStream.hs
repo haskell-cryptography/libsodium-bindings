@@ -277,7 +277,7 @@ foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_ABYTES
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX"
-  cryptoSecretStreamXChaCha20Poly1305MessageBytesMax :: CUChar
+  cryptoSecretStreamXChaCha20Poly1305MessageBytesMax :: CSize
 
 -- | Most common tag, add no information about the nature of the message
 --

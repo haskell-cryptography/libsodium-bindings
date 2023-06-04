@@ -35,6 +35,8 @@ module Sel.SecretKey.EncryptedStream
 
     -- ** Stream Operations
   , Multipart
+  , encryptStream
+  , decryptStream
 
     -- *** Encryption
   , initPushStream
@@ -44,25 +46,44 @@ module Sel.SecretKey.EncryptedStream
   , StreamResult (..)
   , initPullStream
   , pullFromStream
+
+    -- *** Key regeneration
   , rekey
   ) where
 
 import Control.Monad (void)
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 
--- import Data.Kind (Type)
+import Data.Kind (Type)
 import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import LibSodium.Bindings.SecretStream (CryptoSecretStreamXChaCha20Poly1305State, cryptoSecretStreamXChaCha20Poly1305ABytes, cryptoSecretStreamXChaCha20Poly1305HeaderBytes, cryptoSecretStreamXChaCha20Poly1305InitPull, cryptoSecretStreamXChaCha20Poly1305InitPush, cryptoSecretStreamXChaCha20Poly1305KeyBytes, cryptoSecretStreamXChaCha20Poly1305KeyGen, cryptoSecretStreamXChaCha20Poly1305Pull, cryptoSecretStreamXChaCha20Poly1305Push, cryptoSecretStreamXChaCha20Poly1305Rekey, cryptoSecretStreamXChaCha20Poly1305TagFinal, cryptoSecretStreamXChaCha20Poly1305TagMessage, cryptoSecretStreamXChaCha20Poly1305TagPush, cryptoSecretStreamXChaCha20Poly1305TagRekey)
+import GHC.IO.Handle.Text (memcpy)
+import LibSodium.Bindings.SecretStream
+  ( CryptoSecretStreamXChaCha20Poly1305State
+  , cryptoSecretStreamXChaCha20Poly1305ABytes
+  , cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+  , cryptoSecretStreamXChaCha20Poly1305InitPull
+  , cryptoSecretStreamXChaCha20Poly1305InitPush
+  , cryptoSecretStreamXChaCha20Poly1305KeyBytes
+  , cryptoSecretStreamXChaCha20Poly1305KeyGen
+  , cryptoSecretStreamXChaCha20Poly1305Pull
+  , cryptoSecretStreamXChaCha20Poly1305Push
+  , cryptoSecretStreamXChaCha20Poly1305Rekey
+  , cryptoSecretStreamXChaCha20Poly1305StateBytes
+  , cryptoSecretStreamXChaCha20Poly1305TagFinal
+  , cryptoSecretStreamXChaCha20Poly1305TagMessage
+  , cryptoSecretStreamXChaCha20Poly1305TagPush
+  , cryptoSecretStreamXChaCha20Poly1305TagRekey
+  )
 import Sel.Internal
 
 -- | The 'SecretKey' is used to encrypt the stream.
@@ -115,9 +136,9 @@ newSecretKey = do
 -- @since 0.0.1.0
 data CipherText
   = CipherText
-      (ForeignPtr CUChar)
+      !(ForeignPtr CUChar)
       -- ^ Content of the ciphertext
-      CSize
+      !CSize
       -- ^ Length of the ciphertext
 
 -- | Convert a message from the outside (filesystem, network) to a 'CipherText'.
@@ -271,16 +292,6 @@ data StreamResult = StreamResult
     )
     via (ShowInstance StreamResult)
 
--- encryptStream
---   :: forall (a :: Type) (m :: Type -> Type)
---    . MonadIO m
---   => (forall (s :: Type). Multipart s -> m a)
---   -> m (Header, SecretKey, CipherText)
--- encryptStream (SecretKey secretKeyFPtr) action = do
---   allocateWith cryptoSecretStreamXChaCha20Poly1305StateBytes $ \statePtr -> do
---     liftIO $
---       cryptoSecretStreamXChaCha20Poly1305InitPush statePtr headerPtr keyPtr
-
 -- == Encryption ==
 
 -- | Initialise a stream to which you will push encrypted message.
@@ -316,7 +327,7 @@ pushToStream
   -- ^ Additional, optional data that can be included.
   -> StreamTag
   -- ^ Tag that accompanies the resulting 'CipherText'.
-  -> IO ()
+  -> IO CipherText
 pushToStream (Multipart statePtr) message mData tag =
   case mData of
     Just additionalData -> do
@@ -325,10 +336,12 @@ pushToStream (Multipart statePtr) message mData tag =
         doPushToStream additionalDataPtr (fromIntegral additionalDataLength)
     Nothing -> doPushToStream Foreign.nullPtr 0
   where
-    doPushToStream :: Ptr CUChar -> CULLong -> IO ()
+    doPushToStream :: Ptr CUChar -> CULLong -> IO CipherText
     doPushToStream additionalDataPointer additionalDataLength =
-      void $ BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
-        Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes + cStringLen) $
+      BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+        let cipherTextLength = fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes + cStringLen
+        cipherTextFPtr <- Foreign.mallocForeignPtrBytes cipherTextLength
+        Foreign.allocaBytes cipherTextLength $
           \cipherTextBuffer -> do
             void $
               cryptoSecretStreamXChaCha20Poly1305Push
@@ -340,6 +353,24 @@ pushToStream (Multipart statePtr) message mData tag =
                 additionalDataPointer
                 additionalDataLength
                 (streamTagToConstant tag)
+            Foreign.withForeignPtr cipherTextFPtr $ \cipherTextHomePtr ->
+              memcpy cipherTextBuffer cipherTextHomePtr (fromIntegral cipherTextLength)
+            pure $ CipherText cipherTextFPtr (fromIntegral cipherTextLength)
+
+encryptStream
+  :: forall (m :: Type -> Type)
+   . MonadIO m
+  => (forall (s :: Type). Multipart s -> IO [CipherText])
+  -> m (Header, SecretKey, [CipherText])
+encryptStream action = do
+  (SecretKey secretKeyFPtr) <- liftIO newSecretKey
+  headerFPtr <- liftIO $ Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+  liftIO $ Foreign.withForeignPtr headerFPtr $ \headerPtr ->
+    liftIO $ Foreign.withForeignPtr secretKeyFPtr $ \keyPtr -> do
+      Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
+        cryptoSecretStreamXChaCha20Poly1305InitPush statePtr headerPtr keyPtr
+        result <- action $ Multipart statePtr
+        pure (Header headerFPtr, SecretKey secretKeyFPtr, result)
 
 -- == Decryption ==
 
@@ -404,6 +435,23 @@ pullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLeng
               Just tag -> pure $ Just $ StreamResult decryptedMessage (Just tag) Nothing
               Nothing -> pure $ Just $ StreamResult decryptedMessage Nothing Nothing
           _ -> pure Nothing
+
+decryptStream
+  :: forall (m :: Type -> Type)
+   . MonadIO m
+  => (Header, SecretKey)
+  -> (forall (s :: Type). Multipart s -> IO [Maybe StreamResult])
+  -> m [Maybe StreamResult]
+decryptStream (header, secretKey) action = do
+  liftIO $ Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
+    result <-
+      initPullStream
+        (Multipart statePtr)
+        header
+        secretKey
+    if result
+      then action (Multipart statePtr)
+      else pure [Nothing]
 
 -- | Trigger a key re-generation. You want to do this when your peer sends a message with the 'Rekey' tag on it.
 --

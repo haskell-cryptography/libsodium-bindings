@@ -10,8 +10,11 @@ tags
 tags.mtime
 .nvimrc
 
+# nix
+result*
+.pre-commit-config.yaml
+
 # direnv
-.envrc
 .direnv
 
 # Libsodium

@@ -3,13 +3,15 @@
 
 module Test.SecretKey.EncryptedStream where
 
+import Control.Monad (void)
 import Data.ByteString (StrictByteString)
-import qualified Data.List as List
+import qualified Data.Text.IO as Text
+import Data.Traversable
+import qualified Foreign
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.Maybe (catMaybes)
-import Data.Traversable (forM)
+import LibSodium.Bindings.SecretStream (cryptoSecretStreamXChaCha20Poly1305StateBytes)
 import Sel.SecretKey.EncryptedStream
 
 spec :: TestTree
@@ -24,17 +26,32 @@ testStream = do
   let messages = ["King", "of", "Kings", "am", "I,", "Osymandias."]
   let encryptChunks :: Multipart s -> [StrictByteString] -> IO [CipherText]
       encryptChunks _ [] = pure []
-      encryptChunks state [x] = List.singleton <$> pushToStream state x Nothing Final
+      encryptChunks state [x] = do
+        result <- pushToStream state x Nothing Final
+        case result of
+          Left err -> assertFailure (show err)
+          Right ct -> pure [ct]
       encryptChunks state (x : xs) = do
-        cipherText <- pushToStream state x Nothing Message
-        rest <- encryptChunks state xs
-        pure $ cipherText : rest
+        result <- pushToStream state x Nothing Message
+        case result of
+          Left err -> assertFailure (show err)
+          Right ct -> do
+            rest <- encryptChunks state xs
+            pure $ ct : rest
   (header, secretKey, cipherTexts) <- encryptStream $ \state -> do
     encryptChunks state messages
+  Text.putStrLn $ mconcat $ fmap cipherTextToHexText cipherTexts
 
-  (decryptionResult' :: [Maybe StreamResult]) <- decryptStream (header, secretKey) $ \state -> do
-    forM cipherTexts (pullFromStream state)
-  let decryptionResult = streamMessage <$> catMaybes decryptionResult'
+  (decryptionResult' :: [StreamResult]) <- do
+    Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
+      void $ initPullStream (Multipart statePtr) header secretKey
+      forM cipherTexts $ \ct -> do
+        result <- pullFromStream (Multipart statePtr) ct
+        case result of
+          Left err -> assertFailure (show err)
+          Right sr -> pure sr
+
+  let decryptionResult = streamMessage <$> decryptionResult'
   assertEqual
     "Message is well-opened with the correct key and nonce"
     messages

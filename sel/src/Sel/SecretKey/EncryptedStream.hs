@@ -16,7 +16,10 @@
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
 module Sel.SecretKey.EncryptedStream
-  ( -- ** Secret Key
+  ( -- ** Usage
+    -- $usage
+
+  -- ** Secret Key
     SecretKey
   , newSecretKey
 
@@ -42,7 +45,7 @@ module Sel.SecretKey.EncryptedStream
     -- ** Stream Operations
   , Multipart (..)
   , encryptStream
-  -- , decryptStream
+  , decryptStream
 
     -- *** Encryption
   , initPushStream
@@ -63,6 +66,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
+import Data.Either (isRight)
 import Data.Kind (Type)
 import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr, Word8)
@@ -90,6 +94,10 @@ import LibSodium.Bindings.SecretStream
   , cryptoSecretStreamXChaCha20Poly1305TagRekey
   )
 import Sel.Internal
+
+-- $usage
+--
+--
 
 -- | The 'SecretKey' is used to encrypt the stream.
 --
@@ -330,10 +338,16 @@ data StreamResult = StreamResult
 --
 -- @since 0.0.1.0
 data EncryptedStreamError
-  = InvalidHeader
-  | InvalidCipherText
-  | InputStreamInitError
-  | InputStreamPushError
+  = -- | The header passsed to 'initPullStream' is invalid.
+    InvalidHeader
+  | -- | The ciphertext passsed to 'pullFromStream' is invalid.
+    InvalidCipherText
+  | -- | There was a problem initialising the encryption stream.
+    EncryptionStreamInitError
+  | -- | There wass a problem pushing a new message to the encryption stream.
+    EncryptionStreamPushError
+  | -- | There was a problem initialising the decryption stream.
+    DecryptionStreamInitError
   deriving stock
     ( Eq
       -- ^ @since 0.0.1.0
@@ -371,9 +385,9 @@ initPushStream (Multipart statePtr) = do
           keyPtr
       case result of
         0 -> pure $ Right (Header headerForeignPtr, SecretKey secretKeyForeignPtr)
-        _ -> pure $ Left InputStreamInitError
+        _ -> pure $ Left EncryptionStreamInitError
 
--- |
+-- | Encrypt a message for a stream. The stream is determined by the cryptographic state 'Multipart'.
 --
 -- @since 0.0.1.0
 pushToStream
@@ -397,10 +411,9 @@ pushToStream (Multipart statePtr) message mData tag =
     doPushToStream :: Ptr CUChar -> CULLong -> IO (Either EncryptedStreamError CipherText)
     doPushToStream additionalDataPointer additionalDataLength =
       BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
-        let cipherTextLength =
-              fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes + cStringLen
+        let cipherTextLength = fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes + cStringLen
         cipherTextFPtr <- Foreign.mallocForeignPtrBytes cipherTextLength
-        Foreign.allocaBytes cipherTextLength $ \cipherTextBuffer -> do
+        Foreign.withForeignPtr cipherTextFPtr $ \cipherTextBuffer -> do
           result <-
             cryptoSecretStreamXChaCha20Poly1305Push
               statePtr
@@ -413,12 +426,10 @@ pushToStream (Multipart statePtr) message mData tag =
               (streamTagToConstant tag)
           case result of
             0 -> do
-              Foreign.withForeignPtr cipherTextFPtr $ \cipherTextHomePtr ->
-                memcpy cipherTextBuffer cipherTextHomePtr (fromIntegral cipherTextLength)
               pure $ Right $ CipherText cipherTextFPtr (fromIntegral cipherTextLength)
-            _ -> pure $ Left InputStreamPushError
+            _ -> pure $ Left EncryptionStreamPushError
 
--- | Provide a cryptographic context 'Multipart' to encrypt a stream.
+-- | Provide a cryptographic context 'Multipart' in a continuation to encrypt a stream.
 --
 -- @since 0.0.1.0
 encryptStream
@@ -501,22 +512,25 @@ pullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLeng
               Nothing -> pure $ Right $ StreamResult decryptedMessage Nothing Nothing
           _ -> pure $ Left InvalidCipherText
 
--- decryptStream
---   :: forall (m :: Type -> Type)
---    . MonadIO m
---   => (Header, SecretKey)
---   -> (forall (s :: Type). Multipart s -> IO [Either EncryptedStreamError StreamResult])
---   -> m [Maybe StreamResult]
--- decryptStream (header, secretKey) action = do
---   liftIO $ Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
---     result <-
---       initPullStream
---         (Multipart statePtr)
---         header
---         secretKey
---     if isRight result
---     then action (Multipart statePtr)
---       else pure [Nothing]
+-- | Provide a cryptographic context 'Multipart' in a continuation to decrypt a stream.
+--
+-- @since 0.0.1.0
+decryptStream
+  :: forall (m :: Type -> Type)
+   . MonadIO m
+  => (Header, SecretKey)
+  -> (forall (s :: Type). Multipart s -> IO [Either EncryptedStreamError StreamResult])
+  -> m [Either EncryptedStreamError StreamResult]
+decryptStream (header, secretKey) action = do
+  liftIO $ Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
+    result <-
+      initPullStream
+        (Multipart statePtr)
+        header
+        secretKey
+    if isRight result
+      then action (Multipart statePtr)
+      else pure [Left DecryptionStreamInitError]
 
 -- | Trigger a key re-generation. You want to do this when your peer sends a message with the 'Rekey' tag on it.
 --

@@ -5,7 +5,6 @@ module Test.SecretKey.EncryptedStream where
 
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
-import qualified Data.Text.IO as Text
 import Data.Traversable
 import qualified Foreign
 import Test.Tasty
@@ -40,16 +39,13 @@ testStream = do
             pure $ ct : rest
   (header, secretKey, cipherTexts) <- encryptStream $ \state -> do
     encryptChunks state messages
-  Text.putStrLn $ mconcat $ fmap cipherTextToHexText cipherTexts
 
-  (decryptionResult' :: [StreamResult]) <- do
-    Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
-      void $ initPullStream (Multipart statePtr) header secretKey
-      forM cipherTexts $ \ct -> do
-        result <- pullFromStream (Multipart statePtr) ct
-        case result of
-          Left err -> assertFailure (show err)
-          Right sr -> pure sr
+  (decryptionResult' :: [StreamResult]) <- decryptStream (header, secretKey) $ \statePtr -> do
+    forM cipherTexts $ \ct -> do
+      result <- pullFromStream (Multipart statePtr) ct
+      case result of
+        Left err -> assertFailure (show err)
+        Right sr -> pure sr
 
   let decryptionResult = streamMessage <$> decryptionResult'
   assertEqual

@@ -95,6 +95,40 @@ import LibSodium.Bindings.SecretStream
   )
 import Sel.Internal
 
+-- $usage
+--
+-- When you need to encrypt and decrypt messages that arrive from the network or the file system,
+-- you may want to process them as they arrive, and not once they are all accumulated.
+--
+-- Encrypted streams allows you to do such a thing.
+--
+-- === Example
+--
+-- First let us define the function that will encrypt our messages ("chunks")
+-- and implements rudimentary error handling logic.
+--
+--
+-- > encryptChunks :: Multipart s -> [StrictByteString] -> IO [CipherText]
+-- > encryptChunks state = \case
+-- >    [] -> pure []
+-- >    [x] -> do
+-- >      result <- pushToStream state x Nothing Final
+-- >      case result of
+-- >        Left err -> error (show err)
+-- >        Right ct -> pure [ct]
+-- >    (x : xs) -> do
+-- >      result <- pushToStream state x Nothing Message
+-- >      case result of
+-- >        Left err -> error (show err)
+-- >        Right ct -> do
+-- >          rest <- encryptChunks state xs
+-- >          pure $ ct : rest
+--
+--
+-- >>> let messages = ["King", "of", "Kings", "am", "I,", "Osymandias."] :: [StrictByteString]
+-- >>> (header, secretKey, cipherTexts) <- encryptStream $ \state -> encryptChunks state messages
+-- >>> decryptionResult <- decryptStream (header, secretKey) $ \statePtr -> forM cipherTexts $ \ct -> pullFromStream statePtr ct
+
 -- | The 'SecretKey' is used to encrypt the stream.
 --
 -- @since 0.0.1.0

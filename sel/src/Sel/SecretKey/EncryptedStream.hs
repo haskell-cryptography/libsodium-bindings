@@ -68,7 +68,6 @@ import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
-import qualified GHC.ForeignPtr as Foreign
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
@@ -157,7 +156,7 @@ cipherTextFromByteString :: StrictByteString -> Maybe CipherText
 cipherTextFromByteString bytestring =
   if BS.length bytestring > fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
     then unsafeDupablePerformIO $ do
-      cipherForeignPtr <- Foreign.mallocPlainForeignPtrBytes (BS.length bytestring)
+      cipherForeignPtr <- Foreign.mallocForeignPtrBytes (BS.length bytestring)
       Foreign.withForeignPtr cipherForeignPtr $ \cipherPtr ->
         BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
           memcpy (Foreign.castPtr cipherPtr) cString (fromIntegral cStringLen)

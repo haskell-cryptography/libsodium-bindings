@@ -3,14 +3,12 @@
 
 module Test.SecretKey.EncryptedStream where
 
-import Control.Monad (void)
 import Data.ByteString (StrictByteString)
+import Data.Either
 import Data.Traversable
-import qualified Foreign
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import LibSodium.Bindings.SecretStream (cryptoSecretStreamXChaCha20Poly1305StateBytes)
 import Sel.SecretKey.EncryptedStream
 
 spec :: TestTree
@@ -22,7 +20,7 @@ spec =
 
 testStream :: Assertion
 testStream = do
-  let messages = ["King", "of", "Kings", "am", "I,", "Osymandias."]
+  let messages = ["King", "of", "Kings", "am", "I,", "Osymandias."] :: [StrictByteString]
   let encryptChunks :: Multipart s -> [StrictByteString] -> IO [CipherText]
       encryptChunks _ [] = pure []
       encryptChunks state [x] = do
@@ -40,14 +38,10 @@ testStream = do
   (header, secretKey, cipherTexts) <- encryptStream $ \state -> do
     encryptChunks state messages
 
-  (decryptionResult' :: [StreamResult]) <- decryptStream (header, secretKey) $ \statePtr -> do
-    forM cipherTexts $ \ct -> do
-      result <- pullFromStream (Multipart statePtr) ct
-      case result of
-        Left err -> assertFailure (show err)
-        Right sr -> pure sr
+  decryptionResult' :: [Either EncryptedStreamError StreamResult] <- decryptStream (header, secretKey) $ \statePtr -> do
+    forM cipherTexts $ \ct -> pullFromStream statePtr ct
 
-  let decryptionResult = streamMessage <$> decryptionResult'
+  let decryptionResult = streamMessage <$> rights decryptionResult'
   assertEqual
     "Message is well-opened with the correct key and nonce"
     messages

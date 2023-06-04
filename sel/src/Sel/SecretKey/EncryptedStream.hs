@@ -19,7 +19,7 @@ module Sel.SecretKey.EncryptedStream
   ( -- ** Usage
     -- $usage
 
-  -- ** Secret Key
+    -- ** Secret Key
     SecretKey
   , newSecretKey
 
@@ -94,10 +94,6 @@ import LibSodium.Bindings.SecretStream
   , cryptoSecretStreamXChaCha20Poly1305TagRekey
   )
 import Sel.Internal
-
--- $usage
---
---
 
 -- | The 'SecretKey' is used to encrypt the stream.
 --

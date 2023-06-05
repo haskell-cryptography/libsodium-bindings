@@ -1,94 +1,107 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
     };
-    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
     gitignore = {
       url = "github:hercules-ci/gitignore.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, pre-commit-hooks, gitignore, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  nixConfig.allow-import-from-derivation = true;
+
+  outputs = inputs@{ nixpkgs, ... }:
+    let
+      # this is to allow running `nix flake check` by using `--impure`
+      systems =
+        if builtins.hasAttr "currentSystem" builtins
+        then [ builtins.currentSystem ]
+        else nixpkgs.lib.systems.flakeExposed;
+    in
+    inputs.flake-utils.lib.eachSystem systems (system:
       let
-        inherit (gitignore.lib) gitignoreSource;
+        inherit (inputs.gitignore.lib) gitignoreSource;
 
-        overlay = self: super: {
-          haskell = super.haskell // {
-            packages = super.haskell.packages // {
-              ghc945 = super.haskell.packages.ghc945.override (old: {
-                overrides =
-                  let
-                    oldOverrides = old.overrides or (_: _: { });
+        ghcVer = "945";
 
-                    manualOverrides = haskPkgsNew: haskPkgsOld:
-                      {
-                        libsodium-bindings =
-                          haskPkgsOld.libsodium-bindings.override {
-                            libsodium = super.libsodium;
-                          };
-                      };
+        pkgs = nixpkgs.legacyPackages.${system};
 
-                    packageSources =
-                      self.haskell.lib.packageSourceOverrides {
-                        libsodium-bindings = gitignoreSource ./libsodium-bindings;
-                        sel = gitignoreSource ./sel;
-                      };
+        pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            # nix checks
+            nixpkgs-fmt.enable = true;
+            deadnix.enable = true;
+            statix.enable = true;
 
-                  in
-                  self.lib.fold self.lib.composeExtensions oldOverrides [
-                    packageSources
-                    manualOverrides
-                  ];
+            # Haskell checks
+            fourmolu.enable = true;
+            cabal-fmt.enable = true;
+            hlint.enable = true;
+          };
+        };
+
+        hsPkgs = pkgs.haskell.packages."ghc${ghcVer}".override (_old: {
+          overrides = with pkgs.haskell.lib.compose; hself: hsuper:
+            let
+              commonOverrides = overrideCabal (_drv: {
+                doInstallIntermediates = true;
+                enableSeparateIntermediatesOutput = true;
+                pkg-configDepends = [
+                  pkgs.libsodium
+                ];
               });
+            in
+            {
+              libsodium-bindings = commonOverrides (hself.callCabal2nix "libsodium-bindings" (gitignoreSource ./libsodium-bindings) { });
+              sel = commonOverrides (hself.callCabal2nix "sel" (gitignoreSource ./sel) { });
+              text-display = markUnbroken hsuper.text-display;
             };
-          };
-        };
+        });
 
-        config.allowBroken = true;
-        pkgs = import nixpkgs { inherit config system; overlays = [ overlay ]; };
-        defaultHaskellPackages = pkgs.haskellPackages;
-        myHaskellPackages = pkgs.haskell.packages.ghc945;
-      in
-      {
-        checks = {
-          pre-commit-check = pre-commit-hooks.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              nixpkgs-fmt.enable = true;
-              fourmolu.enable = true;
-              cabal-fmt.enable = true;
-              hlint.enable = true;
-            };
-          };
-        };
+        hsShell = hsPkgs.shellFor {
+          shellHook = ''
+            ${pre-commit-check.shellHook}
+            set -x
+            export LD_LIBRARY_PATH="${pkgs.libsodium}/lib"
+            set +x 
+          '';
 
-        packages = {
-          inherit (myHaskellPackages) libsodium-bindings sel;
-        };
-
-        devShells.default = myHaskellPackages.shellFor {
-          inherit (self.checks.${system}.pre-commit-check) shellHook;
-
-          packages = packages: with packages; [
+          packages = ps: with ps; [
             libsodium-bindings
             sel
           ];
 
-          buildInputs = [
-            defaultHaskellPackages.cabal-install
-            myHaskellPackages.haskell-language-server
-            pkgs.nixpkgs-fmt
-            defaultHaskellPackages.cabal-fmt
-            defaultHaskellPackages.fourmolu
-            defaultHaskellPackages.hlint
+          buildInputs = with hsPkgs; [
+            pkgs.pkg-config
+            pkgs.libsodium.dev
+            cabal-install
+            haskell-language-server
           ];
         };
+
+      in
+      {
+        checks = {
+          inherit (hsPkgs) libsodium-bindings sel;
+          shell = hsShell;
+          formatting = pre-commit-check;
+        };
+
+        packages = {
+          inherit (hsPkgs) libsodium-bindings sel;
+        };
+
+        devShells.default = hsShell;
       }
     );
 }

@@ -94,6 +94,9 @@
             pkgs.libsodium.dev
             cabal-install
             haskell-language-server
+            hlint
+            cabal-fmt
+            fourmolu
           ];
         };
 

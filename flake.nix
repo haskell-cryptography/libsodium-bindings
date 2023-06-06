@@ -17,7 +17,15 @@
     };
   };
 
-  nixConfig.allow-import-from-derivation = true;
+  nixConfig = {
+    extra-substituters = [
+      "https://libsodium-hs.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "libsodium-hs.cachix.org-1:u/v4XdWrbl+G/fDUoEwB1yvMdlxdKM4al2odCNsrqkg="
+    ];
+    allow-import-from-derivation = true;
+  };
 
   outputs = inputs@{ nixpkgs, ... }:
     let

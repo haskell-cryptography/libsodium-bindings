@@ -50,17 +50,20 @@ module Sel.SecretKey.EncryptedStream
     -- *** Encryption
   , initPushStream
   , pushToStream
+  , pushToStreamWith
 
     -- *** Decryption
   , StreamResult (..)
   , initPullStream
   , pullFromStream
+  , pullFromStreamWith
 
     -- *** Key regeneration
   , rekey
   ) where
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad (void)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -425,39 +428,70 @@ pushToStream
   -- ^ The cryptographic state
   -> StrictByteString
   -- ^ The message to encrypt
-  -> Maybe StrictByteString
-  -- ^ Additional, optional data that can be included.
   -> StreamTag
   -- ^ Tag that accompanies the resulting 'CipherText'.
   -> IO (Either EncryptedStreamError CipherText)
-pushToStream (Multipart statePtr) message mData tag =
-  case mData of
-    Just additionalData -> do
-      let additionalDataLength = BS.length additionalData
-      Foreign.allocaBytes additionalDataLength $ \additionalDataPtr ->
-        doPushToStream additionalDataPtr (fromIntegral additionalDataLength)
-    Nothing -> doPushToStream Foreign.nullPtr 0
-  where
-    doPushToStream :: Ptr CUChar -> CULLong -> IO (Either EncryptedStreamError CipherText)
-    doPushToStream additionalDataPointer additionalDataLength =
-      BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
-        let cipherTextLength = fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes + cStringLen
-        cipherTextFPtr <- Foreign.mallocForeignPtrBytes cipherTextLength
-        Foreign.withForeignPtr cipherTextFPtr $ \cipherTextBuffer -> do
-          result <-
-            cryptoSecretStreamXChaCha20Poly1305Push
-              statePtr
-              cipherTextBuffer
-              Foreign.nullPtr
-              (Foreign.castPtr @CChar @CUChar cString)
-              (fromIntegral @Int @CULLong cStringLen)
-              additionalDataPointer
-              additionalDataLength
-              (streamTagToConstant tag)
-          case result of
-            0 -> do
-              pure $ Right $ CipherText cipherTextFPtr (fromIntegral cipherTextLength)
-            _ -> pure $ Left EncryptionStreamPushError
+pushToStream multipartContext message tag =
+  doPushToStream multipartContext message Foreign.nullPtr 0 tag
+
+-- | Encrypt a message for a stream, with additional data.
+-- The stream is determined by the cryptographic state 'Multipart'.
+--
+-- @since 0.0.1.0
+pushToStreamWith
+  :: forall (s :: Type)
+   . Multipart s
+  -- ^ The cryptographic state
+  -> StrictByteString
+  -- ^ The message to encrypt
+  -> StreamTag
+  -- ^ Tag that accompanies the resulting 'CipherText'.
+  -> StrictByteString
+  -- ^ Additional data that you want to ship with the message
+  -> IO (Either EncryptedStreamError CipherText)
+pushToStreamWith multipartContext message tag additionalData  = do
+  let additionalDataLength = BS.length additionalData
+  Foreign.allocaBytes additionalDataLength $ \additionalDataPtr ->
+    doPushToStream
+      multipartContext
+      message
+      additionalDataPtr
+      (fromIntegral additionalDataLength)
+      tag
+
+-- This functions is meant to be called either from 'pushToStream' or 'pushToStreamWith'.
+doPushToStream
+  :: forall (s :: Type)
+   . Multipart s
+  -- ^ the cryptographic state
+  -> StrictByteString
+  -- ^ Message
+  -> Ptr CUChar
+  -- ^ Additional data pointer
+  -> CULLong
+  -- ^ Additional data length
+  -> StreamTag
+  -- ^ Stream tag
+  -> IO (Either EncryptedStreamError CipherText)
+doPushToStream (Multipart statePtr) message additionalDataPointer additionalDataLength tag =
+  BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+    let cipherTextLength = fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes + cStringLen
+    cipherTextFPtr <- Foreign.mallocForeignPtrBytes cipherTextLength
+    Foreign.withForeignPtr cipherTextFPtr $ \cipherTextBuffer -> do
+      result <-
+        cryptoSecretStreamXChaCha20Poly1305Push
+          statePtr
+          cipherTextBuffer
+          Foreign.nullPtr
+          (Foreign.castPtr @CChar @CUChar cString)
+          (fromIntegral @Int @CULLong cStringLen)
+          additionalDataPointer
+          additionalDataLength
+          (streamTagToConstant tag)
+      case result of
+        0 -> do
+          pure $ Right $ CipherText cipherTextFPtr (fromIntegral cipherTextLength)
+        _ -> pure $ Left EncryptionStreamPushError
 
 -- | Provide a cryptographic context 'Multipart' in a continuation to encrypt a stream.
 --
@@ -518,7 +552,33 @@ pullFromStream
   :: Multipart s
   -> CipherText
   -> IO (Either EncryptedStreamError StreamResult)
-pullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLength) = do
+pullFromStream multipartContext cipherText = do
+  doPullFromStream multipartContext cipherText Foreign.nullPtr 0
+
+-- | Decrypt a stream chunk while expecting additional data of a known size.
+-- Applications will typically call this function in a loop,
+-- until a message with the 'Final' tag is found.
+--
+-- If the tag cannot be decoded from the payload, then it is not returned in the `StreamResult`.
+--
+-- @since 0.0.1.0
+pullFromStreamWith
+  :: Multipart s
+  -> CipherText
+  -> CULLong
+  -> IO (Either EncryptedStreamError StreamResult)
+pullFromStreamWith multipartContext cipherText additionalDataLength = do
+  Foreign.allocaBytes (fromIntegral additionalDataLength) $ \additionalDataPointer ->
+    doPullFromStream multipartContext cipherText additionalDataPointer additionalDataLength
+
+-- This functions is meant to be called either from 'pullFromStream' or 'pullFromStreamWith'.
+doPullFromStream
+  :: Multipart s
+  -> CipherText
+  -> Ptr CUChar
+  -> CULLong
+  -> IO (Either EncryptedStreamError StreamResult)
+doPullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLength) additionalDataPointer additionalDataLength = do
   decryptedMessageForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral @CSize @Int (cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes))
   Foreign.allocaArray 8 $ \tagPtr ->
     Foreign.withForeignPtr decryptedMessageForeignPtr $ \decryptedMessagePtr ->
@@ -531,15 +591,27 @@ pullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLeng
             tagPtr
             cipherTextPtr
             (fromIntegral @CSize @CULLong cipherTextLength)
-            Foreign.nullPtr
-            0
+            additionalDataPointer
+            additionalDataLength
         case resultInt of
           0 -> do
-            let decryptedMessage = BS.fromForeignPtr (Foreign.castForeignPtr decryptedMessageForeignPtr) 0 (fromIntegral @CSize @Int (cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes))
+            let decryptedMessage =
+                  BS.fromForeignPtr
+                    (Foreign.castForeignPtr decryptedMessageForeignPtr)
+                    0
+                    (fromIntegral @CSize @Int (cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes))
+            additionalData <-
+                  if additionalDataLength == 0 || additionalDataPointer == Foreign.nullPtr
+                  then pure Nothing
+                  else do
+                    bs <- BS.create (fromIntegral additionalDataLength) $ \bsPtr -> do
+                      void $ memcpy (Foreign.castPtr bsPtr) additionalDataPointer (fromIntegral additionalDataLength)
+                    pure $ Just bs
+
             tagConstant :: CUChar <- Foreign.peekByteOff tagPtr 0
             case tagConstantToStreamTag tagConstant of
-              Just tag -> pure $ Right $ StreamResult decryptedMessage (Just tag) Nothing
-              Nothing -> pure $ Right $ StreamResult decryptedMessage Nothing Nothing
+              Just tag -> pure $ Right $ StreamResult decryptedMessage (Just tag) additionalData
+              Nothing -> pure $ Right $ StreamResult decryptedMessage Nothing additionalData
           _ -> pure $ Left InvalidCipherText
 
 -- | Provide a cryptographic context 'Multipart' in a continuation to decrypt a stream.

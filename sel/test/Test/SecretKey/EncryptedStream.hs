@@ -4,7 +4,9 @@
 
 module Test.SecretKey.EncryptedStream where
 
+import Control.Monad.IO.Class
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
 import Data.Either
 import Data.Traversable
 import Test.Tasty
@@ -17,6 +19,7 @@ spec =
   testGroup
     "Encrypted Stream"
     [ testCase "Encrypt and decrypt a stream" testStream
+    , testCase "Encrypt and decrypt a stream with additional data" testStreamWithAdditionalData
     ]
 
 testStream :: Assertion
@@ -31,7 +34,7 @@ testStream = do
   let decryptionResult = streamMessage <$> rights decryptionResult'
 
   assertEqual
-    "Message is well-opened with the correct key and nonce"
+    "Stream is decrypted"
     messages
     decryptionResult
   where
@@ -39,12 +42,50 @@ testStream = do
     encryptChunks state = \case
       [] -> pure []
       [x] -> do
-        result <- pushToStream state x Nothing Final
+        result <- pushToStream state x Final
         case result of
           Left err -> assertFailure (show err)
           Right ct -> pure [ct]
       (x : xs) -> do
-        result <- pushToStream state x Nothing Message
+        result <- pushToStream state x Message
+        case result of
+          Left err -> assertFailure (show err)
+          Right ct -> do
+            rest <- encryptChunks state xs
+            pure $ ct : rest
+
+testStreamWithAdditionalData :: Assertion
+testStreamWithAdditionalData = do
+  let messages = ["King", "of", "Kings", "am", "I,", "Osymandias."] :: [StrictByteString]
+  (header, secretKey, cipherTexts) <- encryptStream $ \state -> encryptChunks state messages
+
+  decryptionResult' <- decryptStream (header, secretKey) $ \statePtr -> do
+    forM cipherTexts $ \ct -> pullFromStreamWith statePtr ct (fromIntegral $ BS.length additionalData)
+  liftIO $ print decryptionResult'
+
+  let decryptionResult = streamMessage <$> rights decryptionResult'
+
+  assertEqual
+    "Stream is decrypted"
+    messages
+    decryptionResult
+
+  assertEqual
+    "Additional data is present"
+    []
+    (mAdditionalData <$> rights decryptionResult')
+  where
+    additionalData = "{\"foo\": \"bar\"}"
+    encryptChunks :: Multipart s -> [StrictByteString] -> IO [CipherText]
+    encryptChunks state = \case
+      [] -> pure []
+      [x] -> do
+        result <- pushToStreamWith state x Final additionalData
+        case result of
+          Left err -> assertFailure (show err)
+          Right ct -> pure [ct]
+      (x : xs) -> do
+        result <- pushToStreamWith state x Message additionalData
         case result of
           Left err -> assertFailure (show err)
           Right ct -> do

@@ -145,7 +145,7 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
 -- @since 0.0.1.0
 passwordHashToByteString :: PasswordHash -> StrictByteString
 passwordHashToByteString (PasswordHash fPtr) =
-  BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
+  BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) hashBytesSize
   where
     hashBytesSize = fromIntegral @CSize @Int cryptoPWHashStrBytes
 

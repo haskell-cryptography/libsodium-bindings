@@ -29,7 +29,7 @@ testStream = do
   (header, secretKey, cipherTexts) <- encryptStream $ \state -> encryptChunks state messages
 
   decryptionResult' <- decryptStream (header, secretKey) $ \statePtr -> do
-    forM cipherTexts $ \ct -> pullFromStream statePtr ct
+    forM cipherTexts $ \ct -> pullFromStream statePtr ct Nothing
 
   let decryptionResult = streamMessage <$> rights decryptionResult'
 
@@ -42,12 +42,12 @@ testStream = do
     encryptChunks state = \case
       [] -> pure []
       [x] -> do
-        result <- pushToStream state x Final
+        result <- pushToStream state x Final Nothing
         case result of
           Left err -> assertFailure (show err)
           Right ct -> pure [ct]
       (x : xs) -> do
-        result <- pushToStream state x Message
+        result <- pushToStream state x Message Nothing
         case result of
           Left err -> assertFailure (show err)
           Right ct -> do
@@ -60,7 +60,7 @@ testStreamWithAdditionalData = do
   (header, secretKey, cipherTexts) <- encryptStream $ \state -> encryptChunks state messages
 
   decryptionResult' <- decryptStream (header, secretKey) $ \statePtr -> do
-    forM cipherTexts $ \ct -> pullFromStreamWith statePtr ct (fromIntegral $ BS.length additionalData)
+    forM cipherTexts $ \ct -> pullFromStream statePtr ct (Just (fromIntegral $ BS.length additionalData))
   liftIO $ print decryptionResult'
 
   let decryptionResult = streamMessage <$> rights decryptionResult'
@@ -80,12 +80,12 @@ testStreamWithAdditionalData = do
     encryptChunks state = \case
       [] -> pure []
       [x] -> do
-        result <- pushToStreamWith state x Final additionalData
+        result <- pushToStream state x Final (Just additionalData)
         case result of
           Left err -> assertFailure (show err)
           Right ct -> pure [ct]
       (x : xs) -> do
-        result <- pushToStreamWith state x Message additionalData
+        result <- pushToStream state x Message (Just additionalData)
         case result of
           Left err -> assertFailure (show err)
           Right ct -> do

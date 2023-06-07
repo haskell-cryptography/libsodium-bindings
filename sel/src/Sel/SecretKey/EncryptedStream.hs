@@ -50,20 +50,18 @@ module Sel.SecretKey.EncryptedStream
     -- *** Encryption
   , initPushStream
   , pushToStream
-  , pushToStreamWith
 
     -- *** Decryption
   , StreamResult (..)
   , initPullStream
   , pullFromStream
-  , pullFromStreamWith
 
     -- *** Key regeneration
   , rekey
   ) where
 
-import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -74,7 +72,7 @@ import Data.Kind (Type)
 import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
-import Foreign.C (CChar, CSize, CUChar, CULLong)
+import Foreign.C (CChar, CSize, CUChar, CULLong(..))
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
@@ -430,34 +428,22 @@ pushToStream
   -- ^ The message to encrypt
   -> StreamTag
   -- ^ Tag that accompanies the resulting 'CipherText'.
+  -> Maybe StrictByteString
+  -- ^ Additional, optional data
   -> IO (Either EncryptedStreamError CipherText)
-pushToStream multipartContext message tag =
-  doPushToStream multipartContext message Foreign.nullPtr 0 tag
-
--- | Encrypt a message for a stream, with additional data.
--- The stream is determined by the cryptographic state 'Multipart'.
---
--- @since 0.0.1.0
-pushToStreamWith
-  :: forall (s :: Type)
-   . Multipart s
-  -- ^ The cryptographic state
-  -> StrictByteString
-  -- ^ The message to encrypt
-  -> StreamTag
-  -- ^ Tag that accompanies the resulting 'CipherText'.
-  -> StrictByteString
-  -- ^ Additional data that you want to ship with the message
-  -> IO (Either EncryptedStreamError CipherText)
-pushToStreamWith multipartContext message tag additionalData  = do
-  let additionalDataLength = BS.length additionalData
-  Foreign.allocaBytes additionalDataLength $ \additionalDataPtr ->
-    doPushToStream
-      multipartContext
-      message
-      additionalDataPtr
-      (fromIntegral additionalDataLength)
-      tag
+pushToStream multipartContext message tag optionalData =
+  case optionalData of
+    Nothing -> doPushToStream multipartContext message Foreign.nullPtr 0 tag
+    Just additionalData -> do
+      BS.unsafeUseAsCStringLen additionalData $ \(additionalDataSourcePtr, additionalDataLength) ->
+        Foreign.allocaBytes additionalDataLength $ \additionalDataPtr -> do
+          memcpy additionalDataPtr additionalDataSourcePtr (fromIntegral additionalDataLength)
+          doPushToStream
+            multipartContext
+            message
+            (Foreign.castPtr additionalDataPtr)
+            (fromIntegral additionalDataLength)
+            tag
 
 -- This functions is meant to be called either from 'pushToStream' or 'pushToStreamWith'.
 doPushToStream
@@ -551,25 +537,16 @@ initPullStream (Multipart statePtr) (Header headerForeignPtr) (SecretKey secretK
 pullFromStream
   :: Multipart s
   -> CipherText
+  -> Maybe Word
   -> IO (Either EncryptedStreamError StreamResult)
-pullFromStream multipartContext cipherText = do
-  doPullFromStream multipartContext cipherText Foreign.nullPtr 0
-
--- | Decrypt a stream chunk while expecting additional data of a known size.
--- Applications will typically call this function in a loop,
--- until a message with the 'Final' tag is found.
---
--- If the tag cannot be decoded from the payload, then it is not returned in the `StreamResult`.
---
--- @since 0.0.1.0
-pullFromStreamWith
-  :: Multipart s
-  -> CipherText
-  -> CULLong
-  -> IO (Either EncryptedStreamError StreamResult)
-pullFromStreamWith multipartContext cipherText additionalDataLength = do
-  Foreign.allocaBytes (fromIntegral additionalDataLength) $ \additionalDataPointer ->
-    doPullFromStream multipartContext cipherText additionalDataPointer additionalDataLength
+pullFromStream multipartContext cipherText mAdditionalDataLength = do
+  case mAdditionalDataLength of
+    Nothing ->
+      doPullFromStream multipartContext cipherText Foreign.nullPtr 0
+    Just 0 -> doPullFromStream multipartContext cipherText Foreign.nullPtr 0
+    Just additionalDataLength ->
+      Foreign.allocaBytes (fromIntegral additionalDataLength) $ \additionalDataPointer ->
+        doPullFromStream multipartContext cipherText additionalDataPointer (fromIntegral additionalDataLength)
 
 -- This functions is meant to be called either from 'pullFromStream' or 'pullFromStreamWith'.
 doPullFromStream
@@ -601,12 +578,12 @@ doPullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLe
                     0
                     (fromIntegral @CSize @Int (cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes))
             additionalData <-
-                  if additionalDataLength == 0 || additionalDataPointer == Foreign.nullPtr
-                  then pure Nothing
-                  else do
-                    bs <- BS.create (fromIntegral additionalDataLength) $ \bsPtr -> do
-                      void $ memcpy (Foreign.castPtr bsPtr) additionalDataPointer (fromIntegral additionalDataLength)
-                    pure $ Just bs
+              if additionalDataLength == 0 || additionalDataPointer == Foreign.nullPtr
+                then pure Nothing
+                else do
+                  bs <- BS.create (fromIntegral additionalDataLength) $ \bsPtr -> do
+                    void $ memcpy (Foreign.castPtr bsPtr) additionalDataPointer (fromIntegral additionalDataLength)
+                  pure $ Just bs
 
             tagConstant :: CUChar <- Foreign.peekByteOff tagPtr 0
             case tagConstantToStreamTag tagConstant of

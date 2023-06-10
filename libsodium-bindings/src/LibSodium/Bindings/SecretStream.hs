@@ -10,36 +10,36 @@
 -- Stability: Stable
 -- Portability: GHC only
 module LibSodium.Bindings.SecretStream
-  ( -- * Introduction
+  ( -- ** Introduction
     -- $introduction
 
-    -- * Usage
+    -- ** Usage
     -- $usage
     CryptoSecretStreamXChaCha20Poly1305State
   , withCryptoSecretStreamXChaCha20Poly1305State
 
-    -- * Encryption
+    -- ** Encryption
   , cryptoSecretStreamXChaCha20Poly1305KeyGen
   , cryptoSecretStreamXChaCha20Poly1305InitPush
   , cryptoSecretStreamXChaCha20Poly1305Push
 
-    -- * Decryption
+    -- ** Decryption
   , cryptoSecretStreamXChaCha20Poly1305InitPull
   , cryptoSecretStreamXChaCha20Poly1305Pull
 
-    -- * Rekeying
+    -- ** Rekeying
   , cryptoSecretStreamXChaCha20Poly1305Rekey
 
-    -- * Constants
+    -- ** Constants
 
-    -- ** Key, Header and State size constants
+    -- *** Key, Header and State size constants
   , cryptoSecretStreamXChaCha20Poly1305KeyBytes
   , cryptoSecretStreamXChaCha20Poly1305HeaderBytes
   , cryptoSecretStreamXChaCha20Poly1305StateBytes
   , cryptoSecretStreamXChaCha20Poly1305ABytes
   , cryptoSecretStreamXChaCha20Poly1305MessageBytesMax
 
-    -- ** Tag constants
+    -- *** Tag constants
   , cryptoSecretStreamXChaCha20Poly1305TagMessage
   , cryptoSecretStreamXChaCha20Poly1305TagPush
   , cryptoSecretStreamXChaCha20Poly1305TagRekey
@@ -83,6 +83,8 @@ import Foreign.Marshal (allocaBytes)
 -- Note that tags are encrypted; encrypted streams do not reveal any information about sequence boundaries
 -- ('cryptoSecretStreamXChaCha20Poly1305TagPush' and 'cryptoSecretStreamXChaCha20Poly1305TagRekey' tags).
 --
+-- === TL;DR
+--
 -- For each message, additional data can be included in the computation of the authentication tag.
 -- With this API, additional data is rarely required, and most applications can just use 'Foreign.Ptr.nullPtr' and a length of 0 instead.
 
@@ -95,7 +97,7 @@ data CryptoSecretStreamXChaCha20Poly1305State
 
 -- | Allocate an opaque 'CryptoSecretStreamXChaCha20Poly1305State' of size 'cryptoSecretStreamXChaCha20Poly1305StateBytes'.
 --
--- ⚠️ Do not leak the 'CryptoSecretStreamXChaCha20Poly1305State' outside of the lambda,
+-- ⚠️ Do not leak the 'CryptoSecretStreamXChaCha20Poly1305State' outside of the closure,
 -- otherwise you will point at deallocated memory!
 --
 -- @since 0.0.1.0

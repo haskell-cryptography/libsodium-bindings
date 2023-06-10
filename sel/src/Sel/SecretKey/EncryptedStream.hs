@@ -72,7 +72,7 @@ import Data.Kind (Type)
 import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
-import Foreign.C (CChar, CSize, CUChar, CULLong(..))
+import Foreign.C (CChar, CSize, CUChar, CULLong (..))
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
@@ -113,12 +113,12 @@ import Sel.Internal
 -- > encryptChunks state = \case
 -- >    [] -> pure []
 -- >    [x] -> do
--- >      result <- pushToStream state x Nothing Final
+-- >      result <- pushToStream state x Final Nothing
 -- >      case result of
 -- >        Left err -> error (show err)
 -- >        Right ct -> pure [ct]
 -- >    (x : xs) -> do
--- >      result <- pushToStream state x Nothing Message
+-- >      result <- pushToStream state x Message Nothing
 -- >      case result of
 -- >        Left err -> error (show err)
 -- >        Right ct -> do
@@ -418,7 +418,9 @@ initPushStream (Multipart statePtr) = do
         0 -> pure $ Right (Header headerForeignPtr, SecretKey secretKeyForeignPtr)
         _ -> pure $ Left EncryptionStreamInitError
 
--- | Encrypt a message for a stream. The stream is determined by the cryptographic state 'Multipart'.
+-- | Encrypt a message for a stream, with possibly some optional, additional data with it.
+--
+-- The stream is determined by the cryptographic state 'Multipart'.
 --
 -- @since 0.0.1.0
 pushToStream
@@ -445,7 +447,7 @@ pushToStream multipartContext message tag optionalData =
             (fromIntegral additionalDataLength)
             tag
 
--- This functions is meant to be called either from 'pushToStream' or 'pushToStreamWith'.
+-- This functions is meant to be called either from 'pushToStream'.
 doPushToStream
   :: forall (s :: Type)
    . Multipart s
@@ -546,7 +548,11 @@ pullFromStream multipartContext cipherText mAdditionalDataLength = do
     Just 0 -> doPullFromStream multipartContext cipherText Foreign.nullPtr 0
     Just additionalDataLength ->
       Foreign.allocaBytes (fromIntegral additionalDataLength) $ \additionalDataPointer ->
-        doPullFromStream multipartContext cipherText additionalDataPointer (fromIntegral additionalDataLength)
+        doPullFromStream
+          multipartContext
+          cipherText
+          additionalDataPointer
+          (fromIntegral additionalDataLength)
 
 -- This functions is meant to be called either from 'pullFromStream' or 'pullFromStreamWith'.
 doPullFromStream
@@ -556,7 +562,8 @@ doPullFromStream
   -> CULLong
   -> IO (Either EncryptedStreamError StreamResult)
 doPullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLength) additionalDataPointer additionalDataLength = do
-  decryptedMessageForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral @CSize @Int (cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes))
+  let decryptedMessagePtrSize = fromIntegral @CSize @Int $ cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes
+  decryptedMessageForeignPtr <- Foreign.mallocForeignPtrBytes decryptedMessagePtrSize
   Foreign.allocaArray 8 $ \tagPtr ->
     Foreign.withForeignPtr decryptedMessageForeignPtr $ \decryptedMessagePtr ->
       Foreign.withForeignPtr cipherTextForeignPtr $ \cipherTextPtr -> do

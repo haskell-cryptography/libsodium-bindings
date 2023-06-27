@@ -516,7 +516,7 @@ initPullStream
   -> SecretKey
   -- ^ Secret key from the peer, used to decrypt the ciphertexts.
   -> IO (Either EncryptedStreamError ())
-  -- ^ Returns 'True' on success, 'False' if the header is invalid
+  -- ^ Returns 'InvalidHeader' if the initialisation fails.
 initPullStream (Multipart statePtr) (Header headerForeignPtr) (SecretKey secretKeyForeignPtr) =
   Foreign.withForeignPtr headerForeignPtr $ \headerPtr ->
     Foreign.withForeignPtr secretKeyForeignPtr $ \keyPtr -> do
@@ -538,8 +538,11 @@ initPullStream (Multipart statePtr) (Header headerForeignPtr) (SecretKey secretK
 -- @since 0.0.1.0
 pullFromStream
   :: Multipart s
+  -- ^ Cryptographic state.
   -> CipherText
+  -- ^ The encrypted chunk to decrypt
   -> Maybe Word
+  -- ^ Length of additional, optional data associated with the cipher text.
   -> IO (Either EncryptedStreamError StreamResult)
 pullFromStream multipartContext cipherText mAdditionalDataLength = do
   case mAdditionalDataLength of
@@ -554,7 +557,8 @@ pullFromStream multipartContext cipherText mAdditionalDataLength = do
           additionalDataPointer
           (fromIntegral additionalDataLength)
 
--- This functions is meant to be called either from 'pullFromStream' or 'pullFromStreamWith'.
+-- This functions is meant to be called either
+-- from 'pullFromStream' or 'pullFromStreamWith'.
 doPullFromStream
   :: Multipart s
   -> CipherText

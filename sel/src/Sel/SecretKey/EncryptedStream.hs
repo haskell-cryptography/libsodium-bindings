@@ -399,13 +399,18 @@ data EncryptedStreamError
 -- This function returns the 'Header' and the 'SecretKey' that are needed for the peer to
 -- decrypt the stream.
 --
+-- It will return 'EncryptionStreamInitError' if stream initialisation fails.
+--
 -- @since 0.0.1.0
 initPushStream
   :: Multipart s
   -- ^ Cryptographic state
   -> IO (Either EncryptedStreamError (Header, SecretKey))
 initPushStream (Multipart statePtr) = do
-  headerForeignPtr <- liftIO $ Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+  headerForeignPtr <-
+    liftIO $
+      Foreign.mallocForeignPtrBytes
+        (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
   (SecretKey secretKeyForeignPtr) <- newSecretKey
   Foreign.withForeignPtr headerForeignPtr $ \headerPtr ->
     Foreign.withForeignPtr secretKeyForeignPtr $ \keyPtr -> do
@@ -492,7 +497,10 @@ encryptStream
   -> m (Header, SecretKey, [CipherText])
 encryptStream action = do
   (SecretKey secretKeyFPtr) <- liftIO newSecretKey
-  headerFPtr <- liftIO $ Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+  headerFPtr <-
+    liftIO $
+      Foreign.mallocForeignPtrBytes
+        (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
   liftIO $ Foreign.withForeignPtr headerFPtr $ \headerPtr ->
     liftIO $ Foreign.withForeignPtr secretKeyFPtr $ \keyPtr -> do
       Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
@@ -504,8 +512,8 @@ encryptStream action = do
 
 -- | Initialise a stream from which you will retrieve encrypted messages.
 --
--- You need the 'Header' and 'SecretKey' used by your peer to intialise the stream in order to
--- sucecessfully decrypt the incoming messages.
+-- You need the 'Header' and 'SecretKey' used by your peer to intialise
+-- the stream in order to sucecessfully decrypt the incoming messages.
 --
 -- @since 0.0.1.0
 initPullStream
@@ -533,7 +541,8 @@ initPullStream (Multipart statePtr) (Header headerForeignPtr) (SecretKey secretK
 -- Applications will typically call this function in a loop,
 -- until a message with the 'Final' tag is found.
 --
--- If the tag cannot be decoded from the payload, then it is not returned in the `StreamResult`.
+-- If the tag cannot be decoded from the payload, then it is not returned
+-- in the `StreamResult`.
 --
 -- @since 0.0.1.0
 pullFromStream
@@ -566,7 +575,9 @@ doPullFromStream
   -> CULLong
   -> IO (Either EncryptedStreamError StreamResult)
 doPullFromStream (Multipart state) (CipherText cipherTextForeignPtr cipherTextLength) additionalDataPointer additionalDataLength = do
-  let decryptedMessagePtrSize = fromIntegral @CSize @Int $ cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes
+  let decryptedMessagePtrSize =
+        fromIntegral @CSize @Int $
+          cipherTextLength - cryptoSecretStreamXChaCha20Poly1305ABytes
   decryptedMessageForeignPtr <- Foreign.mallocForeignPtrBytes decryptedMessagePtrSize
   Foreign.allocaArray 8 $ \tagPtr ->
     Foreign.withForeignPtr decryptedMessageForeignPtr $ \decryptedMessagePtr ->
@@ -612,15 +623,18 @@ decryptStream
   -> (forall (s :: Type). Multipart s -> IO [Either EncryptedStreamError StreamResult])
   -> m [Either EncryptedStreamError StreamResult]
 decryptStream (header, secretKey) action = do
-  liftIO $ Foreign.allocaBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes) $ \statePtr -> do
-    result <-
-      initPullStream
-        (Multipart statePtr)
-        header
-        secretKey
-    if isRight result
-      then action (Multipart statePtr)
-      else pure [Left DecryptionStreamInitError]
+  liftIO
+    $ Foreign.allocaBytes
+      (fromIntegral cryptoSecretStreamXChaCha20Poly1305StateBytes)
+    $ \statePtr -> do
+      result <-
+        initPullStream
+          (Multipart statePtr)
+          header
+          secretKey
+      if isRight result
+        then action (Multipart statePtr)
+        else pure [Left DecryptionStreamInitError]
 
 -- | Trigger a key re-generation. You want to do this when your peer sends a message with the 'Rekey' tag on it.
 --

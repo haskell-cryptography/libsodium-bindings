@@ -4,8 +4,8 @@ The Haskell Cryptography Group presents its suite of libsodium packages:
 
 | Package                  | Status           |
 |--------------------------|------------------|
-| [sel][sel]               | ![sel-ci]        |
-| [libsodium‑bindings][lb] | ![lb-ci]         |
+| [sel][sel]               | [![sel-badge]][sel-ci]        |
+| [libsodium‑bindings][lb] | [![lb-badge]][lb-ci]         |
 
 ## Comparison with other libraries
 
@@ -24,7 +24,9 @@ The Haskell Cryptography Group presents its suite of libsodium packages:
 | `libsodium`          | Legacy `ccall` convention      | `pkg-config`
 
 [sel]: https://github.com/haskell-cryptography/libsodium-bindings/blob/main/sel/README.md
-[sel-ci]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/sel.yml/badge.svg
+[sel-badge]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/sel.yml/badge.svg
+[sel-ci]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/sel.yml?query=branch%3Amain
 
 [lb]: https://github.com/haskell-cryptography/libsodium-bindings/blob/main/libsodium-bindings/README.md
-[lb-ci]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/libsodium-bindings.yml/badge.svg
+[lb-badge]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/libsodium-bindings.yml/badge.svg
+[lb-ci]: https://github.com/haskell-cryptography/libsodium-bindings/actions/workflows/libsodium-bindings.yml?query=branch%3Amain

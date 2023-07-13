@@ -24,11 +24,12 @@ module LibSodium.Bindings.SecureMemory
   , sodiumMalloc
   , sodiumAllocArray
   , sodiumFree
+  , finalizerSodiumFree
   )
 where
 
 import Data.Word (Word8)
-import Foreign (Ptr)
+import Foreign (FinalizerPtr, Ptr)
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 
 -- $introduction
@@ -178,3 +179,11 @@ foreign import capi "sodium.h sodium_free"
     :: forall a
      . Ptr a
     -> IO ()
+
+-- | Function pointer to use as 'Foreign.ForeignPtr' finalizer for sodium-allocated memory.
+--
+-- The memory region is filled with zeros before the deallocation.
+foreign import capi "sodium.h &sodium_free"
+  finalizerSodiumFree
+    :: forall a
+     . FinalizerPtr a

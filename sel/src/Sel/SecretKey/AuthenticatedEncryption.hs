@@ -24,6 +24,8 @@ module Sel.SecretKey.AuthenticatedEncryption
   , newSecretKey
   , secretKeyFromByteString
   , unsafeSecretKeyToHexByteString
+  , newSecretKeyWith
+  , freeSecretKey
 
     -- ** Nonce
   , Nonce
@@ -42,7 +44,7 @@ module Sel.SecretKey.AuthenticatedEncryption
   , decrypt
   ) where
 
-import Control.Monad (void)
+import Control.Monad (void, when)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -54,12 +56,13 @@ import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
 import Foreign (ForeignPtr)
 import qualified Foreign
-import Foreign.C (CChar, CSize, CUChar, CULLong)
+import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.Secretbox (cryptoSecretboxEasy, cryptoSecretboxKeyBytes, cryptoSecretboxKeygen, cryptoSecretboxMACBytes, cryptoSecretboxNonceBytes, cryptoSecretboxOpenEasy)
+import LibSodium.Bindings.SecureMemory
 import Sel.Internal
 
 -- $introduction
@@ -120,11 +123,7 @@ instance Show SecretKey where
 --
 -- @since 0.0.1.0
 newSecretKey :: IO SecretKey
-newSecretKey = do
-  fPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretboxKeyBytes)
-  Foreign.withForeignPtr fPtr $ \ptr ->
-    cryptoSecretboxKeygen ptr
-  pure $ SecretKey fPtr
+newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 
 -- | Create a 'SecretKey' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
@@ -135,15 +134,38 @@ secretKeyFromByteString bytestring =
   if BS.length bytestring < fromIntegral cryptoSecretboxKeyBytes
     then Nothing
     else unsafeDupablePerformIO $
-      BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
-        secretKeyForeignPtr <-
-          BS.mallocByteString @CChar (fromIntegral cryptoSecretboxKeyBytes)
-        Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
-          Foreign.copyArray
-            outsideSecretKeyPtr
-            secretKeyPtr
-            (fromIntegral cryptoSecretboxKeyBytes)
-        pure $ Just $ SecretKey (Foreign.castForeignPtr @CChar @CUChar secretKeyForeignPtr)
+      BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
+        fmap Just $
+          newSecretKeyWith $ \secretKeyPtr ->
+            Foreign.copyArray
+              outsideSecretKeyPtr
+              (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+              (fromIntegral cryptoSecretboxKeyBytes)
+
+-- | Prepare memory for a 'SecretKey' and use the provided action to fill it.
+--
+-- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc' (see the note attached there).
+-- Finalizer is run when the key is goes out of scope, but 'freeSecretKey' can be used to release early.
+--
+-- @since 0.0.1.0
+newSecretKeyWith :: (Foreign.Ptr CUChar -> IO ()) -> IO SecretKey
+newSecretKeyWith action = do
+  ptr <- sodiumMalloc cryptoSecretboxKeyBytes
+  when (ptr == Foreign.nullPtr) $ do
+    throwErrno "sodium_malloc"
+
+  fPtr <- Foreign.newForeignPtr_ ptr
+  Foreign.addForeignPtrFinalizer finalizerSodiumFree fPtr
+  action ptr
+  pure $ SecretKey fPtr
+
+-- | Trigger memory clean up and release without waiting for GC.
+--
+-- The 'SecretKey' must not be used again.
+--
+-- @since 0.0.1.0
+freeSecretKey :: SecretKey -> IO ()
+freeSecretKey (SecretKey fPtr) = Foreign.finalizeForeignPtr fPtr
 
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
 --

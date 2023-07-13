@@ -40,7 +40,7 @@ module LibSodium.Bindings.CryptoBox
   , cryptoBoxPublicKeyBytes
   , cryptoBoxSecretKeyBytes
   , cryptoBoxSeedBytes
-  , cryptoBoxMacBytes
+  , cryptoBoxMACBytes
   , cryptoBoxNonceBytes
   , cryptoBoxBeforeNMBytes
   ) where
@@ -118,7 +118,7 @@ foreign import capi "sodium.h crypto_box_seed_keypair"
 --
 -- The pointers to the buffers containing the message to encrypt and the
 -- combination of authentication tag and encrypted message can overlap, making in-place
--- encryption possible. However do not forget that 'cryptoBoxMacBytes' extra bytes are required to prepend the tag.
+-- encryption possible. However do not forget that 'cryptoBoxMACBytes' extra bytes are required to prepend the tag.
 --
 -- /See:/ [crypto_box_easy()](https://doc.libsodium.org/public-key_cryptography/authenticated_encryption#combined-mode)
 --
@@ -126,7 +126,7 @@ foreign import capi "sodium.h crypto_box_seed_keypair"
 foreign import capi "crypto_box_easy"
   cryptoBoxEasy
     :: Ptr CUChar
-    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMacBytes' + @messageLength@
+    -- ^ Buffer that will hold the encrypted message, of size 'cryptoBoxMACBytes' + @messageLength@.
     -> Ptr CUChar
     -- ^ Buffer that holds the message to be encrypted
     -> CULLong
@@ -158,13 +158,13 @@ foreign import capi "crypto_box_open_easy"
     -> Ptr CUChar
     -- ^ Buffer that holds the authentication tag and encrypted message combination produced by 'cryptoBoxEasy'.
     -> CULLong
-    -- ^ Length of the authentication tag and encrypted message combination, which is 'cryptoBoxMacBytes' + length of the message
+    -- ^ Length of the authentication tag and encrypted message combination, which is 'cryptoBoxMACBytes' + length of the message
     -> Ptr CUChar
     -- ^ Nonce, that should be at least of size 'cryptoBoxNonceBytes'. It must match the nonce used by 'cryptoBoxEasy'.
     -> Ptr CUChar
-    -- ^ Buffer that holds the public key, of size 'cryptoBoxPublicKeyBytes'
+    -- ^ Buffer that holds the recipient's public key, of size 'cryptoBoxPublicKeyBytes'
     -> Ptr CUChar
-    -- ^ Buffer that holds the secret key, of size 'cryptoBoxSecretKeyBytes'
+    -- ^ Buffer that holds the sender's secret key, of size 'cryptoBoxSecretKeyBytes'
     -> IO CInt
     -- ^ The function returns -1 if the verification fails and 0 on success
 
@@ -179,7 +179,7 @@ foreign import capi "crypto_box_detached"
     :: Ptr CUChar
     -- ^ Buffer that will hold the encrypted message.
     -> Ptr CUChar
-    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMacBytes'
+    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMACBytes'
     -> Ptr CUChar
     -- ^ Buffer that holds the message to be encrypted.
     -> CULLong
@@ -207,7 +207,7 @@ foreign import capi "crypto_box_open_detached"
     -> Ptr CUChar
     -- ^ Buffer that holds the encrypted message
     -> Ptr CUChar
-    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMacBytes'
+    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMACBytes'
     -> CULLong
     -- ^ Length of the plaintext message
     -> Ptr CUChar
@@ -288,7 +288,7 @@ foreign import capi "crypto_box_detached_afternm"
     :: Ptr CUChar
     -- ^ Buffer that will hold the encrypted message.
     -> Ptr CUChar
-    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMacBytes'
+    -- ^ Buffer that will hold the authentication tag, of size 'cryptoBoxMACBytes'
     -> Ptr CUChar
     -- ^ Buffer that holds the plaintext message.
     -> CULLong
@@ -312,7 +312,7 @@ foreign import capi "crypto_box_open_detached_afternm"
     -> Ptr CUChar
     -- ^ Buffer that holds the encrypted message.
     -> Ptr CUChar
-    -- ^ Buffer that holds the authentication tag, of size 'cryptoBoxMacBytes'
+    -- ^ Buffer that holds the authentication tag, of size 'cryptoBoxMACBytes'
     -> CULLong
     -- ^ Length of the plaintext message
     -> Ptr CUChar
@@ -354,7 +354,7 @@ foreign import capi "sodium.h value crypto_box_SEEDBYTES"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_box_MACBYTES"
-  cryptoBoxMacBytes :: CSize
+  cryptoBoxMACBytes :: CSize
 
 -- |
 --

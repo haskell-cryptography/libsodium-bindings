@@ -42,13 +42,15 @@ library
   import:          common
   hs-source-dirs:  src
   exposed-modules:
+    Sel
     Sel.Hashing
     Sel.Hashing.Password
     Sel.Hashing.SHA2
     Sel.Hashing.SHA2.SHA256
     Sel.Hashing.SHA2.SHA512
+    Sel.PublicKey.AuthenticatedEncryption
+    Sel.PublicKey.Signature
     Sel.SecretKey.AuthenticatedEncryption
-    Sel.Signing
 
   other-modules:   Sel.Internal
   build-depends:
@@ -68,8 +70,9 @@ test-suite sel-tests
     Test.Hashing
     Test.Hashing.Password
     Test.Hashing.SHA2
+    Test.PublicKey.AuthenticatedEncryption
+    Test.PublicKey.Signature
     Test.SecretKey.AuthenticatedEncryption
-    Test.Signing
 
   hs-source-dirs: test
   build-depends:

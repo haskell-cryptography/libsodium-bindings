@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test.Signing where
+module Test.PublicKey.Signature where
 
-import Sel.Signing
+import Sel.PublicKey.Signature
 import Test.Tasty
 import Test.Tasty.HUnit
 

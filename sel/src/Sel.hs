@@ -1,0 +1,32 @@
+-- |
+--
+-- Module: Sel.Hashing.Signing
+-- Description: Public-key signatures with the Ed25519 algorithm
+-- Copyright: (C) Hécate Moonlight 2022
+-- License: BSD-3-Clause
+-- Maintainer: The Haskell Cryptography Group
+-- Portability: GHC only
+--
+-- Sel is the library for casual cryptographers by the [Haskell Cryptography Group](https://haskell-cryptography.org).
+-- Building on [Libsodium](https://doc.libsodium.org), safe interface to its cryptography primitives are offered.
+--
+-- +--+-------------------------------------------------------------------+-----------------------------------------+
+-- |  |                              Purpose                              | Module                                  |
+-- +==+===================================================================+=========================================+
+-- |  |                              __Hashing__                          |                                         |
+-- |  +-------------------------------------------------------------------+-----------------------------------------+
+-- |  | Hash passwords                                                    | "Sel.Hashing.Password"                  |
+-- |  +-------------------------------------------------------------------+-----------------------------------------+
+-- |  | Verify the integrity of files                                     | "Sel.Hashing"                           |
+-- +--+-------------------------------------------------------------------+-----------------------------------------+
+-- |  | __Secret key / symmetric cryptography__                           |                                         |
+-- |  +-------------------------------------------------------------------+-----------------------------------------+
+-- |  | Encrypt and sign data with a secret key                           | "Sel.SecretKey.AuthenticatedEncryption" |
+-- +--+-------------------------------------------------------------------+-----------------------------------------+
+-- |  | __Public and Secret key / asymmetric cryptography__               |                                         |
+-- |  +-------------------------------------------------------------------+-----------------------------------------+
+-- |  | Sign with a secret key and distribute my public key               | "Sel.PublicKey.Signature"               |
+-- |  +-------------------------------------------------------------------+-----------------------------------------+
+-- |  | Sign and encrypt with my secret key and my recipient's public key | "Sel.PublicKey.AuthenticatedEncryption" |
+-- +--+-------------------------------------------------------------------+-----------------------------------------+
+module Sel where

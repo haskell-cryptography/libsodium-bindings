@@ -6,13 +6,13 @@
 
 -- |
 --
--- Module: Sel.SecretKey.AuthenticatedEncryption
+-- Module: Sel.SecretKey.Cipher
 -- Description: Authenticated Encryption with Poly1305 MAC and XSalsa20
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
-module Sel.SecretKey.AuthenticatedEncryption
+module Sel.SecretKey.Cipher
   ( -- ** Introduction
     -- $introduction
 
@@ -75,14 +75,14 @@ import Sel.Internal
 
 -- $usage
 --
--- > import qualified Sel.SecretKey.AuthenticatedEncryption as AuthenticatedEncryption
+-- > import qualified Sel.SecretKey.Cipher as Cipher
 -- >
 -- > main = do
 -- >   -- We get the secretKey from the other party or with 'newSecretKey'.
 -- >   -- We get the nonce from the other party with the message, or with 'encrypt' and our own message.
 -- >   -- Do not reuse a nonce with the same secret key!
--- >   (nonce, encryptedMessage) <- AuthenticatedEncryption.encrypt "hello hello" secretKey
--- >   let result = AuthenticatedEncryption.decrypt encryptedMessage secretKey nonce
+-- >   (nonce, encryptedMessage) <- Cipher.encrypt "hello hello" secretKey
+-- >   let result = Cipher.decrypt encryptedMessage secretKey nonce
 -- >   print result
 -- >   -- "Just \"hello hello\""
 

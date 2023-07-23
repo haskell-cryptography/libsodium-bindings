@@ -7,13 +7,13 @@
 
 -- |
 --
--- Module: Sel.PublicKey.AuthenticatedEncryption
--- Description: Public key authenticated encryption with X25519, XSalsa20 and Poly1305
+-- Module: Sel.PublicKey.Cipher
+-- Description: Authenticated encryption with public and secret keys
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
-module Sel.PublicKey.AuthenticatedEncryption
+module Sel.PublicKey.Cipher
   ( -- ** Introduction
     -- $introduction
 
@@ -22,19 +22,19 @@ module Sel.PublicKey.AuthenticatedEncryption
 
     -- ** Key pair generation
     newKeyPair
-  , SecretKey
+  , SecretKey (..)
   , unsafeSecretKeyToHexByteString
   , freeSecretKey
-  , PublicKey
+  , PublicKey (..)
   , secretKeyPairFromHexByteStrings
 
     -- ** Nonce
-  , Nonce
+  , Nonce (..)
   , nonceFromHexByteString
   , nonceToHexByteString
 
     -- ** Cipher text
-  , CipherText
+  , CipherText (..)
   , cipherTextFromHexByteString
   , cipherTextToHexText
   , cipherTextToHexByteString
@@ -45,7 +45,8 @@ module Sel.PublicKey.AuthenticatedEncryption
   , decrypt
 
     -- ** Errors
-  , KeyPairGenerationException
+  , KeyPairGenerationException (..)
+  , EncryptionError (..)
   ) where
 
 import Control.Monad (when)
@@ -78,15 +79,14 @@ import Sel.Internal
 
 -- $usage
 --
--- > import qualified Sel.PublicKey.AuthenticatedEncryption as AuthenticatedEncryption
+-- > import qualified Sel.PublicKey.Cipher as Cipher
 -- >
 -- > main = do
 -- >   -- We get the sender their pair of keys:
 -- >   (senderSecretKey, senderPublicKey) <- newKeyPair
 -- >   -- We get the nonce from the other party with the message, or with 'encrypt' and our own message.
--- >   -- Do not reuse a nonce with the same secret key!
--- >   (nonce, encryptedMessage) <- AuthenticatedEncryption.encrypt "hello hello" secretKey
--- >   let result = AuthenticatedEncryption.decrypt encryptedMessage secretKey nonce
+-- >   (nonce, encryptedMessage) <- Cipher.encrypt "hello hello" secretKey
+-- >   let result = Cipher.decrypt encryptedMessage secretKey nonce
 -- >   print result
 -- >   -- "Just \"hello hello\""
 
@@ -465,13 +465,12 @@ encrypt message (PublicKey publicKeyForeignPtr) (SecretKey secretKeyForeignPtr) 
                 noncePtr
                 publicKeyPtr
                 secretKeyPtr
-            case result of
-              (-1) -> error "cryptoBoxEasy failed to encrypt the message"
-              _ -> do
-                let cipherText = CipherText (fromIntegral @Int @CULLong cStringLen) cipherTextForeignPtr
-                pure (Nonce nonceForeignPtr, cipherText)
+            when (result /= 0) $ throw EncryptionError
+            let cipherText = CipherText (fromIntegral @Int @CULLong cStringLen) cipherTextForeignPtr
+            pure (Nonce nonceForeignPtr, cipherText)
 
--- | Decrypt a 'CipherText' and authenticated message with the shared secret key and the one-time cryptographic nonce.
+-- | Decrypt a 'CipherText' and authenticated message with the shared
+-- secret key and the one-time cryptographic nonce.
 --
 -- @since 0.0.1.0
 decrypt
@@ -516,5 +515,13 @@ decrypt
 --
 -- @since 0.0.1.0
 data KeyPairGenerationException = KeyPairGenerationException
+  deriving stock (Eq, Ord, Show)
+  deriving anyclass (Exception)
+
+-- | Exception thrown upon error during the encryption
+-- of the message by 'encrypt'.
+--
+-- @since 0.0.1.0
+data EncryptionError = EncryptionError
   deriving stock (Eq, Ord, Show)
   deriving anyclass (Exception)

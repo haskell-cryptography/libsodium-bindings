@@ -6,9 +6,10 @@ import LibSodium.Bindings.Main (sodiumInit)
 import qualified Test.Hashing as Hashing
 import qualified Test.Hashing.Password as Password
 import qualified Test.Hashing.SHA2 as SHA2
-import qualified Test.PublicKey.AuthenticatedEncryption as PublicKey.AuthenticatedEncryption
+import qualified Test.PublicKey.Cipher as PublicKey.Cipher
+import qualified Test.PublicKey.Seal as PublicKey.Seal
 import qualified Test.PublicKey.Signature as PublicKey.Signature
-import qualified Test.SecretKey.AuthenticatedEncryption as SecretKey.AuthenticatedEncryption
+import qualified Test.SecretKey.Cipher as SecretKey.Cipher
 
 main :: IO ()
 main = do
@@ -20,7 +21,8 @@ specs =
   [ Hashing.spec
   , Password.spec
   , PublicKey.Signature.spec
-  , PublicKey.AuthenticatedEncryption.spec
+  , PublicKey.Cipher.spec
+  , PublicKey.Seal.spec
   , SHA2.spec
-  , SecretKey.AuthenticatedEncryption.spec
+  , SecretKey.Cipher.spec
   ]

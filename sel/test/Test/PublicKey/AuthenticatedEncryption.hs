@@ -15,10 +15,11 @@ spec =
 
 testEncryptMessage :: Assertion
 testEncryptMessage = do
-  (senderSecretKey, senderPublicKey) <- newKeyPair
-  (recipientSecretKey, recipientPublicKey) <- newKeyPair
-  (nonce, encryptedMessage) <- encrypt "hello hello" senderSecretKey recipientPublicKey
-  let result = decrypt encryptedMessage recipientSecretKey senderPublicKey nonce
+  (senderPublicKey, senderSecretKey) <- newKeyPair
+
+  (recipientPublicKey, recipientSecretKey) <- newKeyPair
+  (nonce, encryptedMessage) <- encrypt "hello hello" recipientPublicKey senderSecretKey
+  let result = decrypt encryptedMessage senderPublicKey recipientSecretKey nonce
   assertEqual
     "Message is well-opened with the correct key and nonce"
     (Just "hello hello")

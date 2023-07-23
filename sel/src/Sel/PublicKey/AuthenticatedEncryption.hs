@@ -21,38 +21,41 @@ module Sel.PublicKey.AuthenticatedEncryption
     -- $usage
 
     -- ** Key pair generation
-    SecretKey
-  , PublicKey
-  , newKeyPair
-  , secretKeyPairFromByteStrings
-  , freeSecretKey
+    newKeyPair
+  , SecretKey
   , unsafeSecretKeyToHexByteString
-  , unsafePublicKeyToHexByteString
+  , freeSecretKey
+  , PublicKey
+  , secretKeyPairFromHexByteStrings
 
     -- ** Nonce
   , Nonce
-  , nonceFromByteString
+  , nonceFromHexByteString
   , nonceToHexByteString
 
-    -- ** Hash
-  , Hash
-  , hashFromByteString
-  , hashToHexText
-  , hashToHexByteString
-  , hashToBinary
+    -- ** Cipher text
+  , CipherText
+  , cipherTextFromHexByteString
+  , cipherTextToHexText
+  , cipherTextToHexByteString
+  , cipherTextToBinary
 
     -- ** Encryption and Decryption
   , encrypt
   , decrypt
+
+    -- ** Errors
+  , KeyPairGenerationException
   ) where
 
-import Control.Monad (void, when)
+import Control.Monad (when)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text as Text
 import Data.Text.Display (Display (displayBuilder), OpaqueInstance (..), ShowInstance (..))
 import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
@@ -66,7 +69,7 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 import Control.Exception
 import LibSodium.Bindings.CryptoBox
 import LibSodium.Bindings.Random (randombytesBuf)
-import LibSodium.Bindings.SecureMemory
+import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumFree, sodiumMalloc)
 import Sel.Internal
 
 -- $introduction
@@ -127,9 +130,8 @@ newtype PublicKey = PublicKey (ForeignPtr CUChar)
   deriving
     ( Display
       -- ^ @since 0.0.1.0
-      -- > display secretKey == "[REDACTED]"
     )
-    via (OpaqueInstance "[REDACTED]" PublicKey)
+    via (ShowInstance PublicKey)
 
 -- |
 --
@@ -147,80 +149,94 @@ instance Ord PublicKey where
     unsafeDupablePerformIO $
       foreignPtrOrd hk1 hk2 cryptoBoxPublicKeyBytes
 
--- | > show secretKey == "[REDACTED]"
+-- |
 --
 -- @since 0.0.1.0
 instance Show PublicKey where
-  show _ = "[REDACTED]"
+  show = BS.unpackChars . publicKeyToHexByteString
 
-data KeyPairGenerationException = KeyPairGenerationException
-  deriving stock (Eq, Ord, Show)
-  deriving anyclass (Exception)
+publicKeyToHexByteString :: PublicKey -> StrictByteString
+publicKeyToHexByteString (PublicKey publicKeyForeignPtr) =
+  Base16.encodeBase16' $
+    BS.fromForeignPtr0
+      (Foreign.castForeignPtr @CUChar @Word8 publicKeyForeignPtr)
+      (fromIntegral @CSize @Int cryptoBoxPublicKeyBytes)
 
 -- | Generate a new random secret key.
 --
--- @since 0.0.1.0
-newKeyPair :: IO (SecretKey, PublicKey)
-newKeyPair = newKeyPairWith $ \secretKeyPtr publicKeyPtr -> do
-  result <- cryptoBoxKeyPair secretKeyPtr publicKeyPtr
-  when (result /= 0) $ throw KeyPairGenerationException
-
--- | Create a 'SecretKey' from a binary 'StrictByteString' that you have obtained on your own,
--- usually from the network or disk.
+-- May throw 'KeyPairGenerationException' if the generation fails.
 --
 -- @since 0.0.1.0
-secretKeyPairFromByteStrings
-  :: StrictByteString
-  -- ^ Secret key
-  -> StrictByteString
-  -- @ Public keyu
-  -> Maybe (SecretKey, PublicKey)
-secretKeyPairFromByteStrings secretByteString publicByteString =
-  if BS.length secretByteString < fromIntegral cryptoBoxSecretKeyBytes
-    || BS.length publicByteString < fromIntegral cryptoBoxPublicKeyBytes
-    then Nothing
-    else unsafeDupablePerformIO $
-      BS.unsafeUseAsCString secretByteString $ \outsideSecretKeyPtr ->
-        BS.unsafeUseAsCString publicByteString $ \outsidePublicKeyPtr ->
-          fmap Just $
-            newKeyPairWith $ \secretKeyPtr publicKeyPtr -> do
-              Foreign.copyArray
-                outsideSecretKeyPtr
-                (Foreign.castPtr @CUChar @CChar secretKeyPtr)
-                (fromIntegral cryptoBoxSecretKeyBytes)
+newKeyPair :: IO (PublicKey, SecretKey)
+newKeyPair = newKeyPairWith $ \publicKeyPtr secretKeyPtr -> do
+  result <- cryptoBoxKeyPair publicKeyPtr secretKeyPtr
+  when (result /= 0) $ throw KeyPairGenerationException
 
-              Foreign.copyArray
-                outsidePublicKeyPtr
-                (Foreign.castPtr @CUChar @CChar publicKeyPtr)
-                (fromIntegral cryptoBoxPublicKeyBytes)
+-- | Create a pair of 'SecretKey' and 'PublicKey'  from hexadecimal-encoded
+-- 'StrictByteString's that you have obtained on your own, usually from the network or disk.
+--
+-- @since 0.0.1.0
+secretKeyPairFromHexByteStrings
+  :: StrictByteString
+  -- ^ Public key
+  -> StrictByteString
+  -- ^ Secret key
+  -> Either Text (PublicKey, SecretKey)
+secretKeyPairFromHexByteStrings publicByteStringHex secretByteStringHex =
+  case (Base16.decodeBase16 publicByteStringHex, Base16.decodeBase16 secretByteStringHex) of
+    (Right publicByteString, Right secretByteString) ->
+      if BS.length publicByteString < fromIntegral cryptoBoxPublicKeyBytes
+        || BS.length secretByteString < fromIntegral cryptoBoxSecretKeyBytes
+        then Left (Text.pack "Input too short")
+        else unsafeDupablePerformIO $
+          BS.unsafeUseAsCString publicByteString $ \outsidePublicKeyPtr ->
+            BS.unsafeUseAsCString secretByteString $ \outsideSecretKeyPtr ->
+              fmap Right $
+                newKeyPairWith $ \publicKeyPtr secretKeyPtr -> do
+                  Foreign.copyArray
+                    outsidePublicKeyPtr
+                    (Foreign.castPtr @CUChar @CChar publicKeyPtr)
+                    (fromIntegral cryptoBoxPublicKeyBytes)
+
+                  Foreign.copyArray
+                    outsideSecretKeyPtr
+                    (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+                    (fromIntegral cryptoBoxSecretKeyBytes)
+    (_, Left msg) -> Left msg
+    (Left msg, _) -> Left msg
 
 -- | Prepare memory for a 'SecretKey' and 'PublicKey' pair,
 -- and use the provided action to fill it.
 --
--- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc' (see the note attached there).
--- Finalizer is run when the key is goes out of scope, but 'freeSecretKey' can be used to release early.
+-- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc'
+-- (see the note attached there).
+-- Finalizer is run when the key is goes out of scope, but 'freeSecretKey'
+-- can be used to release early.
 --
 -- @since 0.0.1.0
 newKeyPairWith
   :: ( Ptr CUChar
-       -- \^ Secret Key pointer
-       -> Ptr CUChar
        -- \^ Public Key pointer
+       -> Ptr CUChar
+       -- \^ Secret Key pointer
        -> IO ()
      )
-  -> IO (SecretKey, PublicKey)
+  -> IO (PublicKey, SecretKey)
 newKeyPairWith action = do
-  secretKeyPtr <- sodiumMalloc cryptoBoxSecretKeyBytes
   publicKeyPtr <- sodiumMalloc cryptoBoxPublicKeyBytes
+  secretKeyPtr <- sodiumMalloc cryptoBoxSecretKeyBytes
   when (secretKeyPtr == Foreign.nullPtr || publicKeyPtr == Foreign.nullPtr) $ do
-    Foreign.throwErrno "sodium_malloc"
+    sodiumFree secretKeyPtr
+    sodiumFree publicKeyPtr
+    Foreign.throwErrno "sodium_malloc failed to allocate memory"
 
   secretKeyForeignPtr <- Foreign.newForeignPtr_ secretKeyPtr
   Foreign.addForeignPtrFinalizer finalizerSodiumFree secretKeyForeignPtr
   publicKeyForeignPtr <- Foreign.newForeignPtr_ publicKeyPtr
   Foreign.addForeignPtrFinalizer finalizerSodiumFree publicKeyForeignPtr
-  action secretKeyPtr publicKeyPtr
-  pure (SecretKey secretKeyForeignPtr, PublicKey publicKeyForeignPtr)
+
+  action publicKeyPtr secretKeyPtr
+  pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
 
 -- | Trigger memory clean up and release without waiting for GC.
 --
@@ -249,12 +265,6 @@ unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-unsafePublicKeyToHexByteString :: PublicKey -> StrictByteString
-unsafePublicKeyToHexByteString (PublicKey publicKeyForeignPtr) =
-  Base16.encodeBase16' $
-    BS.fromForeignPtr0
-      (Foreign.castForeignPtr @CUChar @Word8 publicKeyForeignPtr)
-      (fromIntegral @CSize @Int cryptoBoxPublicKeyBytes)
 
 -- | A random number that must only be used once per exchanged message.
 -- It does not have to be confidential.
@@ -265,7 +275,6 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
   deriving
     ( Display
       -- ^ @since 0.0.1.0
-      -- > display secretKey == "[REDACTED]"
     )
     via (ShowInstance Nonce)
 
@@ -294,7 +303,7 @@ instance Show Nonce where
 -- | Generate a new random nonce.
 -- Only use it once per exchanged message.
 --
--- Do not use this outside of hash creation!
+-- Do not use this outside of ciphertext creation!
 newNonce :: IO Nonce
 newNonce = do
   (fPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoBoxNonceBytes)
@@ -302,23 +311,26 @@ newNonce = do
     randombytesBuf (Foreign.castPtr @CUChar @Word8 ptr) cryptoBoxNonceBytes
   pure $ Nonce fPtr
 
--- | Create a 'Nonce' from a binary 'StrictByteString' that you have obtained on your own,
--- usually from the network or disk.
+-- | Create a 'Nonce' from a hexadecimal-encoded 'StrictByteString' that you have obtained
+-- on your own, usually from the network or disk.
 --
 -- @since 0.0.1.0
-nonceFromByteString :: StrictByteString -> Nonce
-nonceFromByteString bytestring = unsafeDupablePerformIO $
-  BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
-    nonceForeignPtr <-
-      BS.mallocByteString
-        @CChar
-        (fromIntegral cryptoBoxNonceBytes)
-    Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
-      Foreign.copyArray
-        outsideNoncePtr
-        noncePtr
-        (fromIntegral cryptoBoxNonceBytes)
-    pure $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+nonceFromHexByteString :: StrictByteString -> Either Text Nonce
+nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
+  case Base16.decodeBase16 hexNonce of
+    Right bytestring ->
+      BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
+        nonceForeignPtr <-
+          BS.mallocByteString
+            @CChar
+            (fromIntegral cryptoBoxNonceBytes)
+        Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
+          Foreign.copyArray
+            outsideNoncePtr
+            noncePtr
+            (fromIntegral cryptoBoxNonceBytes)
+        pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+    Left msg -> pure $ Left msg
 
 -- | Convert a 'Nonce' to a hexadecimal-encoded 'StrictByteString'.
 --
@@ -333,16 +345,16 @@ nonceToHexByteString (Nonce nonceForeignPtr) =
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --
 -- @since 0.0.1.0
-data Hash = Hash
+data CipherText = CipherText
   { messageLength :: CULLong
-  , hashForeignPtr :: ForeignPtr CUChar
+  , cipherTextForeignPtr :: ForeignPtr CUChar
   }
 
 -- |
 --
 -- @since 0.0.1.0
-instance Eq Hash where
-  (Hash messageLength1 hk1) == (Hash messageLength2 hk2) =
+instance Eq CipherText where
+  (CipherText messageLength1 hk1) == (CipherText messageLength2 hk2) =
     unsafeDupablePerformIO $ do
       let result1 = messageLength1 == messageLength2
       result2 <-
@@ -355,8 +367,8 @@ instance Eq Hash where
 -- |
 --
 -- @since 0.0.1.0
-instance Ord Hash where
-  compare (Hash messageLength1 hk1) (Hash messageLength2 hk2) =
+instance Ord CipherText where
+  compare (CipherText messageLength1 hk1) (CipherText messageLength2 hk2) =
     unsafeDupablePerformIO $ do
       let result1 = compare messageLength1 messageLength2
       result2 <- foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoBoxMACBytes)
@@ -365,122 +377,128 @@ instance Ord Hash where
 -- | ⚠️  Be prudent as to what you do with it!
 --
 -- @since 0.0.1.0
-instance Display Hash where
-  displayBuilder = Builder.fromText . hashToHexText
+instance Display CipherText where
+  displayBuilder = Builder.fromText . cipherTextToHexText
 
 -- | ⚠️  Be prudent as to what you do with it!
 --
 -- @since 0.0.1.0
-instance Show Hash where
-  show = BS.unpackChars . hashToHexByteString
+instance Show CipherText where
+  show = BS.unpackChars . cipherTextToHexByteString
 
--- | Create a 'Hash' from a binary 'StrictByteString' that you have obtained on your own,
--- usually from the network or disk. It must be a valid hash built from the concatenation
+-- | Create a 'CipherText' from a binary 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk. It must be a valid cipherText built from the concatenation
 -- of the encrypted message and the authentication tag.
 --
 -- @since 0.0.1.0
-hashFromByteString :: StrictByteString -> Maybe Hash
-hashFromByteString bytestring =
-  if BS.length bytestring < fromIntegral cryptoBoxMACBytes
+cipherTextFromHexByteString :: StrictByteString -> Maybe CipherText
+cipherTextFromHexByteString hexByteString =
+  if BS.length hexByteString < fromIntegral cryptoBoxMACBytes
     then Nothing
     else unsafeDupablePerformIO $
-      BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
-        hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength
-        Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-          Foreign.copyArray outsideHashPtr hashPtr outsideHashLength
-        pure $
-          Just $
-            Hash
-              (fromIntegral @Int @CULLong outsideHashLength)
-              (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+      case Base16.decodeBase16 hexByteString of
+        Right bytestring ->
+          BS.unsafeUseAsCStringLen bytestring $ \(outsideCipherTextPtr, outsideCipherTextLength) -> do
+            cipherTextForeignPtr <- BS.mallocByteString @CChar outsideCipherTextLength
+            Foreign.withForeignPtr cipherTextForeignPtr $ \cipherTextPtr ->
+              Foreign.copyArray outsideCipherTextPtr cipherTextPtr outsideCipherTextLength
+            pure $
+              Just $
+                CipherText
+                  (fromIntegral @Int @CULLong outsideCipherTextLength)
+                  (Foreign.castForeignPtr @CChar @CUChar cipherTextForeignPtr)
+        Left msg -> error (Text.unpack msg)
 
--- | Convert a 'Hash' to a hexadecimal-encoded 'Text'.
+-- | Convert a 'CipherText' to a hexadecimal-encoded 'Text'.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-hashToHexText :: Hash -> Text
-hashToHexText = Base16.encodeBase16 . hashToBinary
+cipherTextToHexText :: CipherText -> Text
+cipherTextToHexText = Base16.encodeBase16 . cipherTextToBinary
 
--- | Convert a 'Hash' to a hexadecimal-encoded 'StrictByteString'.
+-- | Convert a 'CipherText' to a hexadecimal-encoded 'StrictByteString'.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-hashToHexByteString :: Hash -> StrictByteString
-hashToHexByteString = Base16.encodeBase16' . hashToBinary
+cipherTextToHexByteString :: CipherText -> StrictByteString
+cipherTextToHexByteString = Base16.encodeBase16' . cipherTextToBinary
 
--- | Convert a 'Hash' to a binary 'StrictByteString'.
+-- | Convert a 'CipherText' to a binary 'StrictByteString'.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-hashToBinary :: Hash -> StrictByteString
-hashToBinary (Hash messageLength fPtr) =
+cipherTextToBinary :: CipherText -> StrictByteString
+cipherTextToBinary (CipherText messageLength fPtr) =
   BS.fromForeignPtr0
     (Foreign.castForeignPtr fPtr)
     (fromIntegral messageLength + fromIntegral cryptoBoxMACBytes)
 
--- | Create an authenticated hash from a message, a secret key,
--- and a one-time cryptographic nonce that must never be re-used with the same
+-- | Create an authenticated 'CipherText' from a message, a 'SecretKey',
+-- and a one-time cryptographic 'Nonce' that must never be re-used with the same
 -- secret key to encrypt another message.
 --
 -- @since 0.0.1.0
 encrypt
   :: StrictByteString
   -- ^ Message to encrypt.
-  -> SecretKey
-  -- ^ Secret key of the sender
   -> PublicKey
   -- ^ Public key of the recipient
-  -> IO (Nonce, Hash)
-encrypt message (SecretKey secretKeyForeignPtr) (PublicKey publicKeyForeignPtr) =
+  -> SecretKey
+  -- ^ Secret key of the sender
+  -> IO (Nonce, CipherText)
+encrypt message (PublicKey publicKeyForeignPtr) (SecretKey secretKeyForeignPtr) =
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     (Nonce nonceForeignPtr) <- newNonce
-    hashForeignPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoBoxMACBytes)
-    Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-      Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
-        Foreign.withForeignPtr publicKeyForeignPtr $ \publicKeyPtr ->
+    cipherTextForeignPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoBoxMACBytes)
+    Foreign.withForeignPtr cipherTextForeignPtr $ \cipherTextPtr ->
+      Foreign.withForeignPtr publicKeyForeignPtr $ \publicKeyPtr ->
+        Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
           Foreign.withForeignPtr nonceForeignPtr $ \noncePtr -> do
-            void $
+            result <-
               cryptoBoxEasy
-                hashPtr
+                cipherTextPtr
                 (Foreign.castPtr @CChar @CUChar cString)
                 (fromIntegral @Int @CULLong cStringLen)
                 noncePtr
                 publicKeyPtr
                 secretKeyPtr
-            let hash = Hash (fromIntegral @Int @CULLong cStringLen) hashForeignPtr
-            pure (Nonce nonceForeignPtr, hash)
+            case result of
+              (-1) -> error "cryptoBoxEasy failed to encrypt the message"
+              _ -> do
+                let cipherText = CipherText (fromIntegral @Int @CULLong cStringLen) cipherTextForeignPtr
+                pure (Nonce nonceForeignPtr, cipherText)
 
--- | Decrypt a hashed and authenticated message with the shared secret key and the one-time cryptographic nonce.
+-- | Decrypt a 'CipherText' and authenticated message with the shared secret key and the one-time cryptographic nonce.
 --
 -- @since 0.0.1.0
 decrypt
-  :: Hash
+  :: CipherText
   -- ^ Encrypted message you want to decrypt.
-  -> SecretKey
-  -- ^ Secret key of the recipient.
   -> PublicKey
   -- ^ Public key of the sender.
+  -> SecretKey
+  -- ^ Secret key of the recipient.
   -> Nonce
   -- ^ Nonce used for encrypting the original message.
   -> Maybe StrictByteString
 decrypt
-  Hash{messageLength, hashForeignPtr}
-  (SecretKey secretKeyForeignPtr)
+  CipherText{messageLength, cipherTextForeignPtr}
   (PublicKey publicKeyForeignPtr)
+  (SecretKey secretKeyForeignPtr)
   (Nonce nonceForeignPtr) = unsafeDupablePerformIO $ do
     messagePtr <- Foreign.mallocBytes (fromIntegral @CULLong @Int messageLength)
-    Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-      Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
-        Foreign.withForeignPtr publicKeyForeignPtr $ \publicKeyPtr ->
+    Foreign.withForeignPtr cipherTextForeignPtr $ \cipherTextPtr ->
+      Foreign.withForeignPtr publicKeyForeignPtr $ \publicKeyPtr ->
+        Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
           Foreign.withForeignPtr nonceForeignPtr $ \noncePtr -> do
             result <-
               cryptoBoxOpenEasy
                 messagePtr
-                hashPtr
-                (messageLength + fromIntegral cryptoBoxMACBytes)
+                cipherTextPtr
+                (messageLength + fromIntegral @CSize @CULLong cryptoBoxMACBytes)
                 noncePtr
                 publicKeyPtr
                 secretKeyPtr
@@ -492,3 +510,11 @@ decrypt
                 Just
                   <$> BS.unsafePackMallocCStringLen
                     (Foreign.castPtr @CChar bsPtr, fromIntegral messageLength)
+
+-- | Exception thrown upon error during the generation of
+-- the key pair by 'newKeyPair'.
+--
+-- @since 0.0.1.0
+data KeyPairGenerationException = KeyPairGenerationException
+  deriving stock (Eq, Ord, Show)
+  deriving anyclass (Exception)

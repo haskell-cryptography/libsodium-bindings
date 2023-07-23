@@ -1,14 +1,13 @@
 -- |
 --
--- Module: Sel.Hashing.Signing
--- Description: Public-key signatures with the Ed25519 algorithm
--- Copyright: (C) Hécate Moonlight 2022
+-- Module: Sel
+-- Description: Cryptography for the casual user.
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
 --
--- Sel is the library for casual cryptographers by the [Haskell Cryptography Group](https://haskell-cryptography.org).
--- Building on [Libsodium](https://doc.libsodium.org), safe interface to its cryptography primitives are offered.
+-- Sel is the library for casual users by the [Haskell Cryptography Group](https://haskell-cryptography.org).
+-- Building on [Libsodium](https://doc.libsodium.org), safe interfaces to its cryptography primitives are offered.
 --
 -- +--+-------------------------------------------------------------------+-----------------------------------------+
 -- |  |                              Purpose                              | Module                                  |

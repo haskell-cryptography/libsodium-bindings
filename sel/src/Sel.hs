@@ -1,12 +1,13 @@
 -- |
 --
 -- Module: Sel
--- Description: Cryptography for the casual user.
+-- Description: Cryptography for the casual user
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
 --
 -- Sel is the library for casual users by the [Haskell Cryptography Group](https://haskell-cryptography.org).
+--
 -- Building on [Libsodium](https://doc.libsodium.org), safe interfaces to its cryptography primitives are offered.
 --
 -- +--+----------------------------------------------------------------------+---------------------------+
@@ -29,5 +30,9 @@
 -- |  | Sign and encrypt with my secret key and my recipient's public key    | "Sel.PublicKey.Cipher"    |
 -- |  +----------------------------------------------------------------------+---------------------------+
 -- |  | Sign and encrypt an anonymous message with my recipient's public key | "Sel.PublicKey.Seal"      |
+-- +--+----------------------------------------------------------------------+---------------------------+
+-- |  | __Other constructs__                                                 |                           |
+-- |  +----------------------------------------------------------------------+---------------------------+
+-- |  | SHA-2 (for legacy compatibility)                                     | "Sel.Hashing.SHA2"        |
 -- +--+----------------------------------------------------------------------+---------------------------+
 module Sel where

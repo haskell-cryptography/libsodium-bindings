@@ -23,8 +23,8 @@ lint: ## Run the code linter (HLint)
 	@find sel libsodium-bindings -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code formatter (fourmolu, cabal-fmt)
-	@fourmolu -q --mode inplace sel libsodium-bindings
 	@cabal-fmt -i **/**.cabal
+	@fourmolu -q --mode inplace sel libsodium-bindings
 
 help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

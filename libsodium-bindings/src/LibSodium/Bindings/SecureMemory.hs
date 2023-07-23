@@ -30,6 +30,7 @@ where
 
 import Data.Word (Word8)
 import Foreign (FinalizerPtr, Ptr)
+import Foreign.C.Error ()
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 
 -- $introduction
@@ -99,13 +100,15 @@ foreign import capi "sodium.h sodium_munlock"
     -- ^ Size of the memory region to unlock
     -> IO CInt
 
--- | This function takes an amount (called @size@) and returns a pointer from which exactly
--- @size@ contiguous bytes of memory can be accessed. The pointer may be 'Foreign.Ptr.nullPtr'and
--- there may be an error when allocating memory, through @errno@.
+-- | This function takes an amount (called @size@) and returns a pointer from which
+-- exactly @size@ contiguous bytes of memory can be accessed. The pointer may be
+-- 'Foreign.Ptr.nullPtr'and there may be an error when allocating memory,
+-- through @errno@. Upon failure, @errno@ will be set to 'eNOMEM'
 --
 -- It is recommended that the caller use "Foreign.C.Error" to handle potential failure.
 --
--- Moreover, 'LibSodium.Bindings.Main.sodiumInit' must be called before using this function.
+-- Moreover, 'LibSodium.Bindings.Main.sodiumInit' must be called before using this
+-- function.
 --
 -- === Explanation
 -- The allocated region is placed at the end of a page boundary,
@@ -144,7 +147,8 @@ foreign import capi "sodium.h sodium_munlock"
 -- successfully passed to 'sodiumFree'.
 --
 -- ⚠️  This is not a general-purpose allocation function, and requires 3 or 4 extra
--- pages of virtual memory.
+-- pages of virtual memory. Since it is very expensive, do not use it to allocate
+-- every-day memory.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_malloc"

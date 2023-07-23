@@ -5,13 +5,13 @@
 
 -- |
 --
--- Module: Sel.Hashing.Signing
+-- Module: Sel.PublicKey.Signature
 -- Description: Public-key signatures with the Ed25519 algorithm
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
-module Sel.Signing
+module Sel.PublicKey.Signature
   ( -- ** Introduction
     -- $introduction
     PublicKey
@@ -48,6 +48,8 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import qualified Foreign.Marshal.Array as Foreign
 import qualified Foreign.Ptr as Foreign
 import GHC.IO.Handle.Text (memcpy)
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import LibSodium.Bindings.CryptoSign
   ( cryptoSignBytes
   , cryptoSignDetached
@@ -57,7 +59,6 @@ import LibSodium.Bindings.CryptoSign
   , cryptoSignVerifyDetached
   )
 import Sel.Internal
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --

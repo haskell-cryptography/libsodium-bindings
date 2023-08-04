@@ -29,6 +29,8 @@ module Sel.Hashing.Password
     -- * Salt
   , Salt
   , genSalt
+  , saltToByteString
+  , byteStringToSalt
 
     -- * Argon2 Parameters
   , Argon2Params (Argon2Params)
@@ -38,6 +40,7 @@ where
 
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
@@ -46,7 +49,6 @@ import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import LibSodium.Bindings.PasswordHashing
@@ -168,6 +170,22 @@ passwordHashToText = Text.decodeUtf8 . passwordHashToByteString
 -- @since 0.0.1.0
 newtype Salt = Salt StrictByteString
 
+-- | Convert 'Salt to underlying 'StrictByteString'
+--
+-- @since 0.0.2.0
+saltToByteString :: Salt -> StrictByteString
+saltToByteString (Salt bs) = bs
+
+-- | Convert 'StrictByteString' to 'Salt' checking that the argument is
+-- as long as 'cryptoPWHashSaltBytes'
+--
+-- @since 0.0.2.0
+byteStringToSalt :: StrictByteString -> Maybe Salt
+byteStringToSalt bs =
+  if BS.length bs /= fromIntegral cryptoPWHashSaltBytes
+    then Nothing
+    else Just (Salt bs)
+
 -- |
 --
 -- @since 0.0.1.0
@@ -193,10 +211,8 @@ defaultArgon2Params =
 --
 -- @since 0.0.1.0
 genSalt :: IO Salt
-genSalt = do
-  saltForeignPtr <- BS.mallocByteString (fromIntegral cryptoPWHashSaltBytes)
-  withForeignPtr saltForeignPtr $ \saltPtr -> do
-    randombytesBuf saltPtr cryptoPWHashSaltBytes
-    bsPtr <- mallocBytes (fromIntegral cryptoPWHashSaltBytes)
-    memcpy bsPtr saltPtr cryptoPWHashSaltBytes
-    Salt <$> BS.unsafePackMallocCStringLen (castPtr @Word8 @CChar bsPtr, fromIntegral cryptoPWHashSaltBytes)
+genSalt =
+  Salt
+    <$> BS.create
+      (fromIntegral cryptoPWHashSaltBytes)
+      (`randombytesBuf` cryptoPWHashSaltBytes)

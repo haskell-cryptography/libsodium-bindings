@@ -29,7 +29,7 @@ testHashPasswordWSalt :: Assertion
 testHashPasswordWSalt = do
   let hashWSalt s = Sel.hashByteStringWithParams Sel.defaultArgon2Params s
       password = "hunter2"
-      cmpPWHashes = on (==) Sel.passwordHashToByteString
+      cmpPWHashes = on (==) Sel.passwordHashToHexByteString
 
   salt1 <- Sel.genSalt
   hashOrig <- hashWSalt salt1 password
@@ -51,4 +51,4 @@ testHashPasswordWSalt = do
 
   assertBool
     "Bogus salt ByteString fails to generate Salt"
-    (isNothing (Sel.byteStringToSalt "deadbeef"))
+    (isNothing (Sel.hexByteStringToSalt "deadbeef"))

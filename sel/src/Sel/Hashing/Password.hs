@@ -23,14 +23,19 @@ module Sel.Hashing.Password
   , hashByteStringWithParams
 
     -- ** Conversion to textual formats
-  , passwordHashToByteString
-  , passwordHashToText
+  , passwordHashToBinary
+  , passwordHashToHexText
+  , passwordHashToHexByteString
 
     -- * Salt
   , Salt
   , genSalt
-  , saltToByteString
-  , byteStringToSalt
+  , saltToBinary
+  , saltToHexText
+  , saltToHexByteString
+  , binaryToSalt
+  , hexTextToSalt
+  , hexByteStringToSalt
 
     -- * Argon2 Parameters
   , Argon2Params (Argon2Params)
@@ -51,6 +56,7 @@ import Foreign hiding (void)
 import Foreign.C
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
+import qualified Data.ByteString.Base16 as Base16
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
 
@@ -68,7 +74,7 @@ newtype PasswordHash = PasswordHash (ForeignPtr CChar)
 
 -- | @since 0.0.1.0
 instance Display PasswordHash where
-  displayBuilder = Builder.fromText . passwordHashToText
+  displayBuilder = Builder.fromText . passwordHashToHexText
 
 -- | Hash the password with the Argon2id algorithm and
 -- a set of pre-defined parameters.
@@ -142,20 +148,24 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
           (fromIntegral @Int @CULLong cStringLen)
       pure $ result == 0
 
--- | Convert a 'PasswordHash' to a 'StrictByteString'.
+-- | Convert a 'PasswordHash' to a binary 'StrictByteString'.
 --
 -- @since 0.0.1.0
-passwordHashToByteString :: PasswordHash -> StrictByteString
-passwordHashToByteString (PasswordHash fPtr) =
-  BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
-  where
-    hashBytesSize = fromIntegral @CSize @Int cryptoPWHashStrBytes
+passwordHashToBinary :: PasswordHash -> StrictByteString
+passwordHashToBinary (PasswordHash fPtr) =
+  BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 (fromIntegral @CSize @Int cryptoPWHashStrBytes)
 
--- | Convert a 'PasswordHash' to a 'Text'.
+-- | Convert a 'PasswordHash' to a hexadecimal-encoded 'StrictByteString'.
 --
 -- @since 0.0.1.0
-passwordHashToText :: PasswordHash -> Text
-passwordHashToText = Text.decodeUtf8 . passwordHashToByteString
+passwordHashToHexByteString :: PasswordHash -> StrictByteString
+passwordHashToHexByteString = Base16.encodeBase16' . passwordHashToBinary
+
+-- | Convert a 'PasswordHash' to a strict hexadecimal-encoded 'Text'.
+--
+-- @since 0.0.1.0
+passwordHashToHexText :: PasswordHash -> Text
+passwordHashToHexText = Base16.encodeBase16 . passwordHashToBinary
 
 -- | The 'Salt' is used in conjunction with 'hashByteStringWithParams'
 -- when you want to manually provide the piece of data that will
@@ -170,21 +180,45 @@ passwordHashToText = Text.decodeUtf8 . passwordHashToByteString
 -- @since 0.0.1.0
 newtype Salt = Salt StrictByteString
 
--- | Convert 'Salt to underlying 'StrictByteString'
+-- | Convert 'Salt to underlying 'StrictByteString' binary.
 --
 -- @since 0.0.2.0
-saltToByteString :: Salt -> StrictByteString
-saltToByteString (Salt bs) = bs
+saltToBinary :: Salt -> StrictByteString
+saltToBinary (Salt bs) = bs
+
+-- | Convert 'Salt to a strict hexadecimal-encoded 'Text'.
+--
+-- @since 0.0.2.0
+saltToHexText :: Salt -> Text
+saltToHexText = Base16.encodeBase16 . saltToBinary
+
+-- | Convert 'Salt to a hexadecimal-encoded 'StrictByteString'.
+--
+-- @since 0.0.2.0
+saltToHexByteString :: Salt -> StrictByteString
+saltToHexByteString = Base16.encodeBase16' . saltToBinary
 
 -- | Convert 'StrictByteString' to 'Salt' checking that the argument is
 -- as long as 'cryptoPWHashSaltBytes'
 --
 -- @since 0.0.2.0
-byteStringToSalt :: StrictByteString -> Maybe Salt
-byteStringToSalt bs =
+binaryToSalt :: StrictByteString -> Maybe Salt
+binaryToSalt bs =
   if BS.length bs /= fromIntegral cryptoPWHashSaltBytes
     then Nothing
     else Just (Salt bs)
+
+hexTextToSalt :: Text -> Maybe Salt
+hexTextToSalt hexText =
+  case Base16.decodeBase16' hexText of
+    Right binary -> binaryToSalt binary
+    Left _ -> Nothing
+
+hexByteStringToSalt :: StrictByteString -> Maybe Salt
+hexByteStringToSalt hexByteString =
+  case Base16.decodeBase16 hexByteString of
+    Right binary -> binaryToSalt binary
+    Left _ -> Nothing
 
 -- |
 --

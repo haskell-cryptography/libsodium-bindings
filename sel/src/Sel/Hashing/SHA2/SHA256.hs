@@ -147,7 +147,7 @@ hashText text = hashByteString (Text.encodeUtf8 text)
 --
 -- @since 0.0.1.0
 hashToHexText :: Hash -> Text
-hashToHexText = Text.decodeUtf8 . hashToBinary
+hashToHexText = Base16.encodeBase16 . hashToBinary
 
 -- | Convert a 'Hash' to a strict, hexadecimal-encoded 'StrictByteString'.
 --

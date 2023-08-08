@@ -128,6 +128,9 @@ newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 -- | Create a 'SecretKey' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
 --
+-- The input secret key, once decoded from base16, must be at least of length
+-- 'cryptoSecretboxKeyBytes'.
+--
 -- @since 0.0.1.0
 secretKeyFromByteString :: StrictByteString -> Maybe SecretKey
 secretKeyFromByteString bytestring =
@@ -298,6 +301,8 @@ instance Show Hash where
 -- | Create a 'Hash' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk. It must be a valid hash built from the concatenation
 -- of the encrypted message and the authentication tag.
+--
+-- The input hash must at least of length 'cryptoSecretboxMACBytes'
 --
 -- @since 0.0.1.0
 hashFromByteString :: StrictByteString -> Maybe Hash

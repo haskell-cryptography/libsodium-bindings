@@ -175,6 +175,9 @@ newKeyPair = newKeyPairWith $ \publicKeyPtr secretKeyPtr -> do
 -- | Create a pair of 'SecretKey' and 'PublicKey'  from hexadecimal-encoded
 -- 'StrictByteString's that you have obtained on your own, usually from the network or disk.
 --
+-- The public and secret keys, once decoded from base16, must respectively
+-- be at least of length 'cryptoBoxPublicKeyBytes' and 'cryptoBoxSecretKeyBytes.
+--
 -- @since 0.0.1.0
 secretKeyPairFromHexByteStrings
   :: StrictByteString
@@ -389,6 +392,9 @@ instance Show CipherText where
 -- | Create a 'CipherText' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk. It must be a valid cipherText built from the concatenation
 -- of the encrypted message and the authentication tag.
+--
+-- The input cipher text, once decoded from base16, must be at least of length
+-- 'cryptoBoxMACBytes'.
 --
 -- @since 0.0.1.0
 cipherTextFromHexByteString :: StrictByteString -> Maybe CipherText

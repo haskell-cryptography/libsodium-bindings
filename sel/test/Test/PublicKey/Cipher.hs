@@ -1,15 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test.PublicKey.AuthenticatedEncryption where
+module Test.PublicKey.Cipher where
 
-import Sel.PublicKey.AuthenticatedEncryption
+import Sel.PublicKey.Cipher
 import Test.Tasty
 import Test.Tasty.HUnit
 
 spec :: TestTree
 spec =
   testGroup
-    "Public Key Authenticated Encryption tests"
+    "Public Key Cipher tests"
     [ testCase "Encrypt a message with public-key encryption" testEncryptMessage
     ]
 

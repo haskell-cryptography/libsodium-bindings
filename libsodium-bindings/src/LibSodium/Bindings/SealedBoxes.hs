@@ -26,7 +26,7 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 -- Sealed boxes are designed to anonymously send messages to a recipient
 -- given their public key.
 --
--- Only the recipient can decrypt these messages using their private key.
+-- Only the recipient can decrypt these messages using their secret key.
 -- While the recipient can verify the integrity of the message, they cannot
 -- verify the identity of the sender.
 --
@@ -82,7 +82,7 @@ foreign import capi "sodium.h crypto_box_seal_open"
     -- ^ Buffer that holds public key of size
     --  'LibSodium.Bindings.CryptoBox.cryptoBoxPublicKeyBytes' bytes.
     -> Ptr CUChar
-    -- ^ Buffer that holds private key of size
+    -- ^ Buffer that holds secret key of size
     --  'LibSodium.Bindings.CryptoBox.cryptoBoxSecretKeyBytes' bytes.
     -> IO CInt
     -- ^ Returns 0 on success and -1 on error.

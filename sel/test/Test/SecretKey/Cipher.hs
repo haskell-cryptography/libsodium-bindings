@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test.SecretKey.AuthenticatedEncryption where
+module Test.SecretKey.Cipher where
 
-import Sel.SecretKey.AuthenticatedEncryption
+import Sel.SecretKey.Cipher
 import Test.Tasty
 import Test.Tasty.HUnit
 

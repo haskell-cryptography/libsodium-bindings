@@ -172,7 +172,7 @@ hashToBinary (Hash fPtr) =
 --
 -- Use it like this:
 --
--- >>> hash <- SHA256.withMultipart $ \multipartState -> do -- we are in the IO monad
+-- >>> hash <- SHA256.withMultipart $ \multipartState -> do -- we are in IO
 -- ...   message1 <- getMessage
 -- ...   SHA256.updateMultipart multipartState message1
 -- ...   message2 <- getMessage
@@ -208,7 +208,7 @@ withMultipart actions = do
 
 -- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
 --
---  this function is only used within 'withMultiPart'
+--  this function is only used within 'withMultipart'
 --
 --  @since 0.0.1.0
 finaliseMultipart :: Multipart s -> IO Hash

@@ -49,6 +49,7 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
@@ -81,10 +82,6 @@ import Sel.Internal
 --
 -- @since 0.0.1.0
 newtype ShortHash = ShortHash (ForeignPtr CUChar)
-  deriving stock
-    ( Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- |
 --
@@ -101,6 +98,12 @@ instance Ord ShortHash where
   compare (ShortHash sh1) (ShortHash sh2) =
     unsafeDupablePerformIO $
       foreignPtrOrd sh1 sh2 cryptoShortHashSipHashX24Bytes
+
+-- |
+--
+-- @since 0.0.1.0
+instance Show ShortHash where
+  show = Text.unpack . shortHashToHexText
 
 -- |
 --
@@ -178,10 +181,6 @@ shortHashToHexText = Base16.encodeBase16 . shortHashToBinary
 --
 -- @since 0.0.1.0
 newtype ShortHashKey = ShortHashKey (ForeignPtr CUChar)
-  deriving stock
-    ( Show
-      -- ^ @since 0.0.1.0
-    )
 
 -- |
 --
@@ -198,6 +197,12 @@ instance Ord ShortHashKey where
   compare (ShortHashKey sh1) (ShortHashKey sh2) =
     unsafeDupablePerformIO $
       foreignPtrOrd sh1 sh2 cryptoShortHashSipHashX24Bytes
+
+-- |
+--
+-- @since 0.0.1.0
+instance Show ShortHashKey where
+  show = Text.unpack . shortHashKeyToHexText
 
 instance Display ShortHashKey where
   displayBuilder = Builder.fromText . shortHashKeyToHexText

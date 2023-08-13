@@ -11,7 +11,7 @@
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
 module Sel.Hashing.Short
-  ( -- * Introduction
+  ( -- ** Introduction
     -- $introduction
     ShortHash
 

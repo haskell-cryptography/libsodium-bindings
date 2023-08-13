@@ -22,14 +22,16 @@ module Sel.Hashing.Password
   , verifyText
   , hashByteStringWithParams
 
-    -- ** Conversion to textual formats
+    -- *** Conversion
   , passwordHashToBinary
   , passwordHashToHexText
   , passwordHashToHexByteString
 
-    -- * Salt
+    -- ** Salt
   , Salt
   , genSalt
+
+    -- ** Conversion
   , saltToBinary
   , saltToHexText
   , saltToHexByteString
@@ -46,6 +48,7 @@ where
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
@@ -56,7 +59,6 @@ import Foreign hiding (void)
 import Foreign.C
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import qualified Data.ByteString.Base16 as Base16
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
 
@@ -198,8 +200,9 @@ saltToHexText = Base16.encodeBase16 . saltToBinary
 saltToHexByteString :: Salt -> StrictByteString
 saltToHexByteString = Base16.encodeBase16' . saltToBinary
 
--- | Convert 'StrictByteString' to 'Salt' checking that the argument is
--- as long as 'cryptoPWHashSaltBytes'
+-- | Convert 'StrictByteString' to 'Salt'.
+--
+-- The input salt must be of length 'cryptoPWHashSaltBytes'.
 --
 -- @since 0.0.2.0
 binaryToSalt :: StrictByteString -> Maybe Salt
@@ -208,12 +211,22 @@ binaryToSalt bs =
     then Nothing
     else Just (Salt bs)
 
+-- | Convert a strict hexadecimal-encoded 'Text' to a 'Salt'.
+--
+-- The input salt, once decoded from base16, must be of length 'cryptoPWHashSaltBytes'.
+--
+-- @since 0.0.1.0
 hexTextToSalt :: Text -> Maybe Salt
 hexTextToSalt hexText =
   case Base16.decodeBase16' hexText of
     Right binary -> binaryToSalt binary
     Left _ -> Nothing
 
+-- | Convert a hexadecimal-encoded 'StrictByteString' to a 'Salt'.
+--
+-- The input salt, once decoded from base16, must be of length 'cryptoPWHashSaltBytes'.
+--
+-- @since 0.0.1.0
 hexByteStringToSalt :: StrictByteString -> Maybe Salt
 hexByteStringToSalt hexByteString =
   case Base16.decodeBase16 hexByteString of

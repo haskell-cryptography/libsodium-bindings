@@ -48,6 +48,7 @@ library
     Sel.Hashing.SHA2
     Sel.Hashing.SHA2.SHA256
     Sel.Hashing.SHA2.SHA512
+    Sel.Hashing.Short
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature

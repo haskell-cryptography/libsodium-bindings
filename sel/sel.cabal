@@ -72,6 +72,7 @@ test-suite sel-tests
     Test.Hashing
     Test.Hashing.Password
     Test.Hashing.SHA2
+    Test.Hashing.Short
     Test.PublicKey.Cipher
     Test.PublicKey.Seal
     Test.PublicKey.Signature

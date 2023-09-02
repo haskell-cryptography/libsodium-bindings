@@ -10,7 +10,10 @@
 -- Stability: Stable
 -- Portability: GHC only
 module LibSodium.Bindings.AEAD
-  ( -- * Operations
+  ( -- * Introduction
+    -- $introduction
+
+    -- * Operations
     cryptoAEADXChaCha20Poly1305IETFEncrypt
   , cryptoAEADXChaCha20Poly1305IETFDecrypt
   , cryptoAEADXChaCha20Poly1305IETFEncryptDetached
@@ -25,6 +28,18 @@ where
 
 import Foreign.C.Types (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 import Foreign.Ptr (Ptr)
+
+-- $introduction
+--
+-- With @XChaCha20-Poly1305-IETF@, you can encrypt a message witha key and a nonce to keept it
+-- confidential, as well as compute an authentication tag to make sure that the message
+-- has not been tampered with.
+--
+-- A typical use case for additional data is to authenticate protocol-specific metadata
+-- about the message, such as its length and encoding.
+--
+-- For a deeper dive into the limitations of the implementation, please refer to the manual:
+-- https://doc.libsodium.org/secret-key_cryptography/aead#limitations
 
 -- | This function encrypts a message, and then appends the authentication tag
 -- to the encrypted message.

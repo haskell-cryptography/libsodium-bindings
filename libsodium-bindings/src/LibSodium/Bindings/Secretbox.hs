@@ -53,7 +53,7 @@ import Foreign.C (CChar, CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 --
 --
 -- Each message must use a unique nonce, which may be generated with the 'LibSodium.Bindings.Random.randombytesBuf' primitive.
--- The nonce does not need to be kept secret but should never be reused.
+-- The nonce does not need to be kept secret but should never be reused with the same secret key.
 --
 -- For more information see the upstream docs: <https://doc.libsodium.org/secret-key_cryptography/secretbox>
 

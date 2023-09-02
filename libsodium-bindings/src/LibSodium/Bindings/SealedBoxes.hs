@@ -14,6 +14,8 @@ module LibSodium.Bindings.SealedBoxes
     -- * Functions
     cryptoBoxSeal
   , cryptoBoxSealOpen
+  , cryptoBoxKeyPair
+  , cryptoBoxSeedKeyPair
 
     -- * Constants
   , cryptoBoxSealbytes
@@ -21,6 +23,7 @@ module LibSodium.Bindings.SealedBoxes
 
 import Foreign (Ptr)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
+import LibSodium.Bindings.CryptoBox (cryptoBoxKeyPair, cryptoBoxSeedKeyPair)
 
 -- $introduction
 -- Sealed boxes are designed to anonymously send messages to a recipient

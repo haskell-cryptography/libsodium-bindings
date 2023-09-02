@@ -45,7 +45,7 @@ import Foreign.C.Types (CInt (CInt), CSize (CSize))
 -- For similar reasons, on Unix systems, one should also disable core dumps when
 -- running crypto code outside a development environment.
 -- This can be achieved using a shell built-in such as @ulimit@ or programmatically
--- using 'System.Posix.Resource.setResourceLimit':
+-- using [@setResourceLimit@](https://hackage.haskell.org/package/unix/docs/System-Posix-Resource.html#v:setResourceLimit):
 --
 -- >>> setResourceLimit ResourceCoreFileSize (ResourceLimits 0 0)
 --
@@ -61,6 +61,12 @@ import Foreign.C.Types (CInt (CInt), CSize (CSize))
 
 -- | Overwrite the memory region starting at the pointer
 -- address with zeros.
+--
+-- @memset()@ and hand-written code can be silently stripped out by
+-- an optimizing compiler or the linker.
+--
+-- This function tries to effectively zero the amount of bytes starting
+-- at the provided pointer, even if optimizations are being applied to the code.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memzero"
@@ -102,7 +108,7 @@ foreign import capi "sodium.h sodium_munlock"
 
 -- | This function takes an amount (called @size@) and returns a pointer from which
 -- exactly @size@ contiguous bytes of memory can be accessed. The pointer may be
--- 'Foreign.Ptr.nullPtr'and there may be an error when allocating memory,
+-- 'Foreign.Ptr.nullPtr' and there may be an error when allocating memory,
 -- through @errno@. Upon failure, @errno@ will be set to 'eNOMEM'
 --
 -- It is recommended that the caller use "Foreign.C.Error" to handle potential failure.

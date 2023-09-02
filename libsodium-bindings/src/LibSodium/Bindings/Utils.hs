@@ -12,9 +12,8 @@
 -- Stability: Stable
 -- Portability: GHC only
 --
--- These are bindings to some of sodium's utils.h.
--- Included are Hex and Base64 encoding/decoding functions
--- along with a constant-time @memcmp@ for handling secret data.
+-- These are bindings to some of libsodium's [utils.h](https://github.com/jedisct1/libsodium/blob/master/src/libsodium/include/sodium/utils.h).
+-- Included are Hex and Base64 encoding/decoding functions along with a constant-time @memcmp@ for handling secret data.
 module LibSodium.Bindings.Utils
   ( -- * Low-level binding
     sodiumMemcmp
@@ -40,6 +39,8 @@ import Foreign.C.String
 -- This function is not a lexicographic comparator and should be never
 -- used for this purpose. It should only be used when comparing two pieces
 -- of secret data, such as keys or authentication tags.
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memcmp"
   sodiumMemcmp
     :: Ptr CUChar
@@ -53,6 +54,8 @@ foreign import capi "sodium.h sodium_memcmp"
     -- ^ 0 if successful, -1 on failure.
 
 -- | Encode bytes to a hexidecimal string. Constant-time.
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_bin2hex"
   sodiumBin2Hex
     :: CString

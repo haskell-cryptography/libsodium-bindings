@@ -4,7 +4,7 @@
 -- |
 --
 -- Module: LibSodium.Bindings.GenericHashing
--- Description: Direct bindings to the generic hashing primitives of Libsodium.
+-- Description: Direct bindings to the Blake2 hashing primitives of Libsodium.
 -- Copyright: (C) Hécate Moonlight 2022
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
@@ -39,7 +39,7 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- $introduction
 -- This API computes a fixed-length fingerprint for an arbitrarily long message.
--- It is backed by the BLAKE2b algorithm.
+-- It is backed by the [BLAKE2b](https://blake2.net) algorithm.
 --
 -- Sample use cases:
 --

@@ -2,9 +2,9 @@ cabal-version:      3.0
 name:               sel
 version:            0.0.1.0
 category:           Cryptography
-synopsis:           High-level interface to libsodium
+synopsis:           Cryptography for the casual user
 description:
-  A high-level interface to libsodium, aimed at casual users of cryptography.
+  The high-level library aimed at casual users of cryptography, by the Haskell Cryptography Group
 
 homepage:           https://github.com/haskell-cryptography/libsodium-bindings
 bug-reports:

@@ -8,7 +8,7 @@
 --
 -- Sel is the library for casual users by the [Haskell Cryptography Group](https://haskell-cryptography.org).
 --
--- Building on [Libsodium](https://doc.libsodium.org), safe interfaces to its cryptography primitives are offered.
+-- It builds on [Libsodium](https://doc.libsodium.org), a reliable and audited library for common operations.
 --
 -- +--+----------------------------------------------------------------------+---------------------------+
 -- |  |                              Purpose                                 | Module                    |

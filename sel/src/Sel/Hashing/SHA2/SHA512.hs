@@ -189,8 +189,6 @@ type role Multipart nominal
 --
 -- The context is safely allocated and deallocated inside of the continuation.
 --
--- Do not try to jailbreak the context outside of the action, this will not be pleasant.
---
 -- @since 0.0.1.0
 withMultipart
   :: forall (a :: Type) (m :: Type -> Type)

@@ -1,4 +1,9 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RoleAnnotations #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 --
@@ -12,11 +17,18 @@ module Sel.Hashing
   ( -- ** Introduction
     -- $introduction
 
-    -- ** Operations
+    -- ** Hashing a message
     HashKey
   , newHashKey
   , Hash
   , hashByteString
+
+    -- ** Hashing a multi-part message
+  , Multipart
+  , withMultipart
+  , updateMultipart
+
+    -- ** Conversion
   , hashToHexText
   , hashToHexByteString
   , hashToBinary
@@ -28,17 +40,30 @@ import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
+import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign (Ptr)
 import qualified Foreign
-import Foreign.C (CSize, CUChar)
+import Foreign.C (CChar, CInt, CSize, CUChar, CULLong)
 import Foreign.ForeignPtr
 import Foreign.Storable
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes, cryptoGenericHashKeyBytes, cryptoGenericHashKeyGen)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Kind (Type)
+import LibSodium.Bindings.GenericHashing
+  ( CryptoGenericHashState
+  , cryptoGenericHash
+  , cryptoGenericHashBytes
+  , cryptoGenericHashFinal
+  , cryptoGenericHashInit
+  , cryptoGenericHashKeyBytes
+  , cryptoGenericHashKeyGen
+  , cryptoGenericHashStateBytes
+  , cryptoGenericHashUpdate
+  )
 import Sel.Internal
 
 -- $introduction
@@ -196,3 +221,107 @@ hashToBinary (Hash fPtr) =
   BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
   where
     hashBytesSize = fromIntegral cryptoGenericHashBytes
+
+-- ** Hashing a multi-part message
+
+-- | 'Multipart' is a cryptographic context for streaming hashing.
+-- This API can be used when a message is too big to fit
+-- in memory or when the message is received in portions.
+--
+-- Use it like this:
+--
+-- >>> hashKey <- Hashing.newHashKey
+-- >>> hash <- Hashing.withMultipart (Just hashKey) $ \multipartState -> do -- we are in MonadIO
+-- ...   message1 <- getMessage
+-- ...   Hashing.updateMultipart multipartState message1
+-- ...   message2 <- getMessage
+-- ...   Hashing.updateMultipart multipartState message2
+--
+-- @since 0.0.1.0
+newtype Multipart s = Multipart (Ptr CryptoGenericHashState)
+
+type role Multipart nominal
+
+-- | Perform streaming hashing with a 'Multipart' cryptographic context.
+-- If there is no 'HashKey', you will get the same output for the same input all the time.
+--
+-- Use 'Hashing.updateMultipart' within the continuation to add more message parts to be hashed.
+--
+-- The context is safely allocated first, then the continuation is run
+-- and then it is deallocated after that.
+--
+-- Do not try to jailbreak the context outside of the action, this will not be pleasant.
+--
+-- @since 0.0.1.0
+withMultipart
+  :: forall (a :: Type) (m :: Type -> Type)
+   . MonadIO m
+  => Maybe HashKey
+  -- ^ Optional cryptographic key
+  -> (forall s. Multipart s -> m a)
+  -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
+  -> m Hash
+withMultipart mKey actions = do
+  allocateWith cryptoGenericHashStateBytes $ \statePtr -> do
+    case mKey of
+      Just (HashKey hashKeyFPtr) ->
+        liftIO $ Foreign.withForeignPtr hashKeyFPtr $ \(hashKeyPtr :: Ptr CUChar) ->
+          liftIO $
+            initMultipart
+              statePtr
+              hashKeyPtr
+              cryptoGenericHashKeyBytes
+      Nothing ->
+        liftIO $
+          initMultipart
+            statePtr
+            Foreign.nullPtr
+            0
+    let part = Multipart statePtr
+    actions part
+    liftIO (finaliseMultipart part)
+
+-- Internal
+initMultipart
+  :: Ptr CryptoGenericHashState
+  -> Ptr CUChar
+  -> CSize
+  -> IO CInt
+initMultipart statePtr hashKeyPtr hashKeyLength =
+  cryptoGenericHashInit
+    statePtr
+    hashKeyPtr
+    hashKeyLength
+    cryptoGenericHashBytes
+
+-- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
+--
+--  this function is only used within 'withMultipart'
+--
+--  @since 0.0.1.0
+finaliseMultipart :: Multipart s -> IO Hash
+finaliseMultipart (Multipart statePtr) = do
+  hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoGenericHashBytes)
+  Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
+    void $
+      cryptoGenericHashFinal
+        statePtr
+        hashPtr
+        cryptoGenericHashBytes
+  pure $ Hash hashForeignPtr
+
+-- | Add a message portion to be hashed.
+--
+-- This function is to be used within 'withMultipart'.
+--
+-- @since 0.0.1.0
+updateMultipart :: Multipart s -> StrictByteString -> IO ()
+updateMultipart (Multipart statePtr) message = do
+  BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+    let messagePtr = Foreign.castPtr @CChar @CUChar cString
+    let messageLen = fromIntegral @Int @CULLong cStringLen
+    void $
+      cryptoGenericHashUpdate
+        statePtr
+        messagePtr
+        messageLen

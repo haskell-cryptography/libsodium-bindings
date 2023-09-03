@@ -31,6 +31,7 @@ module LibSodium.Bindings.GenericHashing
   , cryptoGenericHashKeyBytes
   , cryptoGenericHashKeyBytesMin
   , cryptoGenericHashKeyBytesMax
+  , cryptoGenericHashStateBytes
   )
 where
 
@@ -216,3 +217,9 @@ foreign import capi "sodium.h value crypto_generichash_KEYBYTES_MIN"
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_KEYBYTES_MAX"
   cryptoGenericHashKeyBytesMax :: CSize
+
+-- | Size of a 'CryptoGenericHashState'
+--
+-- @since 0.0.1.0
+foreign import capi "sodium.h crypto_generichash_blake2b_statebytes"
+  cryptoGenericHashStateBytes :: CSize

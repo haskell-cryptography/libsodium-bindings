@@ -172,7 +172,7 @@ hashText text = hashByteString (Text.encodeUtf8 text)
 --
 -- Use it like this:
 --
--- >>> hash <- SHA512.withMultipart $ \multipartState -> do -- we are in the IO monad
+-- >>> hash <- SHA512.withMultipart $ \multipartState -> do -- we are in MonadIO
 -- ...   message1 <- getMessage
 -- ...   SHA512.updateMultipart multipartState message1
 -- ...   message2 <- getMessage

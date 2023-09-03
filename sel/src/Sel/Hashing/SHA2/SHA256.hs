@@ -172,7 +172,7 @@ hashToBinary (Hash fPtr) =
 --
 -- Use it like this:
 --
--- >>> hash <- SHA256.withMultipart $ \multipartState -> do -- we are in IO
+-- >>> hash <- SHA256.withMultipart $ \multipartState -> do -- we are in MonadIO
 -- ...   message1 <- getMessage
 -- ...   SHA256.updateMultipart multipartState message1
 -- ...   message2 <- getMessage

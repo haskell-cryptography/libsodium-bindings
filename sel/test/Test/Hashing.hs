@@ -5,12 +5,11 @@ module Test.Hashing where
 
 import Control.Monad (void)
 
--- import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes)
-import Sel.Hashing
+import qualified Sel.Hashing as Hashing
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -20,11 +19,12 @@ spec =
     "Generic hashing tests"
     [ testCase "cryptoGenericHash without key" testCryptoGenericHashWithoutKey
     , testCase "cryptoGenericHash with key" testCryptoGenericHashWithKey
+    , testCase "Multi-part hashing" testMultipartHahsing
     ]
 
 testCryptoGenericHashWithoutKey :: Assertion
 testCryptoGenericHashWithoutKey = do
-  expected <- hashToHexByteString <$> hashByteString Nothing "test test"
+  expected <- Hashing.hashToHexByteString <$> Hashing.hashByteString Nothing "test test"
   assertEqual
     "Hashed test string is consistent without key"
     expected
@@ -50,3 +50,17 @@ testCryptoGenericHashWithKey =
               "Hashed test string is consistent with key"
               "<|1"
               out
+
+testMultipartHahsing :: Assertion
+testMultipartHahsing = do
+  hashKey <- Hashing.newHashKey
+  expectedHash <- Hashing.hashByteString (Just hashKey) "test test"
+  actualHash <- Hashing.withMultipart (Just hashKey) $ \multipartState -> do
+    let message1 = "test "
+    Hashing.updateMultipart multipartState message1
+    let message2 = "test"
+    Hashing.updateMultipart multipartState message2
+  assertEqual
+    "Hash remains the same when using multipart"
+    (Hashing.hashToHexByteString expectedHash)
+    (Hashing.hashToHexByteString actualHash)

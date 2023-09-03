@@ -26,7 +26,7 @@ module Sel.Hashing.SHA2.SHA256
   , hashToHexText
   , hashToHexByteString
 
-    -- ** Hashing a multi-parts message
+    -- ** Hashing a multi-part message
   , Multipart
   , withMultipart
   , updateMultipart
@@ -44,7 +44,15 @@ import qualified Data.Text.Internal.Builder as Builder
 import Foreign (ForeignPtr, Ptr, Storable)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
-import LibSodium.Bindings.SHA2 (CryptoHashSHA256State, cryptoHashSHA256, cryptoHashSHA256Bytes, cryptoHashSHA256Final, cryptoHashSHA256Init, cryptoHashSHA256StateBytes, cryptoHashSHA256Update)
+import LibSodium.Bindings.SHA2
+  ( CryptoHashSHA256State
+  , cryptoHashSHA256
+  , cryptoHashSHA256Bytes
+  , cryptoHashSHA256Final
+  , cryptoHashSHA256Init
+  , cryptoHashSHA256StateBytes
+  , cryptoHashSHA256Update
+  )
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
@@ -165,7 +173,7 @@ hashToBinary (Hash fPtr) =
     0
     (fromIntegral @CSize @Int cryptoHashSHA256Bytes)
 
--- ** Hashing a multi-parts message
+-- ** Hashing a multi-part message
 
 -- | 'Multipart' is a cryptographic context for streaming hashing.
 -- This API can be used when a message is too big to fit in memory or when the message is received in portions.

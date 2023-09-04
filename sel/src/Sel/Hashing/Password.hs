@@ -239,7 +239,18 @@ asciiByteStringToPasswordHash textualHash =
 --
 -- @since 0.0.1.0
 newtype Salt = Salt StrictByteString
-  deriving (Eq, Ord, Show)
+
+-- | @since 0.0.1.0
+instance Eq Salt where
+  (Salt s1) == (Salt s2) = s1 == s2
+
+-- | @since 0.0.1.0
+instance Ord Salt where
+  (Salt s1) `compare` (Salt s2) = s1 `compare` s2
+
+-- | @since 0.0.1.0
+instance Show Salt where
+  show (Salt s1) = show s1
 
 -- | Convert 'Salt to underlying 'StrictByteString' binary.
 --

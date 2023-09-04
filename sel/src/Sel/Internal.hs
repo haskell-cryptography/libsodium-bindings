@@ -39,9 +39,9 @@ foreignPtrOrd fptr1 fptr2 size =
         result <- memcmp p q size
         return $
           if
-              | result == 0 -> EQ
-              | result < 0 -> LT
-              | otherwise -> GT
+            | result == 0 -> EQ
+            | result < 0 -> LT
+            | otherwise -> GT
 
 foreignPtrShow :: ForeignPtr a -> CSize -> String
 foreignPtrShow fptr size =

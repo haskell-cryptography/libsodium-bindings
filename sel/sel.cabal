@@ -33,7 +33,12 @@ common common
     -fprint-potential-instances -Wno-unticked-promoted-constructors
     -Werror=unused-imports
 
-  default-language: Haskell2010
+  default-language:   Haskell2010
+  default-extensions:
+    DerivingStrategies
+    GeneralizedNewtypeDeriving
+    ScopedTypeVariables
+    TypeApplications
 
 common test-options
   ghc-options: -rtsopts -threaded -with-rtsopts=-N

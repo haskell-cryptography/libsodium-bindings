@@ -13,23 +13,30 @@ spec :: TestTree
 spec =
   testGroup
     "Password hashing tests"
-    [ testCase "Round-trip test for password hashing" testHashPassword
+    [ testCase "Round-trip test for password hashing" testRoundtripHash
     , testCase "Consistent password hashing with salt" testHashPasswordWSalt
     ]
 
-testHashPassword :: Assertion
-testHashPassword = do
+testRoundtripHash :: Assertion
+testRoundtripHash = do
   let password = "hunter2" :: Text
   passwordHash <- Sel.hashText password
+  let textualHash = Sel.passwordHashToByteString passwordHash
+  let passwordHash' = Sel.asciiByteStringToPasswordHash textualHash
+
   assertBool
     "Password hashing is consistent"
     (Sel.verifyText passwordHash "hunter2")
+
+  assertBool
+    "Password hashing is consistent"
+    (Sel.verifyText passwordHash' "hunter2")
 
 testHashPasswordWSalt :: Assertion
 testHashPasswordWSalt = do
   let hashWSalt s = Sel.hashByteStringWithParams Sel.defaultArgon2Params s
       password = "hunter2"
-      cmpPWHashes = on (==) Sel.passwordHashToHexByteString
+      cmpPWHashes = on (==) Sel.passwordHashToByteString
 
   salt1 <- Sel.genSalt
   hashOrig <- hashWSalt salt1 password

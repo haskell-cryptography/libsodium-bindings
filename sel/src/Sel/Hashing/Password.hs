@@ -1,4 +1,5 @@
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -23,9 +24,12 @@ module Sel.Hashing.Password
   , hashByteStringWithParams
 
     -- *** Conversion
-  , passwordHashToBinary
+  , passwordHashToByteString
+  , passwordHashToText
   , passwordHashToHexText
   , passwordHashToHexByteString
+  , asciiTextToPasswordHash
+  , asciiByteStringToPasswordHash
 
     -- ** Salt
   , Salt
@@ -54,7 +58,6 @@ import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
-import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
 import System.IO.Unsafe (unsafeDupablePerformIO)
@@ -73,13 +76,29 @@ import LibSodium.Bindings.Random
 --
 -- @since 0.0.1.0
 newtype PasswordHash = PasswordHash (ForeignPtr CChar)
+  deriving
+    ( Display
+      -- ^ @since 0.0.1.0
+      -- > display secretKey == "[REDACTED]"
+    )
+    via (OpaqueInstance "[REDACTED]" PasswordHash)
 
--- | @since 0.0.1.0
-instance Display PasswordHash where
-  displayBuilder = Builder.fromText . passwordHashToHexText
+-- | > show passwordHash == "[REDACTED]"
+--
+-- @since 0.0.1.0
+instance Show PasswordHash where
+  show _ = "[REDACTED]"
 
--- | Hash the password with the Argon2id algorithm and
--- a set of pre-defined parameters.
+-- | Hash the password with the Argon2id algorithm and a set of pre-defined parameters.
+--
+-- The hash is encoded in a human-readable format that includes:
+--
+--   * The result of a memory-hard, CPU-intensive hash function applied to the password;
+--   * The automatically generated salt used for the previous computation;
+--   * The other parameters required to verify the password, including the algorithm
+--     identifier, its version, opslimit, and memlimit.
+--
+-- Example output: @$argon2id$v=19$m=262144,t=3,p=1$fpPdXj9mK7J4m…@
 --
 -- @since 0.0.1.0
 hashByteString :: StrictByteString -> IO PasswordHash
@@ -153,21 +172,49 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
 -- | Convert a 'PasswordHash' to a binary 'StrictByteString'.
 --
 -- @since 0.0.1.0
-passwordHashToBinary :: PasswordHash -> StrictByteString
-passwordHashToBinary (PasswordHash fPtr) =
-  BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 (fromIntegral @CSize @Int cryptoPWHashStrBytes)
-
--- | Convert a 'PasswordHash' to a hexadecimal-encoded 'StrictByteString'.
---
--- @since 0.0.1.0
-passwordHashToHexByteString :: PasswordHash -> StrictByteString
-passwordHashToHexByteString = Base16.encodeBase16' . passwordHashToBinary
+passwordHashToByteString :: PasswordHash -> StrictByteString
+passwordHashToByteString (PasswordHash fPtr) =
+  BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) (fromIntegral @CSize @Int cryptoPWHashStrBytes)
 
 -- | Convert a 'PasswordHash' to a strict hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.1.0
+passwordHashToText :: PasswordHash -> Text
+passwordHashToText = Text.decodeASCII . passwordHashToByteString
+
+-- | Convert a 'PasswordHash' to a hexadecimal-encoded 'StrictByteString'.
+--
+-- It is recommended to use this one on a 'PasswordHash' produced by 'hashByteStringWithParams'.
+--
+-- @since 0.0.1.0
+passwordHashToHexByteString :: PasswordHash -> StrictByteString
+passwordHashToHexByteString = Base16.encodeBase16' . passwordHashToByteString
+
+-- | Convert a 'PasswordHash' to a strict hexadecimal-encoded 'Text'.
+--
+-- It is recommended to use this one on a 'PasswordHash' produced by 'hashByteStringWithParams'.
+--
+-- @since 0.0.1.0
 passwordHashToHexText :: PasswordHash -> Text
-passwordHashToHexText = Base16.encodeBase16 . passwordHashToBinary
+passwordHashToHexText = Base16.encodeBase16 . passwordHashToByteString
+
+-- | Convert an ascii-encoded password hash to a 'PasswordHash'
+--
+-- This function does not perform ASCII validation.
+--
+-- @since 0.0.1.0
+asciiTextToPasswordHash :: Text -> PasswordHash
+asciiTextToPasswordHash = asciiByteStringToPasswordHash . Text.encodeUtf8
+
+-- | Convert an ascii-encoded password hash to a 'PasswordHash'
+--
+-- This function does not perform ASCII validation.
+--
+-- @since 0.0.1.0
+asciiByteStringToPasswordHash :: StrictByteString -> PasswordHash
+asciiByteStringToPasswordHash textualHash =
+  let (fPtr, _length) = BS.toForeignPtr0 textualHash
+   in PasswordHash (castForeignPtr @Word8 @CChar fPtr)
 
 -- | The 'Salt' is used in conjunction with 'hashByteStringWithParams'
 -- when you want to manually provide the piece of data that will

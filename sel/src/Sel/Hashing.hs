@@ -250,8 +250,6 @@ type role Multipart nominal
 -- The context is safely allocated first, then the continuation is run
 -- and then it is deallocated after that.
 --
--- Do not try to jailbreak the context outside of the action, this will not be pleasant.
---
 -- @since 0.0.1.0
 withMultipart
   :: forall (a :: Type) (m :: Type -> Type)
@@ -279,7 +277,7 @@ withMultipart mKey actions = do
             0
     let part = Multipart statePtr
     actions part
-    liftIO (finaliseMultipart part)
+    finaliseMultipart part
 
 -- Internal
 initMultipart
@@ -299,8 +297,8 @@ initMultipart statePtr hashKeyPtr hashKeyLength =
 --  this function is only used within 'withMultipart'
 --
 --  @since 0.0.1.0
-finaliseMultipart :: Multipart s -> IO Hash
-finaliseMultipart (Multipart statePtr) = do
+finaliseMultipart :: MonadIO m => Multipart s -> m Hash
+finaliseMultipart (Multipart statePtr) = liftIO $ do
   hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoGenericHashBytes)
   Foreign.withForeignPtr hashForeignPtr $ \(hashPtr :: Ptr CUChar) ->
     void $
@@ -315,8 +313,8 @@ finaliseMultipart (Multipart statePtr) = do
 -- This function is to be used within 'withMultipart'.
 --
 -- @since 0.0.1.0
-updateMultipart :: Multipart s -> StrictByteString -> IO ()
-updateMultipart (Multipart statePtr) message = do
+updateMultipart :: forall (m :: Type -> Type) (s :: Type). MonadIO m => Multipart s -> StrictByteString -> m ()
+updateMultipart (Multipart statePtr) message = liftIO $ do
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     let messagePtr = Foreign.castPtr @CChar @CUChar cString
     let messageLen = fromIntegral @Int @CULLong cStringLen

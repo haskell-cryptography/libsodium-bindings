@@ -240,7 +240,30 @@ asciiByteStringToPasswordHash textualHash =
 --
 -- @since 0.0.1.0
 newtype Salt = Salt StrictByteString
-  deriving newtype (Eq, Ord, Show)
+  deriving newtype
+    ( Eq
+      -- ^ @since 0.0.1.0
+    , Ord
+      -- ^ @since 0.0.1.0
+    , Show
+      -- ^ @since 0.0.1.0
+    )
+
+-- |
+--
+-- @since 0.0.1.0
+instance Display Salt where
+  displayBuilder salt = Builder.fromText . saltToHexText $ salt
+
+-- | Generate a random 'Salt' for password hashing
+--
+-- @since 0.0.1.0
+genSalt :: IO Salt
+genSalt =
+  Salt
+    <$> BS.create
+      (fromIntegral cryptoPWHashSaltBytes)
+      (`randombytesBuf` cryptoPWHashSaltBytes)
 
 -- | Convert 'Salt to underlying 'StrictByteString' binary.
 --
@@ -313,13 +336,3 @@ defaultArgon2Params =
     { opsLimit = cryptoPWHashOpsLimitModerate
     , memLimit = cryptoPWHashMemLimitModerate
     }
-
--- | Generate a random 'Salt' for password hashing
---
--- @since 0.0.1.0
-genSalt :: IO Salt
-genSalt =
-  Salt
-    <$> BS.create
-      (fromIntegral cryptoPWHashSaltBytes)
-      (`randombytesBuf` cryptoPWHashSaltBytes)

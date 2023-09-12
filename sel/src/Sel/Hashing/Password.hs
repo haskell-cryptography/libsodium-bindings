@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -58,9 +59,12 @@ import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
 import System.IO.Unsafe (unsafeDupablePerformIO)
+
+import Sel.Internal
 
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
@@ -76,18 +80,26 @@ import LibSodium.Bindings.Random
 --
 -- @since 0.0.1.0
 newtype PasswordHash = PasswordHash (ForeignPtr CChar)
-  deriving
-    ( Display
-      -- ^ @since 0.0.1.0
-      -- > display secretKey == "[REDACTED]"
-    )
-    via (OpaqueInstance "[REDACTED]" PasswordHash)
 
--- | > show passwordHash == "[REDACTED]"
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
+instance Display PasswordHash where
+  displayBuilder = Builder.fromText . passwordHashToHexText
+
+-- | @since 0.0.1.0
+instance Eq PasswordHash where
+  (PasswordHash ph1) == (PasswordHash ph2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq ph1 ph2 cryptoPWHashStrBytes
+
+-- | @since 0.0.1.0
+instance Ord PasswordHash where
+  (PasswordHash ph1) `compare` (PasswordHash ph2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd ph1 ph2 cryptoPWHashStrBytes
+
+-- | @since 0.0.1.0
 instance Show PasswordHash where
-  show _ = "[REDACTED]"
+  show (PasswordHash fptr) = foreignPtrShow fptr cryptoPWHashStrBytes
 
 -- | Hash the password with the Argon2id algorithm and a set of pre-defined parameters.
 --
@@ -228,6 +240,30 @@ asciiByteStringToPasswordHash textualHash =
 --
 -- @since 0.0.1.0
 newtype Salt = Salt StrictByteString
+  deriving newtype
+    ( Eq
+      -- ^ @since 0.0.1.0
+    , Ord
+      -- ^ @since 0.0.1.0
+    , Show
+      -- ^ @since 0.0.1.0
+    )
+
+-- |
+--
+-- @since 0.0.1.0
+instance Display Salt where
+  displayBuilder salt = Builder.fromText . saltToHexText $ salt
+
+-- | Generate a random 'Salt' for password hashing
+--
+-- @since 0.0.1.0
+genSalt :: IO Salt
+genSalt =
+  Salt
+    <$> BS.create
+      (fromIntegral cryptoPWHashSaltBytes)
+      (`randombytesBuf` cryptoPWHashSaltBytes)
 
 -- | Convert 'Salt to underlying 'StrictByteString' binary.
 --
@@ -300,13 +336,3 @@ defaultArgon2Params =
     { opsLimit = cryptoPWHashOpsLimitModerate
     , memLimit = cryptoPWHashMemLimitModerate
     }
-
--- | Generate a random 'Salt' for password hashing
---
--- @since 0.0.1.0
-genSalt :: IO Salt
-genSalt =
-  Salt
-    <$> BS.create
-      (fromIntegral cryptoPWHashSaltBytes)
-      (`randombytesBuf` cryptoPWHashSaltBytes)

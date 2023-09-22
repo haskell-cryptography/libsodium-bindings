@@ -31,9 +31,11 @@ import Sel.Hashing.SHA2.SHA512
 --
 -- The SHA-2 family of hashing functions is only provided for interoperability with other applications.
 --
--- If you are looking for a generic hash function, do use 'Sel.Hashing'.
+-- This module re-exports "Sel.Hashing.SHA2.SHA512". See "Sel.Hashing.SHA2.SHA256" for the 32-bit variant.
 --
--- If you are looking to hash passwords or deriving keys from passwords, do use 'Sel.Hashing.Password',
+-- If you are looking for a generic hash function, do use "Sel.Hashing" which relies on Blake2b
+--
+-- If you are looking to hash passwords or derive keys from passwords, do use 'Sel.Hashing.Password',
 -- as the functions of the SHA-2 family are not suitable for this task.
 --
 -- Only import this module qualified like this:

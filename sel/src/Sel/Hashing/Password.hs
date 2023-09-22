@@ -57,6 +57,7 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text as Text
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy.Builder as Builder
@@ -99,7 +100,7 @@ instance Ord PasswordHash where
 
 -- | @since 0.0.1.0
 instance Show PasswordHash where
-  show (PasswordHash fptr) = foreignPtrShow fptr cryptoPWHashStrBytes
+  show = Text.unpack . passwordHashToText
 
 -- | Hash the password with the Argon2id algorithm and a set of pre-defined parameters.
 --

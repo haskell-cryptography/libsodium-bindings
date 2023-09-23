@@ -2,14 +2,14 @@
 
 The Haskell Cryptography Group presents its suite of libsodium packages:
 
-| Package                  | Status           |
-|--------------------------|------------------|
-| [sel][sel]               | [![sel-badge]][sel-ci]        |
-| [libsodium‑bindings][lb] | [![lb-badge]][lb-ci]         |
+| Package                  | Status                 |
+|--------------------------|------------------------|
+| [sel][sel]               | [![sel-badge]][sel-ci] |
+| [libsodium‑bindings][lb] | [![lb-badge]][lb-ci]   |
 
 ## Comparison with other libraries
 
-| Name                 | Nature                                | Dependencies                                                                 | GHC Support          
+| Name                 | Nature                                     | Dependencies                                                                 | GHC Support          
 |----------------------|--------------------------------------------|------------------------------------------------------------------------------|--------------------  
 | `libsodium‑bindings` | Low-level FFI bindings                     | `base`                                                                       | Starts with 8.10.7   
 | `sel`                | High-level Haskell interface               | `base`, `base16`,  `bytestring`, `text` `text-display`, `libsodium‑bindings` | Starts with 8.10.7 

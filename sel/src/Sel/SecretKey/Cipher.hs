@@ -191,7 +191,6 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
   deriving
     ( Display
       -- ^ @since 0.0.1.0
-      -- > display secretKey == "[REDACTED]"
     )
     via (ShowInstance Nonce)
 

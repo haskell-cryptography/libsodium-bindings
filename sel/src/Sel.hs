@@ -10,6 +10,8 @@
 --
 -- It builds on [Libsodium](https://doc.libsodium.org), a reliable and audited library for common operations.
 --
+-- ⚠️ Important note: if you want to use any of this code in an executable, ensure that you use 'secureMain' or 'secureMainWithError' in your @main@ function __before__ you call any functions from this library. Failing to do so will cause problems. For libraries, this is not necessary.
+--
 -- +--+----------------------------------------------------------------------+---------------------------+
 -- |  |                              Purpose                                 | Module                    |
 -- +==+======================================================================+===========================+
@@ -37,4 +39,9 @@
 -- |  +----------------------------------------------------------------------+---------------------------+
 -- |  | SHA-2 (for legacy compatibility)                                     | "Sel.Hashing.SHA2"        |
 -- +--+----------------------------------------------------------------------+---------------------------+
-module Sel where
+module Sel
+  ( secureMain
+  , secureMainWithError
+  ) where
+
+import LibSodium.Bindings.Main (secureMain, secureMainWithError)

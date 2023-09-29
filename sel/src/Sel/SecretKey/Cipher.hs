@@ -19,29 +19,29 @@ module Sel.SecretKey.Cipher
     -- ** Usage
     -- $usage
 
+    -- ** Encryption and Decryption
+    encrypt
+  , decrypt
+
     -- ** Secret Key
-    SecretKey
+  , SecretKey
   , newSecretKey
-  , secretKeyFromByteString
+  , secretKeyFromHexByteString
   , unsafeSecretKeyToHexByteString
   , newSecretKeyWith
   , freeSecretKey
 
     -- ** Nonce
   , Nonce
-  , nonceFromByteString
+  , nonceFromHexByteString
   , nonceToHexByteString
 
     -- ** Hash
   , Hash
-  , hashFromByteString
+  , hashFromHexByteString
   , hashToBinary
   , hashToHexByteString
   , hashToHexText
-
-    -- ** Encryption and Decryption
-  , encrypt
-  , decrypt
   ) where
 
 import Control.Monad (void, when)
@@ -51,6 +51,7 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text as Text
 import Data.Text.Display (Display (displayBuilder), OpaqueInstance (..), ShowInstance (..))
 import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
@@ -61,7 +62,14 @@ import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import LibSodium.Bindings.Random (randombytesBuf)
-import LibSodium.Bindings.Secretbox (cryptoSecretboxEasy, cryptoSecretboxKeyBytes, cryptoSecretboxKeygen, cryptoSecretboxMACBytes, cryptoSecretboxNonceBytes, cryptoSecretboxOpenEasy)
+import LibSodium.Bindings.Secretbox
+  ( cryptoSecretboxEasy
+  , cryptoSecretboxKeyBytes
+  , cryptoSecretboxKeygen
+  , cryptoSecretboxMACBytes
+  , cryptoSecretboxNonceBytes
+  , cryptoSecretboxOpenEasy
+  )
 import LibSodium.Bindings.SecureMemory
 import Sel.Internal
 
@@ -128,22 +136,24 @@ newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 -- | Create a 'SecretKey' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
 --
--- The input secret key, once decoded from base16, must be at least of length
+-- The input secret key, once decoded from base16, must be of length
 -- 'cryptoSecretboxKeyBytes'.
 --
 -- @since 0.0.1.0
-secretKeyFromByteString :: StrictByteString -> Maybe SecretKey
-secretKeyFromByteString bytestring =
-  if BS.length bytestring < fromIntegral cryptoSecretboxKeyBytes
-    then Nothing
-    else unsafeDupablePerformIO $
-      BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
-        fmap Just $
-          newSecretKeyWith $ \secretKeyPtr ->
-            Foreign.copyArray
-              outsideSecretKeyPtr
-              (Foreign.castPtr @CUChar @CChar secretKeyPtr)
-              (fromIntegral cryptoSecretboxKeyBytes)
+secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
+secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
+  case Base16.decodeBase16 hexNonce of
+    Right bytestring ->
+      if BS.length bytestring == fromIntegral cryptoSecretboxKeyBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
+          fmap Right $
+            newSecretKeyWith $ \secretKeyPtr ->
+              Foreign.copyArray
+                (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+                outsideSecretKeyPtr
+                (fromIntegral cryptoSecretboxKeyBytes)
+        else pure $ Left $ Text.pack "Secret Key is too short"
+    Left msg -> pure $ Left msg
 
 -- | Prepare memory for a 'SecretKey' and use the provided action to fill it.
 --
@@ -200,7 +210,7 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
 instance Eq Nonce where
   (Nonce hk1) == (Nonce hk2) =
     unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoSecretboxKeyBytes
+      foreignPtrEq hk1 hk2 cryptoSecretboxNonceBytes
 
 -- |
 --
@@ -208,7 +218,7 @@ instance Eq Nonce where
 instance Ord Nonce where
   compare (Nonce hk1) (Nonce hk2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
+      foreignPtrOrd hk1 hk2 cryptoSecretboxNonceBytes
 
 -- |
 --
@@ -229,21 +239,27 @@ newNonce = do
 
 -- | Create a 'Nonce' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
+-- Once decoded from hexadecimal, it must be of length 'cryptoSecretboxNonceBytes'.
 --
 -- @since 0.0.1.0
-nonceFromByteString :: StrictByteString -> Nonce
-nonceFromByteString bytestring = unsafeDupablePerformIO $
-  BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
-    nonceForeignPtr <-
-      BS.mallocByteString
-        @CChar
-        (fromIntegral cryptoSecretboxNonceBytes)
-    Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
-      Foreign.copyArray
-        outsideNoncePtr
-        noncePtr
-        (fromIntegral cryptoSecretboxNonceBytes)
-    pure $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+nonceFromHexByteString :: StrictByteString -> Either Text Nonce
+nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
+  case Base16.decodeBase16 hexNonce of
+    Right bytestring ->
+      if BS.length bytestring == fromIntegral @CSize @Int cryptoSecretboxNonceBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
+          nonceForeignPtr <-
+            BS.mallocByteString
+              @CChar
+              (fromIntegral cryptoSecretboxNonceBytes)
+          Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
+            Foreign.copyArray
+              noncePtr
+              outsideNoncePtr
+              (fromIntegral cryptoSecretboxNonceBytes)
+          pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+        else pure $ Left $ Text.pack "Nonce is too short"
+    Left msg -> pure $ Left msg
 
 -- | Convert a 'Nonce' to a hexadecimal-encoded 'StrictByteString'.
 --
@@ -253,7 +269,7 @@ nonceToHexByteString (Nonce nonceForeignPtr) =
   Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 nonceForeignPtr)
-      (fromIntegral @CSize @Int cryptoSecretboxKeyBytes)
+      (fromIntegral @CSize @Int cryptoSecretboxNonceBytes)
 
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --
@@ -304,20 +320,23 @@ instance Show Hash where
 -- The input hash must at least of length 'cryptoSecretboxMACBytes'
 --
 -- @since 0.0.1.0
-hashFromByteString :: StrictByteString -> Maybe Hash
-hashFromByteString bytestring =
-  if BS.length bytestring < fromIntegral cryptoSecretboxMACBytes
-    then Nothing
-    else unsafeDupablePerformIO $
-      BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
-        hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength
-        Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-          Foreign.copyArray outsideHashPtr hashPtr outsideHashLength
-        pure $
-          Just $
-            Hash
-              (fromIntegral @Int @CULLong outsideHashLength)
-              (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+hashFromHexByteString :: StrictByteString -> Either Text Hash
+hashFromHexByteString hexHash = unsafeDupablePerformIO $
+  case Base16.decodeBase16 hexHash of
+    Right bytestring ->
+      if BS.length bytestring >= fromIntegral cryptoSecretboxMACBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
+          hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength -- The foreign pointer that will receive the hash data.
+          Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
+            -- We copy bytes from 'outsideHashPtr' to 'hashPtr'.
+            Foreign.copyArray hashPtr outsideHashPtr outsideHashLength
+          pure $
+            Right $
+              Hash
+                (fromIntegral @Int @CULLong outsideHashLength - fromIntegral @CSize @CULLong cryptoSecretboxMACBytes)
+                (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+        else pure $ Left $ Text.pack "Hash is too short"
+    Left msg -> pure $ Left msg
 
 -- | Convert a 'Hash' to a hexadecimal-encoded 'Text'.
 --

@@ -164,6 +164,9 @@ instance Ord PublicKey where
 instance Show PublicKey where
   show = BS.unpackChars . publicKeyToHexByteString
 
+-- | Convert a 'PublicKey' to a hexadecimal-encoded 'StrictByteString'.
+--
+-- @since 0.0.1.0
 publicKeyToHexByteString :: PublicKey -> StrictByteString
 publicKeyToHexByteString (PublicKey publicKeyForeignPtr) =
   Base16.encodeBase16' $

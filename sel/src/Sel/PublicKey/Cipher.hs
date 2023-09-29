@@ -26,7 +26,8 @@ module Sel.PublicKey.Cipher
   , unsafeSecretKeyToHexByteString
   , freeSecretKey
   , PublicKey (..)
-  , secretKeyPairFromHexByteStrings
+  , publicKeyToHexByteString
+  , keyPairFromHexByteStrings
 
     -- ** Nonce
   , Nonce (..)
@@ -69,6 +70,14 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Exception
 import LibSodium.Bindings.CryptoBox
+  ( cryptoBoxEasy
+  , cryptoBoxKeyPair
+  , cryptoBoxMACBytes
+  , cryptoBoxNonceBytes
+  , cryptoBoxOpenEasy
+  , cryptoBoxPublicKeyBytes
+  , cryptoBoxSecretKeyBytes
+  )
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumFree, sodiumMalloc)
 import Sel.Internal
@@ -179,13 +188,13 @@ newKeyPair = newKeyPairWith $ \publicKeyPtr secretKeyPtr -> do
 -- be at least of length 'cryptoBoxPublicKeyBytes' and 'cryptoBoxSecretKeyBytes.
 --
 -- @since 0.0.1.0
-secretKeyPairFromHexByteStrings
+keyPairFromHexByteStrings
   :: StrictByteString
   -- ^ Public key
   -> StrictByteString
   -- ^ Secret key
   -> Either Text (PublicKey, SecretKey)
-secretKeyPairFromHexByteStrings publicByteStringHex secretByteStringHex =
+keyPairFromHexByteStrings publicByteStringHex secretByteStringHex =
   case (Base16.decodeBase16 publicByteStringHex, Base16.decodeBase16 secretByteStringHex) of
     (Right publicByteString, Right secretByteString) ->
       if BS.length publicByteString < fromIntegral cryptoBoxPublicKeyBytes
@@ -197,13 +206,13 @@ secretKeyPairFromHexByteStrings publicByteStringHex secretByteStringHex =
               fmap Right $
                 newKeyPairWith $ \publicKeyPtr secretKeyPtr -> do
                   Foreign.copyArray
-                    outsidePublicKeyPtr
                     (Foreign.castPtr @CUChar @CChar publicKeyPtr)
+                    outsidePublicKeyPtr
                     (fromIntegral cryptoBoxPublicKeyBytes)
 
                   Foreign.copyArray
-                    outsideSecretKeyPtr
                     (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+                    outsideSecretKeyPtr
                     (fromIntegral cryptoBoxSecretKeyBytes)
     (_, Left msg) -> Left msg
     (Left msg, _) -> Left msg
@@ -329,8 +338,8 @@ nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
             (fromIntegral cryptoBoxNonceBytes)
         Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
           Foreign.copyArray
-            outsideNoncePtr
             noncePtr
+            outsideNoncePtr
             (fromIntegral cryptoBoxNonceBytes)
         pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
     Left msg -> pure $ Left msg

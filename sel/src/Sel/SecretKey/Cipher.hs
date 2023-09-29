@@ -26,7 +26,7 @@ module Sel.SecretKey.Cipher
     -- ** Secret Key
   , SecretKey
   , newSecretKey
-  , secretKeyFromByteString
+  , secretKeyFromHexByteString
   , unsafeSecretKeyToHexByteString
   , newSecretKeyWith
   , freeSecretKey
@@ -136,22 +136,24 @@ newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 -- | Create a 'SecretKey' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
 --
--- The input secret key, once decoded from base16, must be at least of length
+-- The input secret key, once decoded from base16, must be of length
 -- 'cryptoSecretboxKeyBytes'.
 --
 -- @since 0.0.1.0
-secretKeyFromByteString :: StrictByteString -> Maybe SecretKey
-secretKeyFromByteString bytestring =
-  if BS.length bytestring < fromIntegral cryptoSecretboxKeyBytes
-    then Nothing
-    else unsafeDupablePerformIO $
-      BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
-        fmap Just $
-          newSecretKeyWith $ \secretKeyPtr ->
-            Foreign.copyArray
-              outsideSecretKeyPtr
-              (Foreign.castPtr @CUChar @CChar secretKeyPtr)
-              (fromIntegral cryptoSecretboxKeyBytes)
+secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
+secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
+  case Base16.decodeBase16 hexNonce of
+    Right bytestring ->
+      if BS.length bytestring == fromIntegral cryptoSecretboxKeyBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
+          fmap Right $
+            newSecretKeyWith $ \secretKeyPtr ->
+              Foreign.copyArray
+                outsideSecretKeyPtr
+                (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+                (fromIntegral cryptoSecretboxKeyBytes)
+        else pure $ Left $ Text.pack "Secret Key is too short"
+    Left msg -> pure $ Left msg
 
 -- | Prepare memory for a 'SecretKey' and use the provided action to fill it.
 --
@@ -252,8 +254,8 @@ nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
               (fromIntegral cryptoSecretboxNonceBytes)
           Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
             Foreign.copyArray
-              outsideNoncePtr
               noncePtr
+              outsideNoncePtr
               (fromIntegral cryptoSecretboxNonceBytes)
           pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
         else pure $ Left $ Text.pack "Nonce is too short"

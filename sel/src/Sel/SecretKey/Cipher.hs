@@ -42,7 +42,6 @@ module Sel.SecretKey.Cipher
   , hashToBinary
   , hashToHexByteString
   , hashToHexText
-
   ) where
 
 import Control.Monad (void, when)
@@ -52,6 +51,7 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text as Text
 import Data.Text.Display (Display (displayBuilder), OpaqueInstance (..), ShowInstance (..))
 import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
@@ -62,7 +62,14 @@ import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import LibSodium.Bindings.Random (randombytesBuf)
-import LibSodium.Bindings.Secretbox (cryptoSecretboxEasy, cryptoSecretboxKeyBytes, cryptoSecretboxKeygen, cryptoSecretboxMACBytes, cryptoSecretboxNonceBytes, cryptoSecretboxOpenEasy)
+import LibSodium.Bindings.Secretbox
+  ( cryptoSecretboxEasy
+  , cryptoSecretboxKeyBytes
+  , cryptoSecretboxKeygen
+  , cryptoSecretboxMACBytes
+  , cryptoSecretboxNonceBytes
+  , cryptoSecretboxOpenEasy
+  )
 import LibSodium.Bindings.SecureMemory
 import Sel.Internal
 
@@ -230,23 +237,26 @@ newNonce = do
 
 -- | Create a 'Nonce' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
+-- Once decoded from hexadecimal, it must be of length 'cryptoSecretboxNonceBytes'.
 --
 -- @since 0.0.1.0
 nonceFromHexByteString :: StrictByteString -> Either Text Nonce
 nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
   case Base16.decodeBase16 hexNonce of
     Right bytestring ->
-      BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
-        nonceForeignPtr <-
-          BS.mallocByteString
-            @CChar
-            (fromIntegral cryptoSecretboxNonceBytes)
-        Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
-          Foreign.copyArray
-            outsideNoncePtr
-            noncePtr
-            (fromIntegral cryptoSecretboxNonceBytes)
-        pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+      if BS.length bytestring == fromIntegral @CSize @Int cryptoSecretboxNonceBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
+          nonceForeignPtr <-
+            BS.mallocByteString
+              @CChar
+              (fromIntegral cryptoSecretboxNonceBytes)
+          Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
+            Foreign.copyArray
+              outsideNoncePtr
+              noncePtr
+              (fromIntegral cryptoSecretboxNonceBytes)
+          pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+        else pure $ Left $ Text.pack "Nonce is too short"
     Left msg -> pure $ Left msg
 
 -- | Convert a 'Nonce' to a hexadecimal-encoded 'StrictByteString'.

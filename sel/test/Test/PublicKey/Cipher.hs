@@ -5,7 +5,7 @@ module Test.PublicKey.Cipher where
 import Sel.PublicKey.Cipher
 import Test.Tasty
 import Test.Tasty.HUnit
-import TestUtils (assertRight)
+import TestUtils
 
 spec :: TestTree
 spec =
@@ -31,5 +31,8 @@ testNonceSerdeRoundtrip :: Assertion
 testNonceSerdeRoundtrip = do
   (publicKey, secretKey) <- newKeyPair
   (nonce, _) <- encrypt "hello hello" publicKey secretKey
-  nonce2 <- assertRight $ nonceFromHexByteString . nonceToHexByteString $ nonce
+  let hexNonce = nonceToHexByteString nonce
+  print hexNonce
+  nonce2 <- assertRight $ nonceFromHexByteString hexNonce
+  print nonce2
   assertEqual "Roundtripping" nonce nonce2

@@ -19,8 +19,12 @@ module Sel.SecretKey.Cipher
     -- ** Usage
     -- $usage
 
+    -- ** Encryption and Decryption
+    encrypt
+  , decrypt
+
     -- ** Secret Key
-    SecretKey
+  , SecretKey
   , newSecretKey
   , secretKeyFromByteString
   , unsafeSecretKeyToHexByteString
@@ -29,7 +33,7 @@ module Sel.SecretKey.Cipher
 
     -- ** Nonce
   , Nonce
-  , nonceFromByteString
+  , nonceFromHexByteString
   , nonceToHexByteString
 
     -- ** Hash
@@ -39,9 +43,6 @@ module Sel.SecretKey.Cipher
   , hashToHexByteString
   , hashToHexText
 
-    -- ** Encryption and Decryption
-  , encrypt
-  , decrypt
   ) where
 
 import Control.Monad (void, when)
@@ -200,7 +201,7 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
 instance Eq Nonce where
   (Nonce hk1) == (Nonce hk2) =
     unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoSecretboxKeyBytes
+      foreignPtrEq hk1 hk2 cryptoSecretboxNonceBytes
 
 -- |
 --
@@ -208,7 +209,7 @@ instance Eq Nonce where
 instance Ord Nonce where
   compare (Nonce hk1) (Nonce hk2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
+      foreignPtrOrd hk1 hk2 cryptoSecretboxNonceBytes
 
 -- |
 --
@@ -231,19 +232,22 @@ newNonce = do
 -- usually from the network or disk.
 --
 -- @since 0.0.1.0
-nonceFromByteString :: StrictByteString -> Nonce
-nonceFromByteString bytestring = unsafeDupablePerformIO $
-  BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
-    nonceForeignPtr <-
-      BS.mallocByteString
-        @CChar
-        (fromIntegral cryptoSecretboxNonceBytes)
-    Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
-      Foreign.copyArray
-        outsideNoncePtr
-        noncePtr
-        (fromIntegral cryptoSecretboxNonceBytes)
-    pure $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+nonceFromHexByteString :: StrictByteString -> Either Text Nonce
+nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
+  case Base16.decodeBase16 hexNonce of
+    Right bytestring ->
+      BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
+        nonceForeignPtr <-
+          BS.mallocByteString
+            @CChar
+            (fromIntegral cryptoSecretboxNonceBytes)
+        Foreign.withForeignPtr nonceForeignPtr $ \noncePtr ->
+          Foreign.copyArray
+            outsideNoncePtr
+            noncePtr
+            (fromIntegral cryptoSecretboxNonceBytes)
+        pure $ Right $ Nonce (Foreign.castForeignPtr @CChar @CUChar nonceForeignPtr)
+    Left msg -> pure $ Left msg
 
 -- | Convert a 'Nonce' to a hexadecimal-encoded 'StrictByteString'.
 --
@@ -253,7 +257,7 @@ nonceToHexByteString (Nonce nonceForeignPtr) =
   Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 nonceForeignPtr)
-      (fromIntegral @CSize @Int cryptoSecretboxKeyBytes)
+      (fromIntegral @CSize @Int cryptoSecretboxNonceBytes)
 
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --

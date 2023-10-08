@@ -50,6 +50,7 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Kind (Type)
 import Sel.Internal
+import qualified Data.Base16.Types as Base16
 
 -- $usage
 --
@@ -126,13 +127,13 @@ instance Show Hash where
 --
 -- @since 0.0.1.0
 hashToHexText :: Hash -> Text
-hashToHexText = Base16.encodeBase16 . hashToBinary
+hashToHexText = Base16.extractBase16 . Base16.encodeBase16 . hashToBinary
 
 -- | Convert a 'Hash' to a strict, hexadecimal-encoded 'StrictByteString'.
 --
 -- @since 0.0.1.0
 hashToHexByteString :: Hash -> StrictByteString
-hashToHexByteString = Base16.encodeBase16' . hashToBinary
+hashToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . hashToBinary
 
 -- | Convert a 'Hash' to a binary 'StrictByteString'.
 --

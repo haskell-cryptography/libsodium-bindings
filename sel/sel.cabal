@@ -57,7 +57,7 @@ library
   other-modules:   Sel.Internal
   build-depends:
     , base                >=4.14     && <5
-    , base16              ^>=0.3
+    , base16              ^>=1.0
     , bytestring          ^>=0.11
     , libsodium-bindings  ^>=0.0.1.0
     , text                ^>=2.0

@@ -8,6 +8,7 @@
 module Sel.Internal where
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import qualified Data.Base16.Types as Base16
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import Data.Kind (Type)
@@ -45,7 +46,7 @@ foreignPtrOrd fptr1 fptr2 size =
 
 foreignPtrShow :: ForeignPtr a -> CSize -> String
 foreignPtrShow fptr size =
-  BS.unpackChars . Base16.encodeBase16' $
+  BS.unpackChars . Base16.extractBase16 . Base16.encodeBase16' $
     BS.fromForeignPtr (Foreign.castForeignPtr fptr) 0 (fromIntegral @CSize @Int size)
 
 -- | Securely allocate an amount of memory with 'sodiumMalloc' and pass

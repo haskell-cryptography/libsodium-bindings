@@ -69,6 +69,7 @@ import Sel.Internal
 
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
+import qualified Data.Base16.Types as Base16
 
 -- $introduction
 --
@@ -201,7 +202,7 @@ passwordHashToText = Text.decodeASCII . passwordHashToByteString
 --
 -- @since 0.0.1.0
 passwordHashToHexByteString :: PasswordHash -> StrictByteString
-passwordHashToHexByteString = Base16.encodeBase16' . passwordHashToByteString
+passwordHashToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . passwordHashToByteString
 
 -- | Convert a 'PasswordHash' to a strict hexadecimal-encoded 'Text'.
 --
@@ -209,7 +210,7 @@ passwordHashToHexByteString = Base16.encodeBase16' . passwordHashToByteString
 --
 -- @since 0.0.1.0
 passwordHashToHexText :: PasswordHash -> Text
-passwordHashToHexText = Base16.encodeBase16 . passwordHashToByteString
+passwordHashToHexText = Base16.extractBase16 . Base16.encodeBase16 . passwordHashToByteString
 
 -- | Convert an ascii-encoded password hash to a 'PasswordHash'
 --
@@ -276,13 +277,13 @@ saltToBinary (Salt bs) = bs
 --
 -- @since 0.0.2.0
 saltToHexText :: Salt -> Text
-saltToHexText = Base16.encodeBase16 . saltToBinary
+saltToHexText = Base16.extractBase16 . Base16.encodeBase16 . saltToBinary
 
 -- | Convert 'Salt to a hexadecimal-encoded 'StrictByteString'.
 --
 -- @since 0.0.2.0
 saltToHexByteString :: Salt -> StrictByteString
-saltToHexByteString = Base16.encodeBase16' . saltToBinary
+saltToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . saltToBinary
 
 -- | Convert 'StrictByteString' to 'Salt'.
 --
@@ -301,10 +302,7 @@ binaryToSalt bs =
 --
 -- @since 0.0.1.0
 hexTextToSalt :: Text -> Maybe Salt
-hexTextToSalt hexText =
-  case Base16.decodeBase16' hexText of
-    Right binary -> binaryToSalt binary
-    Left _ -> Nothing
+hexTextToSalt = hexByteStringToSalt . Text.encodeUtf8
 
 -- | Convert a hexadecimal-encoded 'StrictByteString' to a 'Salt'.
 --
@@ -313,7 +311,7 @@ hexTextToSalt hexText =
 -- @since 0.0.1.0
 hexByteStringToSalt :: StrictByteString -> Maybe Salt
 hexByteStringToSalt hexByteString =
-  case Base16.decodeBase16 hexByteString of
+  case Base16.decodeBase16Untyped hexByteString of
     Right binary -> binaryToSalt binary
     Left _ -> Nothing
 

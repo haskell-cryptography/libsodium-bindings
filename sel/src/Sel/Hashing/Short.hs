@@ -66,6 +66,7 @@ import LibSodium.Bindings.ShortHashing
   , cryptoShortHashX24KeyGen
   )
 import Sel.Internal
+import qualified Data.Base16.Types as Base16
 
 -- $introduction
 --
@@ -167,13 +168,13 @@ shortHashToBinary (ShortHash hashFPtr) =
 --
 -- @since 0.0.1.0
 shortHashToHexByteString :: ShortHash -> StrictByteString
-shortHashToHexByteString = Base16.encodeBase16' . shortHashToBinary
+shortHashToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . shortHashToBinary
 
 -- | Convert a 'ShortHash' to a strict hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.1.0
 shortHashToHexText :: ShortHash -> Text
-shortHashToHexText = Base16.encodeBase16 . shortHashToBinary
+shortHashToHexText = Base16.extractBase16 . Base16.encodeBase16 . shortHashToBinary
 
 -- | A random key used for hashing, of size 'cryptoShortHashSipHashX24KeyBytes'.
 --
@@ -232,13 +233,13 @@ shortHashKeyToBinary (ShortHashKey hashKeyFPtr) =
 --
 -- @since 0.0.1.0
 shortHashKeyToHexByteString :: ShortHashKey -> StrictByteString
-shortHashKeyToHexByteString = Base16.encodeBase16' . shortHashKeyToBinary
+shortHashKeyToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . shortHashKeyToBinary
 
 -- | Convert a 'ShortHash' to a strict hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.1.0
 shortHashKeyToHexText :: ShortHashKey -> Text
-shortHashKeyToHexText = Base16.encodeBase16 . shortHashKeyToBinary
+shortHashKeyToHexText = Base16.extractBase16 . Base16.encodeBase16 . shortHashKeyToBinary
 
 -- | Convert a binary 'StrictByteString' to a 'ShortHashKey'.
 --
@@ -262,10 +263,7 @@ binaryToShortHashKey binaryKey =
 --
 -- @since 0.0.1.0
 hexTextToShortHashKey :: Text -> Maybe ShortHashKey
-hexTextToShortHashKey hexText =
-  case Base16.decodeBase16' hexText of
-    Right binary -> binaryToShortHashKey binary
-    Left _ -> Nothing
+hexTextToShortHashKey = hexByteStringToShortHashKey . Text.encodeUtf8
 
 -- | Convert a hexadecimal-encoded 'StrictByteString' to a 'ShortHashKey'.
 --
@@ -274,7 +272,7 @@ hexTextToShortHashKey hexText =
 -- @since 0.0.1.0
 hexByteStringToShortHashKey :: StrictByteString -> Maybe ShortHashKey
 hexByteStringToShortHashKey hexByteString =
-  case Base16.decodeBase16 hexByteString of
+  case Base16.decodeBase16Untyped hexByteString of
     Right binary -> binaryToShortHashKey binary
     Left _ -> Nothing
 

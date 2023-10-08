@@ -72,6 +72,7 @@ import LibSodium.Bindings.Secretbox
   )
 import LibSodium.Bindings.SecureMemory
 import Sel.Internal
+import qualified Data.Base16.Types as Base16
 
 -- $introduction
 -- "Authenticated Encryption" uses a secret key along with a single-use number
@@ -142,7 +143,7 @@ newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 -- @since 0.0.1.0
 secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
 secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
-  case Base16.decodeBase16 hexNonce of
+  case Base16.decodeBase16Untyped hexNonce of
     Right bytestring ->
       if BS.length bytestring == fromIntegral cryptoSecretboxKeyBytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
@@ -187,7 +188,7 @@ freeSecretKey (SecretKey fPtr) = Foreign.finalizeForeignPtr fPtr
 -- @since 0.0.1.0
 unsafeSecretKeyToHexByteString :: SecretKey -> StrictByteString
 unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
-  Base16.encodeBase16' $
+  Base16.extractBase16 . Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 secretKeyForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretboxKeyBytes)
@@ -244,7 +245,7 @@ newNonce = do
 -- @since 0.0.1.0
 nonceFromHexByteString :: StrictByteString -> Either Text Nonce
 nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
-  case Base16.decodeBase16 hexNonce of
+  case Base16.decodeBase16Untyped hexNonce of
     Right bytestring ->
       if BS.length bytestring == fromIntegral @CSize @Int cryptoSecretboxNonceBytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideNoncePtr, _) -> do
@@ -266,7 +267,7 @@ nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
 -- @since 0.0.1.0
 nonceToHexByteString :: Nonce -> StrictByteString
 nonceToHexByteString (Nonce nonceForeignPtr) =
-  Base16.encodeBase16' $
+  Base16.extractBase16 . Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 nonceForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretboxNonceBytes)
@@ -322,7 +323,7 @@ instance Show Hash where
 -- @since 0.0.1.0
 hashFromHexByteString :: StrictByteString -> Either Text Hash
 hashFromHexByteString hexHash = unsafeDupablePerformIO $
-  case Base16.decodeBase16 hexHash of
+  case Base16.decodeBase16Untyped hexHash of
     Right bytestring ->
       if BS.length bytestring >= fromIntegral cryptoSecretboxMACBytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
@@ -344,7 +345,7 @@ hashFromHexByteString hexHash = unsafeDupablePerformIO $
 --
 -- @since 0.0.1.0
 hashToHexText :: Hash -> Text
-hashToHexText = Base16.encodeBase16 . hashToBinary
+hashToHexText = Base16.extractBase16 . Base16.encodeBase16 . hashToBinary
 
 -- | Convert a 'Hash' to a hexadecimal-encoded 'StrictByteString'.
 --
@@ -352,7 +353,7 @@ hashToHexText = Base16.encodeBase16 . hashToBinary
 --
 -- @since 0.0.1.0
 hashToHexByteString :: Hash -> StrictByteString
-hashToHexByteString = Base16.encodeBase16' . hashToBinary
+hashToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . hashToBinary
 
 -- | Convert a 'Hash' to a binary 'StrictByteString'.
 --

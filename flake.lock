@@ -1,5 +1,17 @@
 {
   "nodes": {
+    "base16": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-pLnipLnF7YuQvCwgw7Lp7sbwhab63sdEpubeSpaoEmY=",
+        "type": "tarball",
+        "url": "https://hackage.haskell.org/package/base16-1.0/base16-1.0.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://hackage.haskell.org/package/base16-1.0/base16-1.0.tar.gz"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -151,6 +163,7 @@
     },
     "root": {
       "inputs": {
+        "base16": "base16",
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "gitignore": "gitignore",

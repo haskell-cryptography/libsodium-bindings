@@ -15,6 +15,8 @@
       url = "github:hercules-ci/gitignore.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    base16.flake = false;
+    base16.url = "https://hackage.haskell.org/package/base16-1.0/base16-1.0.tar.gz";
   };
 
   nixConfig = {
@@ -73,6 +75,7 @@
               libsodium-bindings = commonOverrides (hself.callCabal2nix "libsodium-bindings" (gitignoreSource ./libsodium-bindings) { });
               sel = commonOverrides (hself.callCabal2nix "sel" (gitignoreSource ./sel) { });
               text-display = markUnbroken hsuper.text-display;
+              base16 = inputs.base16;
             };
         });
 

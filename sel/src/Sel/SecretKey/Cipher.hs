@@ -61,6 +61,7 @@ import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
+import qualified Data.Base16.Types as Base16
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.Secretbox
   ( cryptoSecretboxEasy
@@ -72,7 +73,6 @@ import LibSodium.Bindings.Secretbox
   )
 import LibSodium.Bindings.SecureMemory
 import Sel.Internal
-import qualified Data.Base16.Types as Base16
 
 -- $introduction
 -- "Authenticated Encryption" uses a secret key along with a single-use number

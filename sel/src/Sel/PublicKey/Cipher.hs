@@ -69,6 +69,7 @@ import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Exception
+import qualified Data.Base16.Types as Base16
 import LibSodium.Bindings.CryptoBox
   ( cryptoBoxEasy
   , cryptoBoxKeyPair
@@ -81,7 +82,6 @@ import LibSodium.Bindings.CryptoBox
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumFree, sodiumMalloc)
 import Sel.Internal
-import qualified Data.Base16.Types as Base16
 
 -- $introduction
 -- Public-key authenticated encryption allows a sender to encrypt a confidential message

@@ -58,6 +58,7 @@ import GHC.Exception (Exception)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
+import qualified Data.Base16.Types as Base16
 import Data.Text.Display
 import LibSodium.Bindings.ShortHashing
   ( cryptoShortHashSipHashX24Bytes
@@ -66,7 +67,6 @@ import LibSodium.Bindings.ShortHashing
   , cryptoShortHashX24KeyGen
   )
 import Sel.Internal
-import qualified Data.Base16.Types as Base16
 
 -- $introduction
 --

@@ -75,7 +75,7 @@
               libsodium-bindings = commonOverrides (hself.callCabal2nix "libsodium-bindings" (gitignoreSource ./libsodium-bindings) { });
               sel = commonOverrides (hself.callCabal2nix "sel" (gitignoreSource ./sel) { });
               text-display = markUnbroken hsuper.text-display;
-              base16 = hself.callCabal2nix "base16" (gitignoreSource inputs.base16);
+              base16 = hself.callCabal2nix "base16" (gitignoreSource inputs.base16) { };
             };
         });
 

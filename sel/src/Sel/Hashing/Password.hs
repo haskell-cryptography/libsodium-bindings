@@ -67,9 +67,9 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
 
+import qualified Data.Base16.Types as Base16
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
-import qualified Data.Base16.Types as Base16
 
 -- $introduction
 --

@@ -48,9 +48,9 @@ import LibSodium.Bindings.SHA2 (CryptoHashSHA512State, cryptoHashSHA512, cryptoH
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import qualified Data.Base16.Types as Base16
 import Data.Kind (Type)
 import Sel.Internal
-import qualified Data.Base16.Types as Base16
 
 -- $usage
 --

@@ -54,6 +54,7 @@ library
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
+    Sel.SecretKey.Authentication
     Sel.SecretKey.Cipher
 
   other-modules:   Sel.Internal
@@ -78,6 +79,7 @@ test-suite sel-tests
     Test.PublicKey.Cipher
     Test.PublicKey.Seal
     Test.PublicKey.Signature
+    Test.SecretKey.Authentication
     Test.SecretKey.Cipher
     TestUtils
 

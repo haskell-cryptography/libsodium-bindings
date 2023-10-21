@@ -10,6 +10,7 @@ import qualified Test.Hashing.Short as Short
 import qualified Test.PublicKey.Cipher as PublicKey.Cipher
 import qualified Test.PublicKey.Seal as PublicKey.Seal
 import qualified Test.PublicKey.Signature as PublicKey.Signature
+import qualified Test.SecretKey.Authentication as SecretKey.Authentication
 import qualified Test.SecretKey.Cipher as SecretKey.Cipher
 
 main :: IO ()
@@ -27,4 +28,5 @@ specs =
   , PublicKey.Seal.spec
   , SHA2.spec
   , SecretKey.Cipher.spec
+  , SecretKey.Authentication.spec
   ]

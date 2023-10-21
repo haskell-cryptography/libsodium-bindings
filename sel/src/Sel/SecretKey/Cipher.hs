@@ -60,8 +60,8 @@ import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import qualified Data.Base16.Types as Base16
+
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.Secretbox
   ( cryptoSecretboxEasy

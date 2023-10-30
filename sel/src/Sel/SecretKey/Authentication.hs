@@ -279,4 +279,3 @@ authenticationTagFromHexByteString hexTag = unsafeDupablePerformIO $
                 (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
         else pure $ Left $ Text.pack "Hash is too short"
     Left msg -> pure $ Left msg
-

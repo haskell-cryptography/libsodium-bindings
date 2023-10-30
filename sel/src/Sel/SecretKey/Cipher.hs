@@ -45,6 +45,7 @@ module Sel.SecretKey.Cipher
   ) where
 
 import Control.Monad (void, when)
+import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -60,7 +61,6 @@ import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
 import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
-import qualified Data.Base16.Types as Base16
 
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.Secretbox

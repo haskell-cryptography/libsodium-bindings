@@ -11,23 +11,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: fourmolu/fourmolu-action@v8
+    - uses: haskell-actions/run-fourmolu@v9
       with:
+        version: "0.12.0.0"
         pattern: |
           sel/**/*.hs
           libsodium-bindings/**/*.hs
+
   hlint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
     - name: 'Set up HLint'
-      uses: rwe/actions-hlint-setup@v1
-      with:
-        version: '3.5'
+      uses: haskell-actions/hlint-setup@v2
 
     - name: 'Run HLint'
-      uses: rwe/actions-hlint-run@v2
+      uses: haskell-actions/hlint-run@v2
       with:
         path: '["sel", "libsodium-bindings"]'
         fail-on: warning

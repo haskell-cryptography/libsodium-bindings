@@ -68,7 +68,24 @@ import Sel.Internal
 -- in order to be able to compute a valid tag.
 -- Therefore, the key should remain confidential. The tag, however, can be public.
 
--- |
+-- $usage
+--
+-- > {-# LANGUAGE OverloadedStrings #-}
+-- > import Sel.SecretKey.Authentication qualified as Auth
+-- >
+-- > main = do
+-- >   -- The parties agree on a shared secret key
+-- >   authKey <- Auth.newAuthenticationKey
+-- >   -- An authentication tag is computed for the message by the server
+-- >   let message = "Hello, world!"
+-- >   tag <- Auth.authenticate message
+-- >   -- The server sends the message and its authentication tag
+-- >   -- […]
+-- >   -- The recipient of the message uses the shared secret to validate the message's tag
+-- >   Auth.verify tag authKey message
+-- >   -- => True
+
+-- | Compute an authentication tag for a message with a secret key shared by all parties.
 --
 -- @since 0.0.1.0
 authenticate

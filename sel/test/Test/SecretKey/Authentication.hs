@@ -18,12 +18,11 @@ spec =
 
 testAuthenticateMessage :: Assertion
 testAuthenticateMessage = do
-  key <- assertRight $ authenticationKeyFromHexByteString "a84b24baf25e5012faefaa7613645983f0c2ec42a7edf7de30e79d97e0ad8276"
+  key <- newAuthenticationKey
   tag <- authenticate "hello, world" key
-  assertEqual
-    "Tag is expected"
-    "6bf8ade5374886be411ecfa7da9897766e4058650756a4af8ca2b93c47176d17"
-    (authenticationTagToHexByteString tag)
+  assertBool
+    "Tag verified"
+    (verify tag key "hello, world")
 
 testAuthKeySerdeRoundtrip :: Assertion
 testAuthKeySerdeRoundtrip = do

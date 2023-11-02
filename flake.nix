@@ -99,7 +99,7 @@
             haskell-language-server
             hlint
             cabal-fmt
-            fourmolu
+            fourmolu_0_12_0_0
           ];
         };
 

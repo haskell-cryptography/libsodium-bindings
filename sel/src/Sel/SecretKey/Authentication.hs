@@ -70,14 +70,13 @@ import Sel.Internal
 
 -- $usage
 --
--- > {-# LANGUAGE OverloadedStrings #-}
 -- > import Sel.SecretKey.Authentication qualified as Auth
 -- >
 -- > main = do
 -- >   -- The parties agree on a shared secret key
 -- >   authKey <- Auth.newAuthenticationKey
 -- >   -- An authentication tag is computed for the message by the server
--- >   let message = "Hello, world!"
+-- >   let message = ("Hello, world!" :: StrictByteString)
 -- >   tag <- Auth.authenticate message
 -- >   -- The server sends the message and its authentication tag
 -- >   -- […]

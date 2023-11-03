@@ -1,15 +1,20 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 -- |
 --
--- Module: Sel.SecretKey.Authentication
--- Description: Authentication with HMAC-SHA512-256
+-- Module: Sel.HMAC.SHA256
+-- Description: HMAC-SHA-256
+-- Copyright: (C) Hécate Moonlight 2022
+-- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
-module Sel.SecretKey.Authentication
+module Sel.HMAC.SHA256
   ( -- ** Introduction
     -- $introduction
 
@@ -17,7 +22,16 @@ module Sel.SecretKey.Authentication
     -- $usage
 
     -- ** Operations
+
+    -- *** Hashing a single messsage
     authenticate
+
+    -- *** Hashing a multi-part message
+  , Multipart
+  , withMultipart
+  , updateMultipart
+
+    -- *** Verifying a message
   , verify
 
     -- ** Authentication key
@@ -33,31 +47,40 @@ module Sel.SecretKey.Authentication
   , authenticationTagFromHexByteString
   ) where
 
+--
+
 import Control.Monad (void, when)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
+import Data.Kind (Type)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import Data.Text.Display (Display, OpaqueInstance (..), ShowInstance (..))
-import Data.Word (Word8)
-import Foreign (ForeignPtr)
+import Data.Text.Display
+import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
-import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
+import Foreign.C (CChar, CSize, CUChar, CULLong)
+import Foreign.C.Error (throwErrno)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import LibSodium.Bindings.CryptoAuth
-  ( cryptoAuth
-  , cryptoAuthBytes
-  , cryptoAuthKeyBytes
-  , cryptoAuthKeygen
-  , cryptoAuthVerify
+import LibSodium.Bindings.SHA2
+  ( CryptoAuthHMACSHA256State
+  , cryptoAuthHMACSHA256
+  , cryptoAuthHMACSHA256Bytes
+  , cryptoAuthHMACSHA256Final
+  , cryptoAuthHMACSHA256Init
+  , cryptoAuthHMACSHA256KeyBytes
+  , cryptoAuthHMACSHA256Keygen
+  , cryptoAuthHMACSHA256StateBytes
+  , cryptoAuthHMACSHA256Update
+  , cryptoAuthHMACSHA256Verify
   )
-import LibSodium.Bindings.SecureMemory
-import Sel.Internal
+import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumMalloc)
+import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 
 -- $introduction
 -- The 'authenticate' function computes an authentication tag for a message and a secret key,
@@ -70,18 +93,18 @@ import Sel.Internal
 
 -- $usage
 --
--- > import Sel.SecretKey.Authentication qualified as Auth
+-- > import Sel.HMAC.SHA256 qualified as HMAC
 -- >
 -- > main = do
 -- >   -- The parties agree on a shared secret key
--- >   authKey <- Auth.newAuthenticationKey
+-- >   authKey <- HMAC.newAuthenticationKey
 -- >   -- An authentication tag is computed for the message by the server
--- >   let message = "Hello, world!"
--- >   tag <- Auth.authenticate message
+-- >   let message = ("Hello, world!" :: StrictByteString)
+-- >   tag <- HMAC.authenticate message
 -- >   -- The server sends the message and its authentication tag
 -- >   -- […]
 -- >   -- The recipient of the message uses the shared secret to validate the message's tag
--- >   Auth.verify tag authKey message
+-- >   HMAC.verify tag authKey message
 -- >   -- => True
 
 -- | Compute an authentication tag for a message with a secret key shared by all parties.
@@ -98,16 +121,90 @@ authenticate message (AuthenticationKey authenticationKeyForeignPtr) =
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     authenticationTagForeignPtr <-
       Foreign.mallocForeignPtrBytes
-        (fromIntegral cryptoAuthBytes)
+        (fromIntegral cryptoAuthHMACSHA256Bytes)
     Foreign.withForeignPtr authenticationTagForeignPtr $ \authTagPtr ->
       Foreign.withForeignPtr authenticationKeyForeignPtr $ \authKeyPtr ->
         void $
-          cryptoAuth
+          cryptoAuthHMACSHA256
             authTagPtr
             (Foreign.castPtr @CChar @CUChar cString)
             (fromIntegral @Int @CULLong cStringLen)
             authKeyPtr
     pure $ AuthenticationTag authenticationTagForeignPtr
+
+-- ** Hashing a multi-part message
+
+-- | 'Multipart' is a cryptographic context for streaming hashing.
+-- This API can be used when a message is too big to fit
+-- in memory or when the message is received in portions.
+--
+-- Use it like this:
+--
+-- >>> secretKey <- HMAC.newSecreKey
+-- >>> hash <- Hashing.withMultipart secretKey $ \multipartState -> do -- we are in MonadIO
+-- ...   message1 <- getMessage
+-- ...   Hashing.updateMultipart multipartState message1
+-- ...   message2 <- getMessage
+-- ...   Hashing.updateMultipart multipartState message2
+--
+-- @since 0.0.1.0
+newtype Multipart s = Multipart (Ptr CryptoAuthHMACSHA256State)
+
+type role Multipart nominal
+
+-- | Perform streaming hashing with a 'Multipart' cryptographic context.
+--
+-- Use 'HMAC.updateMultipart' within the continuation.
+--
+-- The context is safely allocated first, then the continuation is run
+-- and then it is deallocated after that.
+--
+-- @since 0.0.1.0
+withMultipart
+  :: forall (a :: Type) (m :: Type -> Type)
+   . MonadIO m
+  => AuthenticationKey
+  -> (forall s. Multipart s -> m a)
+  -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
+  -> m AuthenticationTag
+withMultipart (AuthenticationKey secretKeyForeignPtr) actions = do
+  allocateWith cryptoAuthHMACSHA256StateBytes $ \statePtr -> do
+    liftIO $ Foreign.withForeignPtr secretKeyForeignPtr $ \keyPtr ->
+      cryptoAuthHMACSHA256Init statePtr keyPtr cryptoAuthHMACSHA256KeyBytes
+    let part = Multipart statePtr
+    actions part
+    finaliseMultipart part
+
+-- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
+--
+--  this function is only used within 'withMultipart'
+--
+--  @since 0.0.1.0
+finaliseMultipart :: MonadIO m => Multipart s -> m AuthenticationTag
+finaliseMultipart (Multipart statePtr) = do
+  authenticatorForeignPtr <- liftIO $ Foreign.mallocForeignPtrBytes (fromIntegral cryptoAuthHMACSHA256Bytes)
+  liftIO $ Foreign.withForeignPtr authenticatorForeignPtr $ \(authenticatorPtr :: Ptr CUChar) ->
+    void $
+      cryptoAuthHMACSHA256Final
+        statePtr
+        authenticatorPtr
+  pure $ AuthenticationTag authenticatorForeignPtr
+
+-- | Add a message portion to be hashed.
+--
+-- This function should be used within 'withMultipart'.
+--
+-- @since 0.0.1.0
+updateMultipart :: Multipart s -> StrictByteString -> IO ()
+updateMultipart (Multipart statePtr) message = do
+  BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+    let messagePtr = Foreign.castPtr @CChar @CUChar cString
+    let messageLen = fromIntegral @Int @CULLong cStringLen
+    void $
+      cryptoAuthHMACSHA256Update
+        statePtr
+        messagePtr
+        messageLen
 
 -- | Verify that the tag is valid for the provided message and secret key.
 --
@@ -122,14 +219,14 @@ verify (AuthenticationTag tagForeignPtr) (AuthenticationKey keyForeignPtr) messa
     Foreign.withForeignPtr tagForeignPtr $ \authTagPtr ->
       Foreign.withForeignPtr keyForeignPtr $ \authKeyPtr -> do
         result <-
-          cryptoAuthVerify
+          cryptoAuthHMACSHA256Verify
             authTagPtr
             (Foreign.castPtr @CChar @CUChar cString)
             (fromIntegral @Int @CULLong cStringLen)
             authKeyPtr
         pure $ result == 0
 
--- | A secret authentication key of size 'cryptoAuthKeyBytes'.
+-- | A secret authentication key of size 'cryptoAuthHMACSHA256Bytes'.
 --
 -- @since 0.0.1.0
 newtype AuthenticationKey = AuthenticationKey (ForeignPtr CUChar)
@@ -146,7 +243,7 @@ newtype AuthenticationKey = AuthenticationKey (ForeignPtr CUChar)
 instance Eq AuthenticationKey where
   (AuthenticationKey hk1) == (AuthenticationKey hk2) =
     unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthKeyBytes
+      foreignPtrEq hk1 hk2 cryptoAuthHMACSHA256Bytes
 
 -- |
 --
@@ -154,7 +251,7 @@ instance Eq AuthenticationKey where
 instance Ord AuthenticationKey where
   compare (AuthenticationKey hk1) (AuthenticationKey hk2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthKeyBytes
+      foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA256Bytes
 
 -- | > show authenticationKey == "[REDACTED]"
 --
@@ -166,7 +263,7 @@ instance Show AuthenticationKey where
 --
 -- @since 0.0.1.0
 newAuthenticationKey :: IO AuthenticationKey
-newAuthenticationKey = newAuthenticationKeyWith cryptoAuthKeygen
+newAuthenticationKey = newAuthenticationKeyWith cryptoAuthHMACSHA256Keygen
 
 -- | Prepare memory for a 'AuthenticationKey' and use the provided action to fill it.
 --
@@ -178,7 +275,7 @@ newAuthenticationKey = newAuthenticationKeyWith cryptoAuthKeygen
 -- @since 0.0.1.0
 newAuthenticationKeyWith :: (Foreign.Ptr CUChar -> IO ()) -> IO AuthenticationKey
 newAuthenticationKeyWith action = do
-  ptr <- sodiumMalloc cryptoAuthKeyBytes
+  ptr <- sodiumMalloc cryptoAuthHMACSHA256Bytes
   when (ptr == Foreign.nullPtr) $ do
     throwErrno "sodium_malloc"
 
@@ -199,21 +296,21 @@ freeAuthenticationKey (AuthenticationKey fPtr) = Foreign.finalizeForeignPtr fPtr
 -- usually from the network or disk.
 --
 -- The input secret key, once decoded from base16, must be of length
--- 'cryptoAuthKeyBytes'.
+-- 'cryptoAuthHMACSHA256Bytes'.
 --
 -- @since 0.0.1.0
 authenticationKeyFromHexByteString :: StrictByteString -> Either Text AuthenticationKey
 authenticationKeyFromHexByteString hexKey = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped hexKey of
     Right bytestring ->
-      if BS.length bytestring == fromIntegral cryptoAuthKeyBytes
+      if BS.length bytestring == fromIntegral cryptoAuthHMACSHA256Bytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideAuthenticationKeyPtr, _) ->
           fmap Right $
             newAuthenticationKeyWith $ \authenticationKeyPtr ->
               Foreign.copyArray
                 (Foreign.castPtr @CUChar @CChar authenticationKeyPtr)
                 outsideAuthenticationKeyPtr
-                (fromIntegral cryptoAuthKeyBytes)
+                (fromIntegral cryptoAuthHMACSHA256Bytes)
         else pure $ Left $ Text.pack "Authentication Key is too short"
     Left msg -> pure $ Left msg
 
@@ -227,9 +324,9 @@ unsafeAuthenticationKeyToHexByteString (AuthenticationKey authenticationKeyForei
   Base16.extractBase16 . Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 authenticationKeyForeignPtr)
-      (fromIntegral @CSize @Int cryptoAuthKeyBytes)
+      (fromIntegral @CSize @Int cryptoAuthHMACSHA256Bytes)
 
--- | A secret authentication key of size 'cryptoAuthBytes'.
+-- | A secret authentication key of size 'cryptoAuthHMACSHA256Bytes'.
 --
 -- @since 0.0.1.0
 newtype AuthenticationTag = AuthenticationTag (ForeignPtr CUChar)
@@ -245,7 +342,7 @@ newtype AuthenticationTag = AuthenticationTag (ForeignPtr CUChar)
 instance Eq AuthenticationTag where
   (AuthenticationTag hk1) == (AuthenticationTag hk2) =
     unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthBytes
+      foreignPtrEq hk1 hk2 cryptoAuthHMACSHA256Bytes
 
 -- |
 --
@@ -253,7 +350,7 @@ instance Eq AuthenticationTag where
 instance Ord AuthenticationTag where
   compare (AuthenticationTag hk1) (AuthenticationTag hk2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthBytes
+      foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA256Bytes
 
 -- |
 --
@@ -270,20 +367,20 @@ authenticationTagToHexByteString (AuthenticationTag fPtr) =
     Base16.encodeBase16' $
       BS.fromForeignPtr0
         (Foreign.castForeignPtr fPtr)
-        (fromIntegral cryptoAuthBytes)
+        (fromIntegral cryptoAuthHMACSHA256Bytes)
 
 -- | Create an 'AuthenticationTag' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
 --
 -- The input secret key, once decoded from base16, must be of length
--- 'cryptoAuthBytes'.
+-- 'cryptoAuthHMACSHA256Bytes'.
 --
 -- @since 0.0.1.0
 authenticationTagFromHexByteString :: StrictByteString -> Either Text AuthenticationTag
 authenticationTagFromHexByteString hexTag = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped hexTag of
     Right bytestring ->
-      if BS.length bytestring >= fromIntegral cryptoAuthBytes
+      if BS.length bytestring >= fromIntegral cryptoAuthHMACSHA256Bytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideTagPtr, outsideTagLength) -> do
           hashForeignPtr <- BS.mallocByteString @CChar outsideTagLength -- The foreign pointer that will receive the hash data.
           Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->

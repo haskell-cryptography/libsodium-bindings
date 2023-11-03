@@ -1,0 +1,21 @@
+-- |
+--
+-- Module: Sel.HMAC.SHA512
+-- Description: Keyed Message Authentication Codes
+--
+-- [HMAC](https://en.wikipedia.org/wiki/HMAC) provides a way to both encrypt a communication
+-- and authenticate its origin.
+--
+-- This relies on a shared pair of secret keys between all the parties
+--
+-- The function computing the tag deterministic: the same @(message, key)@ tuple will always
+-- produce the same output. However, even if the message is public, knowing the key is required
+-- in order to be able to compute a valid tag.
+-- Therefore, the key should remain confidential. The tag, however, can be public.
+--
+-- The following keyed message authentication codes are availabled:
+--
+-- * "Sel.HMAC.SHA256"
+-- * "Sel.HMAC.SHA512"
+-- * "Sel.HMAC.SHA512_256" (truncated HMAC-SHA-512)
+module Sel.HMAC where

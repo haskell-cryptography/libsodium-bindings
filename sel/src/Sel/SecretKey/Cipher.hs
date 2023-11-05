@@ -28,8 +28,6 @@ module Sel.SecretKey.Cipher
   , newSecretKey
   , secretKeyFromHexByteString
   , unsafeSecretKeyToHexByteString
-  , newSecretKeyWith
-  , freeSecretKey
 
     -- ** Nonce
   , Nonce
@@ -159,7 +157,7 @@ secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
 -- | Prepare memory for a 'SecretKey' and use the provided action to fill it.
 --
 -- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc' (see the note attached there).
--- Finalizer is run when the key is goes out of scope, but 'freeSecretKey' can be used to release early.
+-- A finalizer is run when the key is goes out of scope.
 --
 -- @since 0.0.1.0
 newSecretKeyWith :: (Foreign.Ptr CUChar -> IO ()) -> IO SecretKey
@@ -172,14 +170,6 @@ newSecretKeyWith action = do
   Foreign.addForeignPtrFinalizer finalizerSodiumFree fPtr
   action ptr
   pure $ SecretKey fPtr
-
--- | Trigger memory clean up and release without waiting for GC.
---
--- The 'SecretKey' must not be used again.
---
--- @since 0.0.1.0
-freeSecretKey :: SecretKey -> IO ()
-freeSecretKey (SecretKey fPtr) = Foreign.finalizeForeignPtr fPtr
 
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
 --

@@ -24,7 +24,6 @@ module Sel.PublicKey.Cipher
     newKeyPair
   , SecretKey (..)
   , unsafeSecretKeyToHexByteString
-  , freeSecretKey
   , PublicKey (..)
   , publicKeyToHexByteString
   , keyPairFromHexByteStrings
@@ -226,10 +225,7 @@ keyPairFromHexByteStrings publicByteStringHex secretByteStringHex =
 --
 -- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc'
 -- (see the note attached there).
--- Finalizer is run when the key is goes out of scope, but 'freeSecretKey'
--- can be used to release early.
---
--- @since 0.0.1.0
+-- A finalizer is run when the key is goes out of scope.
 newKeyPairWith
   :: ( Ptr CUChar
        -- \^ Public Key pointer
@@ -253,14 +249,6 @@ newKeyPairWith action = do
 
   action publicKeyPtr secretKeyPtr
   pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
-
--- | Trigger memory clean up and release without waiting for GC.
---
--- The 'SecretKey' must not be used again.
---
--- @since 0.0.1.0
-freeSecretKey :: SecretKey -> IO ()
-freeSecretKey (SecretKey fPtr) = Foreign.finalizeForeignPtr fPtr
 
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
 --

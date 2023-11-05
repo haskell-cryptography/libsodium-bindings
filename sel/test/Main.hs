@@ -3,9 +3,10 @@ module Main where
 import Test.Tasty
 
 import LibSodium.Bindings.Main (sodiumInit)
+import qualified Test.HMAC as HMAC
 import qualified Test.Hashing as Hashing
 import qualified Test.Hashing.Password as Password
-import qualified Test.Hashing.SHA2 as SHA2
+import qualified Test.Hashing.SHA2 as Hashing.SHA2
 import qualified Test.Hashing.Short as Short
 import qualified Test.PublicKey.Cipher as PublicKey.Cipher
 import qualified Test.PublicKey.Seal as PublicKey.Seal
@@ -26,7 +27,8 @@ specs =
   , PublicKey.Signature.spec
   , PublicKey.Cipher.spec
   , PublicKey.Seal.spec
-  , SHA2.spec
+  , Hashing.SHA2.spec
   , SecretKey.Cipher.spec
   , SecretKey.Authentication.spec
+  , HMAC.spec
   ]

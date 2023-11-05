@@ -47,10 +47,13 @@ library
     Sel
     Sel.Hashing
     Sel.Hashing.Password
-    Sel.Hashing.SHA2
-    Sel.Hashing.SHA2.SHA256
-    Sel.Hashing.SHA2.SHA512
+    Sel.Hashing.SHA256
+    Sel.Hashing.SHA512
     Sel.Hashing.Short
+    Sel.HMAC
+    Sel.HMAC.SHA256
+    Sel.HMAC.SHA512
+    Sel.HMAC.SHA512_256
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
@@ -76,6 +79,7 @@ test-suite sel-tests
     Test.Hashing.Password
     Test.Hashing.SHA2
     Test.Hashing.Short
+    Test.HMAC
     Test.PublicKey.Cipher
     Test.PublicKey.Seal
     Test.PublicKey.Signature

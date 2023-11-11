@@ -37,7 +37,6 @@ module Sel.HMAC.SHA512_256
   , newAuthenticationKey
   , authenticationKeyFromHexByteString
   , unsafeAuthenticationKeyToHexByteString
-  , freeAuthenticationKey
 
     -- ** Authentication tag
   , AuthenticationTag
@@ -267,10 +266,7 @@ newAuthenticationKey = newAuthenticationKeyWith cryptoAuthHMACSHA512256Keygen
 --
 -- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc'
 -- (see the note attached there).
--- Finalizer is run when the key is goes out of scope, but 'freeAuthenticationKey'
--- can be used to release early.
---
--- @since 0.0.1.0
+-- A finalizer is run when the key is goes out of scope.
 newAuthenticationKeyWith :: (Foreign.Ptr CUChar -> IO ()) -> IO AuthenticationKey
 newAuthenticationKeyWith action = do
   ptr <- sodiumMalloc cryptoAuthHMACSHA512256Bytes
@@ -281,14 +277,6 @@ newAuthenticationKeyWith action = do
   Foreign.addForeignPtrFinalizer finalizerSodiumFree fPtr
   action ptr
   pure $ AuthenticationKey fPtr
-
--- | Trigger memory clean up and release without waiting for GC.
---
--- The 'AuthenticationKey' must not be used again.
---
--- @since 0.0.1.0
-freeAuthenticationKey :: AuthenticationKey -> IO ()
-freeAuthenticationKey (AuthenticationKey fPtr) = Foreign.finalizeForeignPtr fPtr
 
 -- | Create an 'AuthenticationKey' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.

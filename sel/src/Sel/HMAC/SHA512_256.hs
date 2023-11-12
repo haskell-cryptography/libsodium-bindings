@@ -21,10 +21,10 @@ module Sel.HMAC.SHA512_256
 
     -- ** Operations
 
-    -- *** Hashing a single messsage
+    -- *** Authenticating a single messsage
     authenticate
 
-    -- *** Hashing a multi-part message
+    -- *** Authenticating a multi-part message
   , Multipart
   , withMultipart
   , updateMultipart
@@ -41,6 +41,7 @@ module Sel.HMAC.SHA512_256
     -- ** Authentication tag
   , AuthenticationTag
   , authenticationTagToHexByteString
+  , authenticationTagToBinary
   , authenticationTagFromHexByteString
   ) where
 
@@ -129,7 +130,7 @@ authenticate message (AuthenticationKey authenticationKeyForeignPtr) =
             authKeyPtr
     pure $ AuthenticationTag authenticationTagForeignPtr
 
--- ** Hashing a multi-part message
+-- ** Authenticating a multi-part message
 
 -- | 'Multipart' is a cryptographic context for streaming hashing.
 -- This API can be used when a message is too big to fit
@@ -138,11 +139,11 @@ authenticate message (AuthenticationKey authenticationKeyForeignPtr) =
 -- Use it like this:
 --
 -- >>> secretKey <- HMAC.newSecreKey
--- >>> hash <- Hashing.withMultipart secretKey $ \multipartState -> do -- we are in MonadIO
+-- >>> hash <- HMAC.withMultipart secretKey $ \multipartState -> do -- we are in MonadIO
 -- ...   message1 <- getMessage
--- ...   Hashing.updateMultipart multipartState message1
+-- ...   HMAC.updateMultipart multipartState message1
 -- ...   message2 <- getMessage
--- ...   Hashing.updateMultipart multipartState message2
+-- ...   HMAC.updateMultipart multipartState message2
 --
 -- @since 0.0.1.0
 newtype Multipart s = Multipart (Ptr CryptoAuthHMACSHA512256State)
@@ -172,7 +173,7 @@ withMultipart (AuthenticationKey secretKeyForeignPtr) actions = do
     actions part
     finaliseMultipart part
 
--- | Compute the 'Hash' of all the portions that were fed to the cryptographic context.
+-- | Compute the 'AuthenticationTag' of all the portions that were fed to the cryptographic context.
 --
 --  this function is only used within 'withMultipart'
 --
@@ -348,12 +349,19 @@ instance Show AuthenticationTag where
 --
 -- @since 0.0.1.0
 authenticationTagToHexByteString :: AuthenticationTag -> StrictByteString
-authenticationTagToHexByteString (AuthenticationTag fPtr) =
+authenticationTagToHexByteString authenticationTag =
   Base16.extractBase16 $
     Base16.encodeBase16' $
-      BS.fromForeignPtr0
-        (Foreign.castForeignPtr fPtr)
-        (fromIntegral cryptoAuthHMACSHA512256Bytes)
+      authenticationTagToBinary authenticationTag
+
+-- | Convert an 'AuthenticationTag' to a binary 'StrictByteString'.
+--
+-- @since 0.0.1.0
+authenticationTagToBinary :: AuthenticationTag -> StrictByteString
+authenticationTagToBinary (AuthenticationTag fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr fPtr)
+    (fromIntegral cryptoAuthHMACSHA512256Bytes)
 
 -- | Create an 'AuthenticationTag' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
@@ -376,5 +384,5 @@ authenticationTagFromHexByteString hexTag = unsafeDupablePerformIO $
             Right $
               AuthenticationTag
                 (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
-        else pure $ Left $ Text.pack "Hash is too short"
+        else pure $ Left $ Text.pack "Authentication tag is too short"
     Left msg -> pure $ Left msg

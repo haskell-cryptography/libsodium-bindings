@@ -243,7 +243,7 @@ newtype AuthenticationKey = AuthenticationKey (ForeignPtr CUChar)
 instance Eq AuthenticationKey where
   (AuthenticationKey hk1) == (AuthenticationKey hk2) =
     unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthHMACSHA512Bytes
+      foreignPtrEq hk1 hk2 cryptoAuthHMACSHA512KeyBytes
 
 -- |
 --
@@ -251,7 +251,7 @@ instance Eq AuthenticationKey where
 instance Ord AuthenticationKey where
   compare (AuthenticationKey hk1) (AuthenticationKey hk2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA512Bytes
+      foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA512KeyBytes
 
 -- | > show authenticationKey == "[REDACTED]"
 --
@@ -272,7 +272,7 @@ newAuthenticationKey = newAuthenticationKeyWith cryptoAuthHMACSHA512Keygen
 -- A finalizer is run when the key is goes out of scope.
 newAuthenticationKeyWith :: (Foreign.Ptr CUChar -> IO ()) -> IO AuthenticationKey
 newAuthenticationKeyWith action = do
-  ptr <- sodiumMalloc cryptoAuthHMACSHA512Bytes
+  ptr <- sodiumMalloc cryptoAuthHMACSHA512KeyBytes
   when (ptr == Foreign.nullPtr) $ do
     throwErrno "sodium_malloc"
 
@@ -292,14 +292,14 @@ authenticationKeyFromHexByteString :: StrictByteString -> Either Text Authentica
 authenticationKeyFromHexByteString hexKey = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped hexKey of
     Right bytestring ->
-      if BS.length bytestring == fromIntegral cryptoAuthHMACSHA512Bytes
+      if BS.length bytestring == fromIntegral cryptoAuthHMACSHA512KeyBytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideAuthenticationKeyPtr, _) ->
           fmap Right $
             newAuthenticationKeyWith $ \authenticationKeyPtr ->
               Foreign.copyArray
                 (Foreign.castPtr @CUChar @CChar authenticationKeyPtr)
                 outsideAuthenticationKeyPtr
-                (fromIntegral cryptoAuthHMACSHA512Bytes)
+                (fromIntegral cryptoAuthHMACSHA512KeyBytes)
         else pure $ Left $ Text.pack "Authentication Key is too short"
     Left msg -> pure $ Left msg
 
@@ -313,7 +313,7 @@ unsafeAuthenticationKeyToHexByteString (AuthenticationKey authenticationKeyForei
   Base16.extractBase16 . Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 authenticationKeyForeignPtr)
-      (fromIntegral @CSize @Int cryptoAuthHMACSHA512Bytes)
+      (fromIntegral @CSize @Int cryptoAuthHMACSHA512KeyBytes)
 
 -- | A secret authentication key of size 'cryptoAuthHMACSHA512Bytes'.
 --

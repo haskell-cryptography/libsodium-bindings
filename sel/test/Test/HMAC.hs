@@ -16,21 +16,21 @@ spec =
     [ testGroup
         "HMAC-SHA-256"
         [ testCase "Single-message hashing" testSingleHMACSHA256Hashing
-        , testCase "multiple-message hashing" testMultipleHMAC256Hashing
+        , testCase "Multiple-message hashing" testMultipleHMAC256Hashing
         , testCase "Round-trip authentication key serialisation" testHMAC256AuthenticationKeySerialisation
         , testCase "Round-trip tag serialisation" testHMAC256AuthenticationTagSerialisation
         ]
     , testGroup
         "HMAC-SHA-512"
         [ testCase "Single-message hashing" testSingleHMACSHA512Hashing
-        , testCase "multiple-message hashing" testMultipleHMAC512Hashing
+        , testCase "Multiple-message hashing" testMultipleHMAC512Hashing
         , testCase "Round-trip authentication key serialisation" testHMAC512AuthenticationKeySerialisation
         , testCase "Round-trip tag serialisation" testHMAC512AuthenticationTagSerialisation
         ]
     , testGroup
         "HMAC-SHA-512-256"
         [ testCase "Single-message hashing" testSingleHMACSHA512_256Hashing
-        , testCase "multiple-message hashing" testMultipleHMAC512_256Hashing
+        , testCase "Multiple-message hashing" testMultipleHMAC512_256Hashing
         , testCase "Round-trip authentication key serialisation" testHMAC512_256AuthenticationKeySerialisation
         , testCase "Round-trip tag serialisation" testHMAC512_256AuthenticationTagSerialisation
         ]

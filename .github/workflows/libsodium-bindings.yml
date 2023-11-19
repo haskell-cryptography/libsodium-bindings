@@ -37,7 +37,9 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: 'latest'
       - name: Configure
-        run: ./.github/workflows/install-libsodium.sh
+        run: |
+          ./.github/workflows/install-libsodium.sh
+          cabal freeze
       - name: Cache
         uses: actions/cache@v3.3.2
         with:

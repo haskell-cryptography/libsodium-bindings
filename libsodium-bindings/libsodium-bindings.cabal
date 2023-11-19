@@ -2,7 +2,7 @@ cabal-version:      3.0
 name:               libsodium-bindings
 version:            0.0.1.0
 category:           Cryptography
-synopsis:           Static FFI bindings to libsodium
+synopsis:           FFI bindings to libsodium
 description:
   This library embeds FFI bindings to the stable version of libsodium 1.0.18.
   The interface exposed by this library is kept close to the C library.
@@ -32,6 +32,7 @@ flag use-pkg-config
 flag homebrew-libsodium
   description: Use Homebrew version of Libsodium (macOS only).
   default:     False
+  manual:      True
 
 source-repository head
   type:     git

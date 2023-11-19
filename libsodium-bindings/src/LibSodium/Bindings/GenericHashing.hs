@@ -101,6 +101,8 @@ withGenericHashStateOfSize size action = allocaBytes (fromIntegral size) action
 -- However, the key size can be any value between 0 (included) and 'cryptoGenericHashKeyBytesMax' (included).
 -- If the key is meant to be secret, the recommended minimum length is 'cryptoGenericHashKeyBytesMin'.
 --
+-- /See:/ [crypto_generichash()](https://doc.libsodium.org/hashing/generic_hashing#usage)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash"
   cryptoGenericHash
@@ -128,6 +130,8 @@ foreign import capi "sodium.h crypto_generichash"
 -- 'cryptoGenericHashKeyBytesMax', and should typically be 'cryptoGenericHashKeyBytes'.
 -- It is the caller's responsibility to ensure that these hold.
 --
+-- /See:/ [crypto_generichash_init()](https://doc.libsodium.org/hashing/generic_hashing#usage)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_init"
   cryptoGenericHashInit
@@ -146,6 +150,8 @@ foreign import capi "sodium.h crypto_generichash_init"
 -- by providing a pointer to the previously initialised state, a pointer to the input chunk,
 -- and the length of the chunk in bytes.
 --
+-- /See:/ [crypto_generichash_update()](https://doc.libsodium.org/hashing/generic_hashing#usage)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_update"
   cryptoGenericHashUpdate
@@ -161,6 +167,8 @@ foreign import capi "sodium.h crypto_generichash_update"
 -- | After processing everything you need with 'cryptoGenericHashUpdate', you can finalise the operation
 -- with 'cryptoGenericHashFinal'.
 --
+-- /See:/ [crypto_generichash_final()](https://doc.libsodium.org/hashing/generic_hashing#usage)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_final"
   cryptoGenericHashFinal
@@ -175,6 +183,8 @@ foreign import capi "sodium.h crypto_generichash_final"
 
 -- | This function creates a key of the recommended length 'cryptoGenericHashKeyBytes'.
 --
+-- /See:/ [crypto_generichash_keygen()](https://doc.libsodium.org/hashing/generic_hashing#usage)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_generichash_keygen"
   cryptoGenericHashKeyGen
@@ -182,37 +192,49 @@ foreign import capi "sodium.h crypto_generichash_keygen"
     -- ^ A pointer to the key
     -> IO ()
 
--- | Haskell binding to the @crypto_generichash_BYTES@ constant
+-- | Size of the generated hash.
+--
+-- /See:/ [crypto_generichash_BYTES](https://doc.libsodium.org/hashing/generic_hashing#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_BYTES"
   cryptoGenericHashBytes :: CSize
 
--- | Haskell binding to the @crypto_generichash_BYTES_MIN@ constant
+-- | Minimum size of a generated hash
+--
+-- /See:/ [crypto_generichash_BYTES_MIN](https://doc.libsodium.org/hashing/generic_hashing#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_BYTES_MIN"
   cryptoGenericHashBytesMin :: CSize
 
--- | Haskell binding to the @crypto_generichash_BYTES_MAX@ constant
+-- | Maximum size of a generated hash
+--
+-- /See:/ [crypto_generichash_BYTES_MAX](https://doc.libsodium.org/hashing/generic_hashing#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_BYTES_MAX"
   cryptoGenericHashBytesMax :: CSize
 
--- | Haskell binding to the @crypto_generichash_KEYBYTES@ constant
+-- | Size of a generated key
+--
+-- /See:/ [crypto_generichash_KEYBYTES](https://doc.libsodium.org/hashing/generic_hashing#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_KEYBYTES"
   cryptoGenericHashKeyBytes :: CSize
 
--- | Haskell binding to the @crypto_generichash_KEYBYTES_MIN@ constant
+-- | Minimum size of a generated key
+--
+-- /See:/ [crypto_generichash_KEYBYTES_MIN](https://doc.libsodium.org/hashing/generic_hashing#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_KEYBYTES_MIN"
   cryptoGenericHashKeyBytesMin :: CSize
 
--- | Haskell binding to the @crypto_generichash_KEYBYTES_MAX@ constant
+-- | Maximum size of a generated key
+--
+-- /See:/ [crypto_generichash_KEYBYTES_MAX](https://doc.libsodium.org/hashing/generic_hashing#constants)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_generichash_KEYBYTES_MAX"

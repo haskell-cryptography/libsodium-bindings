@@ -30,7 +30,6 @@ where
 
 import Data.Word (Word8)
 import Foreign (FinalizerPtr, Ptr)
-import Foreign.C.Error ()
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 
 -- $introduction
@@ -109,7 +108,7 @@ foreign import capi "sodium.h sodium_munlock"
 -- | This function takes an amount (called @size@) and returns a pointer from which
 -- exactly @size@ contiguous bytes of memory can be accessed. The pointer may be
 -- 'Foreign.Ptr.nullPtr' and there may be an error when allocating memory,
--- through @errno@. Upon failure, @errno@ will be set to 'eNOMEM'
+-- through @errno@. Upon failure, @errno@ will be set to 'Foreign.C.Error.eNOMEM'
 --
 -- It is recommended that the caller use "Foreign.C.Error" to handle potential failure.
 --

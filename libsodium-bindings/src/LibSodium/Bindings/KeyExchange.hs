@@ -46,7 +46,7 @@ import Foreign.C (CChar, CInt (CInt), CSize (CSize), CUChar)
 --
 -- This function takes pointers to two empty buffers that will hold (respectively) the public and secret keys.
 --
--- /See also:/ [crypto_kx_keypair()](https://doc.libsodium.org/key_exchange#usage)
+-- /See:/ [crypto_kx_keypair()](https://doc.libsodium.org/key_exchange#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_keypair"
@@ -63,7 +63,7 @@ foreign import capi "sodium.h crypto_kx_keypair"
 -- This function takes pointers to two empty buffers that will hold (respectively) the public and secret keys,
 -- as well as the seed from which these keys will be derived.
 --
--- /See also:/ [crypto_kx_seed_keypair()](https://doc.libsodium.org/key_exchange#usage)
+-- /See:/ [crypto_kx_seed_keypair()](https://doc.libsodium.org/key_exchange#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_seed_keypair"
@@ -91,7 +91,7 @@ foreign import capi "sodium.h crypto_kx_seed_keypair"
 -- If only one session key is required, either the pointer to the shared secret key or the pointer
 -- to the shared public key can be set to 'Foreign.nullPtr'.
 --
--- /See also:/ [crypto_kx_client_session_keys()](https://doc.libsodium.org/key_exchange#usage)
+-- /See:/ [crypto_kx_client_session_keys()](https://doc.libsodium.org/key_exchange#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_client_session_keys"
@@ -125,7 +125,7 @@ foreign import capi "sodium.h crypto_kx_client_session_keys"
 -- If only one session key is required, either the pointer to the shared secret key or the pointer
 -- to the shared public key can be set to 'Foreign.nullPtr'.
 --
--- /See also:/ [crypto_kx_server_session_keys()](https://doc.libsodium.org/key_exchange#usage)
+-- /See:/ [crypto_kx_server_session_keys()](https://doc.libsodium.org/key_exchange#usage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kx_server_session_keys"
@@ -143,22 +143,42 @@ foreign import capi "sodium.h crypto_kx_server_session_keys"
     -> IO CInt
     -- ^ Returns 0 on success, -1 on error, such as when the server's public key is not acceptable.
 
--- | @since 0.0.1.0
+-- | Size of the public key in bytes.
+--
+-- /See:/ [crypto_kx_PUBLICKEYBYTES](https://doc.libsodium.org/key_exchange#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_PUBLICKEYBYTES"
   cryptoKXPublicKeyBytes :: CSize
 
--- | @since 0.0.1.0
+-- | Size of the secret key in bytes.
+--
+-- /See:/ [crypto_kx_SECRETKEYBYTES](https://doc.libsodium.org/key_exchange#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_SECRETKEYBYTES"
   cryptoKXSecretKeyBytes :: CSize
 
--- | @since 0.0.1.0
+-- | Size of the seed in bytes.
+--
+-- /See:/ [crypto_kx_SEEDBYTES](https://doc.libsodium.org/key_exchange#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_SEEDBYTES"
   cryptoKXSeedBytes :: CSize
 
--- | @since 0.0.1.0
+-- | Size of the session key in bytes.
+--
+-- /See:/ [crypto_kx_SESSIONKEYBYTES](https://doc.libsodium.org/key_exchange#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_SESSIONKEYBYTES"
   cryptoKXSessionKeyBytes :: CSize
 
--- | @since 0.0.1.0
+-- | Primitive used by this module
+--
+-- /See:/ [crypto_kx_PRIMITIVE](https://doc.libsodium.org/key_exchange#constants)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kx_PRIMITIVE"
   cryptoKXPrimitive :: Ptr CChar

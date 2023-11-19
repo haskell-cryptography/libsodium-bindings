@@ -129,7 +129,7 @@ import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 
 -- | Hash the content of the second buffer and put the result in the first buffer.
 --
--- /See also:/ [crypto_hash_sha256()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
+-- /See:/ [crypto_hash_sha256()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256"
@@ -147,7 +147,7 @@ foreign import capi "sodium.h crypto_hash_sha256"
 --
 -- Its size is 'cryptoHashSHA256StateBytes'.
 --
--- /See also:/ [crypto_hash_sha256_state](https://doc.libsodium.org/advanced/sha-2_hash_function#data-types)
+-- /See:/ [crypto_hash_sha256_state](https://doc.libsodium.org/advanced/sha-2_hash_function#data-types)
 --
 -- @since 0.0.1.0
 data CryptoHashSHA256State
@@ -170,7 +170,7 @@ withCryptoHashSHA256State action = do
 -- Call this function on a 'Ptr' 'CryptoHashSHA256State' before using it
 -- as an argument in any other function in this module.
 --
--- /See also:/ [crypto_hash_sha256_init()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
+-- /See:/ [crypto_hash_sha256_init()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_init"
@@ -185,7 +185,7 @@ foreign import capi "sodium.h crypto_hash_sha256_init"
 -- After all parts have been supplied, 'cryptoHashSHA256Final' can be used to finalise the operation
 -- and get the final hash.
 --
--- /See also:/ [crypto_hash_sha256_update()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
+-- /See:/ [crypto_hash_sha256_update()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_update"
@@ -205,7 +205,7 @@ foreign import capi "sodium.h crypto_hash_sha256_update"
 -- After this operation, the buffer containing the 'CryptoHashSHA256State' is emptied and
 -- cannot be relied upon.
 --
--- /See also:/ [crypto_hash_sha256_final()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
+-- /See:/ [crypto_hash_sha256_final()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha256_final"
@@ -224,7 +224,7 @@ foreign import capi "sodium.h crypto_hash_sha256_final"
 -- | Authenticate a message given its size and a secret key, and produce an authenticator to be
 -- validated with 'cryptoAuthHMACSHA256Verify'.
 --
--- /See also:/ [crypto_auth_hmacsha256()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256).
+-- /See:/ [crypto_auth_hmacsha256()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256).
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256"
@@ -242,7 +242,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha256"
 
 -- | Verify that an authenticator provided by 'cryptoAuthHMACSHA256' is correct.
 --
--- /See also:/ [crypto_auth_hmacsha256_verify()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
+-- /See:/ [crypto_auth_hmacsha256_verify()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_verify"
@@ -260,7 +260,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_verify"
 
 -- | Create a random key of the correct length.
 --
--- /See also:/ [crypto_auth_hmacsha256_keygen()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
+-- /See:/ [crypto_auth_hmacsha256_keygen()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_keygen"
@@ -276,7 +276,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_keygen"
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
--- /See also:/ [crypto_auth_hmacsha256_state](https://doc.libsodium.org/advanced/hmac-sha2#data-types)
+-- /See:/ [crypto_auth_hmacsha256_state](https://doc.libsodium.org/advanced/hmac-sha2#data-types)
 --
 -- @since 0.0.1.0
 data CryptoAuthHMACSHA256State
@@ -299,7 +299,7 @@ withCryptoAuthHMACSHA256State action = do
 -- Call this function on a 'Ptr' 'CryptoAuthHMACSHA256State' before using it
 -- as an argument in any other function in this module.
 --
--- /See also:/ [crypto_auth_hmacsha256_init()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
+-- /See:/ [crypto_auth_hmacsha256_init()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_init"
@@ -318,7 +318,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_init"
 -- After all parts have been supplied, 'cryptoAuthHMACSHA256Final' can be used to finalise the operation
 -- and get the final hash.
 --
--- /See also:/ [crypto_auth_hmacsha256_update()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
+-- /See:/ [crypto_auth_hmacsha256_update()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_update"
@@ -338,7 +338,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_update"
 -- After this operation, the buffer containing the 'CryptoAuthHMACSHA256State' is emptied and
 -- cannot be relied upon.
 --
--- /See also:/ [crypto_auth_hmacsha256_final()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
+-- /See:/ [crypto_auth_hmacsha256_final()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha256_final"
@@ -356,7 +356,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha256_final"
 
 -- | Hash the content of the second buffer and put the result in the first buffer.
 --
--- /See also:/ [crypto_hash_sha512()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
+-- /See:/ [crypto_hash_sha512()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512"
@@ -374,7 +374,7 @@ foreign import capi "sodium.h crypto_hash_sha512"
 --
 -- Its size is 'cryptoHashSHA512StateBytes'.
 --
--- /See also:/ [crypto_hash_sha512_state](https://doc.libsodium.org/advanced/sha-2_hash_function#data-types)
+-- /See:/ [crypto_hash_sha512_state](https://doc.libsodium.org/advanced/sha-2_hash_function#data-types)
 --
 -- @since 0.0.1.0
 data CryptoHashSHA512State
@@ -397,7 +397,7 @@ withCryptoHashSHA512State action = do
 -- Call this function on a 'Ptr CryptoHashSHA512State' before using it
 -- as an argument in any other function in this module.
 --
--- /See also:/ [crypto_hash_sha512_init()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
+-- /See:/ [crypto_hash_sha512_init()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_init"
@@ -412,7 +412,7 @@ foreign import capi "sodium.h crypto_hash_sha512_init"
 -- After all parts have been supplied, 'cryptoHashSHA512Final' can be used to finalise the operation
 -- and get the final hash.
 --
--- /See also:/ [crypto_hash_sha512_update()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
+-- /See:/ [crypto_hash_sha512_update()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_update"
@@ -432,7 +432,7 @@ foreign import capi "sodium.h crypto_hash_sha512_update"
 -- After this operation, the buffer containing the 'CryptoHashSHA512State' is emptied and
 -- cannot be relied upon.
 --
--- /See also:/ [crypto_hash_sha512_final()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
+-- /See:/ [crypto_hash_sha512_final()](https://doc.libsodium.org/advanced/sha-2_hash_function#sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_hash_sha512_final"
@@ -451,7 +451,7 @@ foreign import capi "sodium.h crypto_hash_sha512_final"
 -- | Authenticate a message given its size and a secret key, and produce an authenticator to be
 -- validated with 'cryptoAuthHMACSHA512Verify'.
 --
--- /See also:/ [crypto_auth_hmacsha512()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512).
+-- /See:/ [crypto_auth_hmacsha512()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512).
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512"
@@ -469,7 +469,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512"
 
 -- | Verify that an authenticator provided by 'cryptoAuthHMACSHA512' is correct.
 --
--- /See also:/ [crypto_auth_hmacsha512_verify()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
+-- /See:/ [crypto_auth_hmacsha512_verify()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_verify"
@@ -487,7 +487,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_verify"
 
 -- | Create a random key of the correct length.
 --
--- /See also:/ [crypto_auth_hmacsha512_keygen()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
+-- /See:/ [crypto_auth_hmacsha512_keygen()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_keygen"
@@ -503,7 +503,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_keygen"
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
--- /See also:/ [crypto_auth_hmacsha512_state](https://doc.libsodium.org/advanced/hmac-sha2#data-types)
+-- /See:/ [crypto_auth_hmacsha512_state](https://doc.libsodium.org/advanced/hmac-sha2#data-types)
 --
 -- @since 0.0.1.0
 data CryptoAuthHMACSHA512State
@@ -526,7 +526,7 @@ withCryptoAuthHMACSHA512State action = do
 -- Call this function on a 'Ptr CryptoAuthHMACSHA512State' before using it
 -- as an argument in any other function in this module.
 --
--- /See also:/ [crypto_auth_hmacsha512_init()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
+-- /See:/ [crypto_auth_hmacsha512_init()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_init"
@@ -545,7 +545,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_init"
 -- After all parts have been supplied, 'cryptoAuthHMACSHA512Final' can be used
 -- to finalise the operation and get the final hash.
 --
--- /See also:/ [crypto_auth_hmacsha512_update()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
+-- /See:/ [crypto_auth_hmacsha512_update()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_update"
@@ -565,7 +565,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_update"
 -- After this operation, the buffer containing the 'CryptoAuthHMACSHA512State' is emptied and
 -- cannot be relied upon.
 --
--- /See also:/ [crypto_auth_hmacsha512_final()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
+-- /See:/ [crypto_auth_hmacsha512_final()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512_final"
@@ -589,7 +589,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512_final"
 -- | Authenticate a message given its size and a secret key, and produce an authenticator to be
 -- validated with 'cryptoAuthHMACSHA512256Verify'.
 --
--- /See also:/ [crypto_auth_hmacsha512256()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256).
+-- /See:/ [crypto_auth_hmacsha512256()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256).
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256"
@@ -607,7 +607,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256"
 
 -- | Verify that an authenticator provided by 'cryptoAuthHMACSHA512256' is correct.
 --
--- /See also:/ [crypto_auth_hmacsha512256_verify()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
+-- /See:/ [crypto_auth_hmacsha512256_verify()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_verify"
@@ -625,7 +625,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_verify"
 
 -- | Create a random key of the correct length.
 --
--- /See also:/ [crypto_auth_hmacsha512256_keygen()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
+-- /See:/ [crypto_auth_hmacsha512256_keygen()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_keygen"
@@ -642,7 +642,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_keygen"
 --
 -- Please refer to the documentation of 'Foreign.allocaBytes' for more operational details.
 --
--- /See also:/ [crypto_auth_hmacsha512256_state](https://doc.libsodium.org/advanced/hmac-sha2#data-types)
+-- /See:/ [crypto_auth_hmacsha512256_state](https://doc.libsodium.org/advanced/hmac-sha2#data-types)
 --
 -- @since 0.0.1.0
 data CryptoAuthHMACSHA512256State
@@ -666,7 +666,7 @@ withCryptoAuthHMACSHA512256State action = do
 -- Call this function on a 'Ptr' 'CryptoAuthHMACSHA512256State' before using it
 -- as an argument in any other function in this module.
 --
--- /See also:/ [crypto_auth_hmacsha512256_init()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
+-- /See:/ [crypto_auth_hmacsha512256_init()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_init"
@@ -685,7 +685,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_init"
 -- After all parts have been supplied, 'cryptoAuthHMACSHA512256Final' can be
 -- used to finalise the operation and get the final hash.
 --
--- /See also:/ [crypto_auth_hmacsha512256_update()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
+-- /See:/ [crypto_auth_hmacsha512256_update()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_update"
@@ -705,7 +705,7 @@ foreign import capi "sodium.h crypto_auth_hmacsha512256_update"
 -- After this operation, the buffer containing the 'CryptoAuthHMACSHA512256State' is emptied and
 -- cannot be relied upon.
 --
--- /See also:/ [crypto_auth_hmacsha512256_final()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
+-- /See:/ [crypto_auth_hmacsha512256_final()](https://doc.libsodium.org/advanced/hmac-sha2#hmac-sha-512256-256)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_auth_hmacsha512256_final"

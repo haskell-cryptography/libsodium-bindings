@@ -30,7 +30,6 @@ where
 
 import Data.Word (Word8)
 import Foreign (FinalizerPtr, Ptr)
-import Foreign.C.Error ()
 import Foreign.C.Types (CInt (CInt), CSize (CSize))
 
 -- $introduction
@@ -68,6 +67,8 @@ import Foreign.C.Types (CInt (CInt), CSize (CSize))
 -- This function tries to effectively zero the amount of bytes starting
 -- at the provided pointer, even if optimizations are being applied to the code.
 --
+-- /See:/ [sodium_memzero()](https://doc.libsodium.org/memory_management)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_memzero"
   sodiumMemZero
@@ -80,6 +81,8 @@ foreign import capi "sodium.h sodium_memzero"
 -- | Lock a memory region starting at the pointer
 -- address. This can help avoid swapping sensitive
 -- data to disk.
+--
+-- /See:/ [sodium_mlock()](https://doc.libsodium.org/memory_management)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_mlock"
@@ -97,6 +100,8 @@ foreign import capi "sodium.h sodium_mlock"
 -- On systems where it is supported, 'sodiumMlock' also wraps @madvise(2)@ and advises the kernel not to include the locked memory in core dumps. The 'sodiumMunlock'
 -- function also undoes this additional protection.
 --
+-- /See:/ [sodium_munlock()](https://doc.libsodium.org/memory_management)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_munlock"
   sodiumMunlock
@@ -109,7 +114,7 @@ foreign import capi "sodium.h sodium_munlock"
 -- | This function takes an amount (called @size@) and returns a pointer from which
 -- exactly @size@ contiguous bytes of memory can be accessed. The pointer may be
 -- 'Foreign.Ptr.nullPtr' and there may be an error when allocating memory,
--- through @errno@. Upon failure, @errno@ will be set to 'eNOMEM'
+-- through @errno@. Upon failure, @errno@ will be set to 'Foreign.C.Error.eNOMEM'
 --
 -- It is recommended that the caller use "Foreign.C.Error" to handle potential failure.
 --
@@ -156,6 +161,8 @@ foreign import capi "sodium.h sodium_munlock"
 -- pages of virtual memory. Since it is very expensive, do not use it to allocate
 -- every-day memory.
 --
+-- /See:/ [sodium_malloc()](https://doc.libsodium.org/memory_management)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_malloc"
   sodiumMalloc
@@ -171,6 +178,8 @@ foreign import capi "sodium.h sodium_malloc"
 -- It provides the same guarantees as 'sodiumMalloc' but also protects against
 -- arithmetic overflows when @count * size@ exceeds @SIZE_MAX@.
 --
+-- /See:/ [sodium_allocarray()](https://doc.libsodium.org/memory_management)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h sodium_allocarray"
   sodiumAllocArray
@@ -184,6 +193,10 @@ foreign import capi "sodium.h sodium_allocarray"
 -- | Unlock and deallocate memory allocated using 'sodiumMalloc' or 'sodiumAllocArray'.
 --
 -- The memory region is filled with zeros before the deallocation.
+--
+-- /See:/ [sodium_free()](https://doc.libsodium.org/memory_management)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h sodium_free"
   sodiumFree
     :: forall a
@@ -193,6 +206,10 @@ foreign import capi "sodium.h sodium_free"
 -- | Function pointer to use as 'Foreign.ForeignPtr' finalizer for sodium-allocated memory.
 --
 -- The memory region is filled with zeros before the deallocation.
+--
+-- /See:/ [sodium_free()](https://doc.libsodium.org/memory_management)
+--
+-- @since 0.0.1.0
 foreign import capi "sodium.h &sodium_free"
   finalizerSodiumFree
     :: forall a

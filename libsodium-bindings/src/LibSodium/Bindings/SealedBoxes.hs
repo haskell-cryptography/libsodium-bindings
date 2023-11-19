@@ -62,7 +62,7 @@ foreign import capi "sodium.h crypto_box_seal"
     -> IO CInt
     -- ^ Returns 0 on success and -1 on error.
 
--- | @cryptoBoxSealOpen@ doesn't require passing the public key of
+-- | 'cryptoBoxSealOpen' doesn't require passing the public key of
 --   the sender as the ciphertext already includes this information.
 --
 --   Key pairs are compatible with operations from 'LibSodium.Bindings.CryptoBox'

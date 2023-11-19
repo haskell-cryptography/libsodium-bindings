@@ -37,6 +37,7 @@ module Sel.HMAC.SHA512_256
   , newAuthenticationKey
   , authenticationKeyFromHexByteString
   , unsafeAuthenticationKeyToHexByteString
+  , unsafeAuthenticationKeyToBinary
 
     -- ** Authentication tag
   , AuthenticationTag
@@ -303,15 +304,26 @@ authenticationKeyFromHexByteString hexKey = unsafeDupablePerformIO $
 
 -- | Convert a 'AuthenticationKey to a hexadecimal-encoded 'StrictByteString'.
 --
+-- This format is useful if you need conversion to base32 or base64.
+--
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> StrictByteString
-unsafeAuthenticationKeyToHexByteString (AuthenticationKey authenticationKeyForeignPtr) =
+unsafeAuthenticationKeyToBinary :: AuthenticationKey -> StrictByteString
+unsafeAuthenticationKeyToBinary (AuthenticationKey authenticationKeyForeignPtr) =
   Base16.extractBase16 . Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 authenticationKeyForeignPtr)
       (fromIntegral @CSize @Int cryptoAuthHMACSHA512256KeyBytes)
+
+-- | Convert a 'AuthenticationKey to a hexadecimal-encoded 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> StrictByteString
+unsafeAuthenticationKeyToHexByteString =
+  Base16.extractBase16 . Base16.encodeBase16' . unsafeAuthenticationKeyToBinary
 
 -- | A secret authentication key of size 'cryptoAuthHMACSHA512256Bytes'.
 --

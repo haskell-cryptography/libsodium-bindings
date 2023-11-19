@@ -36,6 +36,8 @@ import Foreign.C (CChar, CInt (CInt), CSize (CSize), CUChar)
 
 -- | Generate a high-entropy key from which the sub-keys will be derived.
 --
+-- /See:/ [crypto_kdf_keygen()](https://doc.libsodium.org/key_derivation)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kdf_keygen"
   cryptoKDFKeygen
@@ -45,6 +47,8 @@ foreign import capi "sodium.h crypto_kdf_keygen"
 
 -- | Derive a sub-key from a high-entropy secre key with a unique identifier.
 -- The identifier can be any value up to 2⁶⁴-1
+--
+-- /See:/ [crypto_kdf_derive_from_key()](https://doc.libsodium.org/key_derivation)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_kdf_derive_from_key"
@@ -66,11 +70,15 @@ foreign import capi "sodium.h crypto_kdf_derive_from_key"
 
 -- | Minimum length of a sub-key.
 --
+-- /See:/ [crypto_kdf_BYTES_MIN](https://doc.libsodium.org/key_derivation)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kdf_BYTES_MIN"
   cryptoKDFBytesMin :: CSize
 
 -- | Maximum length of a sub-key.
+--
+-- /See:/ [crypto_kdf_BYTES_MAX](https://doc.libsodium.org/key_derivation)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kdf_BYTES_MAX"
@@ -78,11 +86,15 @@ foreign import capi "sodium.h value crypto_kdf_BYTES_MAX"
 
 -- | Length of a Context.
 --
+-- /See:/ [crypto_kdf_CONTEXTBYTES](https://doc.libsodium.org/key_derivation)
+--
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kdf_CONTEXTBYTES"
   cryptoKDFContextBytes :: CSize
 
 -- | Length of the master key.
+--
+-- /See:/ [crypto_kdf_KEYBYTES](https://doc.libsodium.org/key_derivation)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_kdf_KEYBYTES"

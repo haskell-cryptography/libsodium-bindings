@@ -108,7 +108,7 @@ import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CU
 -- Keep in mind that to produce the same key from the same password, the same salt,
 -- opslimit, and memlimit values must be used. Therefore, these parameters must be stored for each user.
 --
--- /See also:/ [crypto_pwhash_scryptsalsa208sha256()](https://doc.libsodium.org/advanced/scrypt#key-derivation)
+-- /See:/ [crypto_pwhash_scryptsalsa208sha256()](https://doc.libsodium.org/advanced/scrypt#key-derivation)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
@@ -151,7 +151,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
 -- * The automatically generated salt used for the previous computation;
 -- * The other parameters required to verify the password: opslimit and memlimit.
 --
--- /See also:/ [crypto_pwhash_scryptsalsa208sha256_str()](https://doc.libsodium.org/advanced/scrypt#password-storage)
+-- /See:/ [crypto_pwhash_scryptsalsa208sha256_str()](https://doc.libsodium.org/advanced/scrypt#password-storage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
@@ -175,7 +175,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
 
 -- | Verify that the password verification string is valid for the associated password.
 --
--- /See also:/ [crypto_pwhash_scryptsalsa208sha256_str_verify()](https://doc.libsodium.org/advanced/scrypt#password-storage)
+-- /See:/ [crypto_pwhash_scryptsalsa208sha256_str_verify()](https://doc.libsodium.org/advanced/scrypt#password-storage)
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str_verify"

@@ -57,6 +57,7 @@ library
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
+    Sel.Scrypt
     Sel.SecretKey.Authentication
     Sel.SecretKey.Cipher
 

@@ -260,7 +260,7 @@ instance Ord AuthenticationKey where
 instance Show AuthenticationKey where
   show _ = "[REDACTED]"
 
--- | Generate a new random secret key.
+-- | Generate a new random secret key of size 'cryptoAuthHMACSHA512KeyBytes'.
 --
 -- @since 0.0.1.0
 newAuthenticationKey :: IO AuthenticationKey

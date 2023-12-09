@@ -59,6 +59,9 @@ common common
   if flag(use-pkg-config)
     pkgconfig-depends: libsodium ==1.0.18
 
+  if flag(bundled-libsodium)
+    extra-bundled-libraries: sodium
+
   else
     extra-libraries: sodium
 

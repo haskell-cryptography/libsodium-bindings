@@ -13,6 +13,8 @@ module Sel.Scrypt
 
     -- ** Password storage.
     ScryptHash
+  , unScryptHash
+  , mkScryptHash
   , scryptStorePassword
   , scryptVerifyPassword
   )
@@ -36,7 +38,13 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 -- | A pointer to a password hashed using Scrypt.
 --
 -- @since 0.0.1.0
-newtype ScryptHash = ScryptHash (ForeignPtr CChar)
+newtype ScryptHash = ScryptHash {unScryptHash :: ForeignPtr CChar}
+
+-- | Make a ScryptHash out of an unwrapped foreign pointer.
+--
+-- @since 0.0.1.0
+mkScryptHash :: ForeignPtr CChar -> ScryptHash
+mkScryptHash fptr = ScryptHash fptr
 
 instance Eq ScryptHash where
   (ScryptHash sh1) == (ScryptHash sh2) =

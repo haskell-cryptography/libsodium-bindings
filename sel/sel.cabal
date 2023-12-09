@@ -84,6 +84,7 @@ test-suite sel-tests
     Test.PublicKey.Cipher
     Test.PublicKey.Seal
     Test.PublicKey.Signature
+    Test.Scrypt
     Test.SecretKey.Authentication
     Test.SecretKey.Cipher
     TestUtils

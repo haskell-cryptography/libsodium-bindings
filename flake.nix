@@ -41,8 +41,6 @@
       let
         inherit (inputs.gitignore.lib) gitignoreSource;
 
-        ghcVer = "945";
-
         pkgs = nixpkgs.legacyPackages.${system};
 
         pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
@@ -60,7 +58,7 @@
           };
         };
 
-        hsPkgs = pkgs.haskell.packages."ghc${ghcVer}".override (_old: {
+        hsPkgs = pkgs.haskellPackages.override (_old: {
           overrides = with pkgs.haskell.lib.compose; hself: hsuper:
             let
               commonOverrides = overrideCabal (_drv: {
@@ -99,7 +97,7 @@
             haskell-language-server
             hlint
             cabal-fmt
-            fourmolu_0_12_0_0
+            fourmolu
           ];
         };
 

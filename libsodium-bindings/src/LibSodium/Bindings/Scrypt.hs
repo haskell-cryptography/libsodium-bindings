@@ -17,28 +17,28 @@ module LibSodium.Bindings.Scrypt
     -- $introduction
 
     -- * Key Derivation
-    cryptoPWHashScryptSalsa2018SHA256
+    cryptoPWHashScryptSalsa208SHA256
 
     -- * Password storage
-  , cryptoPWHashScryptSalsa2018SHA256Str
-  , cryptoPWHashScryptSalsa2018SHA256StrVerify
+  , cryptoPWHashScryptSalsa208SHA256Str
+  , cryptoPWHashScryptSalsa208SHA256StrVerify
 
     -- * Constants
-  , cryptoPWHashScryptSalsa2018SHA256BytesMin
-  , cryptoPWHashScryptSalsa2018SHA256BytesMax
-  , cryptoPWHashScryptSalsa2018SHA256PasswdMin
-  , cryptoPWHashScryptSalsa2018SHA256PasswdMax
-  , cryptoPWHashScryptSalsa2018SHA256SaltBytes
-  , cryptoPWHashScryptSalsa2018SHA256StrBytes
-  , cryptoPWHashScryptSalsa2018SHA256StrPrefix
-  , cryptoPWHashScryptSalsa2018SHA256OpsLimitMin
-  , cryptoPWHashScryptSalsa2018SHA256OpsLimitMax
-  , cryptoPWHashScryptSalsa2018SHA256MemLimitMin
-  , cryptoPWHashScryptSalsa2018SHA256MemLimitMax
-  , cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive
-  , cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive
-  , cryptoPWHashScryptSalsa2018SHA256OpsLimitSensitive
-  , cryptoPWHashScryptSalsa2018SHA256MemLimitSensitive
+  , cryptoPWHashScryptSalsa208SHA256BytesMin
+  , cryptoPWHashScryptSalsa208SHA256BytesMax
+  , cryptoPWHashScryptSalsa208SHA256PasswdMin
+  , cryptoPWHashScryptSalsa208SHA256PasswdMax
+  , cryptoPWHashScryptSalsa208SHA256SaltBytes
+  , cryptoPWHashScryptSalsa208SHA256StrBytes
+  , cryptoPWHashScryptSalsa208SHA256StrPrefix
+  , cryptoPWHashScryptSalsa208SHA256OpsLimitMin
+  , cryptoPWHashScryptSalsa208SHA256OpsLimitMax
+  , cryptoPWHashScryptSalsa208SHA256MemLimitMin
+  , cryptoPWHashScryptSalsa208SHA256MemLimitMax
+  , cryptoPWHashScryptSalsa208SHA256OpsLimitInteractive
+  , cryptoPWHashScryptSalsa208SHA256MemLimitInteractive
+  , cryptoPWHashScryptSalsa208SHA256OpsLimitSensitive
+  , cryptoPWHashScryptSalsa208SHA256MemLimitSensitive
   )
 where
 
@@ -87,22 +87,22 @@ import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CU
 -- It is highly recommended to use 'LibSodium.Bindings.SecureMemory.lock'
 -- to lock memory regions storing plaintext passwords and to call
 -- 'LibSodium.Bindings.SecureMemory.unlock' right after
--- 'cryptoPWHashScryptSalsa2018SHA256Str' and 'cryptoPWHashScryptSalsa2018SHA256StrVerify'
+-- 'cryptoPWHashScryptSalsa208SHA256Str' and 'cryptoPWHashScryptSalsa208SHA256StrVerify'
 -- return.
 
 -- | Derive a key from a password.
 --
--- For interactive, online operations, 'cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive'
--- and 'cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive' provide a safe baseline to be used.
+-- For interactive, online operations, 'cryptoPWHashScryptSalsa208SHA256OpsLimitInteractive'
+-- and 'cryptoPWHashScryptSalsa208SHA256MemLimitInteractive' provide a safe baseline to be used.
 -- However, using higher values may improve security.
 --
--- For highly sensitive data, 'cryptoPWHashScryptSalsa2018SHA256OpsLimitSensitive' and
--- 'cryptoPWHashScryptSalsa2018SHA256MemLimitSensitive' can be used as an alternative.
+-- For highly sensitive data, 'cryptoPWHashScryptSalsa208SHA256OpsLimitSensitive' and
+-- 'cryptoPWHashScryptSalsa208SHA256MemLimitSensitive' can be used as an alternative.
 -- However, with these parameters, deriving a key takes about
 -- 2 seconds on a 2.8 GHz Core i7 CPU and requires up to 1 GiB of dedicated RAM.
 --
 -- The salt should be unpredictable. 'LibSodium.Bindings.Random.randombytesBuf'
--- is the easiest way to fill the 'cryptoPWHashScryptSalsa2018SHA256SaltBytes' bytes
+-- is the easiest way to fill the 'cryptoPWHashScryptSalsa208SHA256SaltBytes' bytes
 -- of the salt.
 --
 -- Keep in mind that to produce the same key from the same password, the same salt,
@@ -112,30 +112,30 @@ import Foreign.C (CChar (CChar), CInt (CInt), CSize (CSize), CUChar, CULLong (CU
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
-  cryptoPWHashScryptSalsa2018SHA256
+  cryptoPWHashScryptSalsa208SHA256
     :: Ptr CUChar
     -- ^ A pointer to the computed key.
     -> CULLong
     -- ^ The length of the computed key.
-    -- Should be  between 'cryptoPWHashScryptSalsa2018SHA256BytesMin'
-    -- and 'cryptoPWHashScryptSalsa2018SHA256BytesMax' (~127 GB).
+    -- Should be  between 'cryptoPWHashScryptSalsa208SHA256BytesMin'
+    -- and 'cryptoPWHashScryptSalsa208SHA256BytesMax' (~127 GB).
     -> Ptr CChar
     -- ^ A pointer to the password from which the key is derived
     -> CULLong
     -- ^ The length of the password.
-    -- Should be between 'cryptoPWHashScryptSalsa2018SHA256PasswdMin'
-    -- and 'cryptoPWHashScryptSalsa2018SHA256PasswdMax'.
+    -- Should be between 'cryptoPWHashScryptSalsa208SHA256PasswdMin'
+    -- and 'cryptoPWHashScryptSalsa208SHA256PasswdMax'.
     -> Ptr CUChar
-    -- ^ The salt, of length 'cryptoPWHashScryptSalsa2018SHA256SaltBytes'.
+    -- ^ The salt, of length 'cryptoPWHashScryptSalsa208SHA256SaltBytes'.
     -> CULLong
     -- ^ /opslimit:/ The maximum amount of computations to perform.
-    -- Must be between 'cryptoPWHashScryptSalsa2018SHA256OpsLimitMin'
-    -- and 'cryptoPWHashScryptSalsa2018SHA256OpsLimitMax'.
+    -- Must be between 'cryptoPWHashScryptSalsa208SHA256OpsLimitMin'
+    -- and 'cryptoPWHashScryptSalsa208SHA256OpsLimitMax'.
     -> CSize
     -- ^ /memlimit:/ The maximum amount of RAM in bytes that the function will use.
     -- It is highly recommended to allow the function to use at least 16 MiB.
-    -- This number must be between 'cryptoPWHashScryptSalsa2018SHA256MemLimitMin'
-    -- and 'cryptoPWHashScryptSalsa2018SHA256MemLimitMax'.
+    -- This number must be between 'cryptoPWHashScryptSalsa208SHA256MemLimitMin'
+    -- and 'cryptoPWHashScryptSalsa208SHA256MemLimitMax'.
     -> IO CInt
     -- ^ Returns 0 on success, -1 if the computation didn't complete,
     -- usually because the operating system refused to allocate the amount of
@@ -155,7 +155,7 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
-  cryptoPWHashScryptSalsa2018SHA256Str
+  cryptoPWHashScryptSalsa208SHA256Str
     :: Ptr CChar
     -- ^ A pointer to the buffer receiving the string.
     -> Ptr CChar
@@ -164,11 +164,11 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
     -- ^ Password length
     -> CULLong
     -- ^ /opslimit:/ The maximum amount of computations to perform.
-    -- The 'cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive' constant
+    -- The 'cryptoPWHashScryptSalsa208SHA256OpsLimitInteractive' constant
     -- is a safe baseline value to use.
     -> CSize
     -- ^ /memlimit:/ The maximum amount of RAM in bytes that the function will use.
-    -- The 'cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive' constant
+    -- The 'cryptoPWHashScryptSalsa208SHA256MemLimitInteractive' constant
     -- is a safe baseline value to use.
     -> IO CInt
     -- ^ Returns 0 on success, -1 on error.
@@ -179,9 +179,9 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str_verify"
-  cryptoPWHashScryptSalsa2018SHA256StrVerify
+  cryptoPWHashScryptSalsa208SHA256StrVerify
     :: Ptr CChar
-    -- ^ The password verification C-string, of size 'cryptoPWHashScryptSalsa2018SHA256StrBytes' bytes.
+    -- ^ The password verification C-string, of size 'cryptoPWHashScryptSalsa208SHA256StrBytes' bytes.
     -> Ptr CChar
     -- ^ The password.
     -> CULLong
@@ -197,81 +197,81 @@ foreign import capi "sodium.h crypto_pwhash_scryptsalsa208sha256_str_verify"
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_BYTES_MIN"
-  cryptoPWHashScryptSalsa2018SHA256BytesMin :: CSize
+  cryptoPWHashScryptSalsa208SHA256BytesMin :: CSize
 
 -- | Maximum size of the computed key (~127GB).
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_BYTES_MAX"
-  cryptoPWHashScryptSalsa2018SHA256BytesMax :: CSize
+  cryptoPWHashScryptSalsa208SHA256BytesMax :: CSize
 
 -- | Minimum size of the password.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_PASSWD_MIN"
-  cryptoPWHashScryptSalsa2018SHA256PasswdMin :: CSize
+  cryptoPWHashScryptSalsa208SHA256PasswdMin :: CSize
 
 -- | Maximum size of the password.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_PASSWD_MAX"
-  cryptoPWHashScryptSalsa2018SHA256PasswdMax :: CSize
+  cryptoPWHashScryptSalsa208SHA256PasswdMax :: CSize
 
--- | Length of the salt used by 'cryptoPWHashScryptSalsa2018SHA256'.
+-- | Length of the salt used by 'cryptoPWHashScryptSalsa208SHA256'.
 -- The easiest way to get a salt is to use 'LibSodium.Bindings.Random.randombytesBuf'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_SALTBYTES"
-  cryptoPWHashScryptSalsa2018SHA256SaltBytes :: CSize
+  cryptoPWHashScryptSalsa208SHA256SaltBytes :: CSize
 
 -- | Length of the buffer receiving the string when using
--- 'cryptoPWHashScryptSalsa2018SHA256Str'.
+-- 'cryptoPWHashScryptSalsa208SHA256Str'.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_STRBYTES"
-  cryptoPWHashScryptSalsa2018SHA256StrBytes :: CSize
+  cryptoPWHashScryptSalsa208SHA256StrBytes :: CSize
 
 -- | The string prefix that is prepended to the computed keys.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_STRPREFIX"
-  cryptoPWHashScryptSalsa2018SHA256StrPrefix :: Ptr CChar
+  cryptoPWHashScryptSalsa208SHA256StrPrefix :: Ptr CChar
 
 -- | The minimum amount of operations during the computation process
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_MIN"
-  cryptoPWHashScryptSalsa2018SHA256OpsLimitMin :: CSize
+  cryptoPWHashScryptSalsa208SHA256OpsLimitMin :: CSize
 
 -- | The maximum amount of operations during the computation process
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_MAX"
-  cryptoPWHashScryptSalsa2018SHA256OpsLimitMax :: CSize
+  cryptoPWHashScryptSalsa208SHA256OpsLimitMax :: CSize
 
 -- | The minimum amount of memory during the computation process
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_MIN"
-  cryptoPWHashScryptSalsa2018SHA256MemLimitMin :: CSize
+  cryptoPWHashScryptSalsa208SHA256MemLimitMin :: CSize
 
 -- | The maximum amount of memory during the computation process
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_MAX"
-  cryptoPWHashScryptSalsa2018SHA256MemLimitMax :: CSize
+  cryptoPWHashScryptSalsa208SHA256MemLimitMax :: CSize
 
 -- | The amount of operations most suitable for an interactive usage.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_INTERACTIVE"
-  cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive :: CSize
+  cryptoPWHashScryptSalsa208SHA256OpsLimitInteractive :: CSize
 
 -- | The amount of memory most suitable for an interactive usage.
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE"
-  cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive :: CSize
+  cryptoPWHashScryptSalsa208SHA256MemLimitInteractive :: CSize
 
 -- | The amount of operations most suitable for for highly sensitive data.
 --
@@ -280,7 +280,7 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_SENSITIVE"
-  cryptoPWHashScryptSalsa2018SHA256OpsLimitSensitive :: CSize
+  cryptoPWHashScryptSalsa208SHA256OpsLimitSensitive :: CSize
 
 -- | The amount of memory most suitable for for highly sensitive data.
 --
@@ -289,4 +289,4 @@ foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_
 --
 -- @since 0.0.1.0
 foreign import capi "sodium.h value crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_SENSITIVE"
-  cryptoPWHashScryptSalsa2018SHA256MemLimitSensitive :: CSize
+  cryptoPWHashScryptSalsa208SHA256MemLimitSensitive :: CSize

@@ -56,7 +56,9 @@ instance Ord ScryptHash where
     unsafeDupablePerformIO $
       foreignPtrOrd sh1 sh2 cryptoPWHashScryptSalsa2018SHA256StrBytes
 
--- | Store a password of size `cryptoPWHashScryptSalsa2018SHA256StrBytes`.
+-- | Store an ASCII-encoded password verification string into a ScryptHash.
+-- This string includes: A hash applied to the supplied bytestring, the
+-- generated salt, opslimit, and memlimit.
 --
 -- @since 0.0.1.0
 scryptStorePassword :: StrictByteString -> IO ScryptHash
@@ -73,7 +75,8 @@ scryptStorePassword bytestring = do
           cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive
     pure $ ScryptHash hashForeignPtr
 
--- | Verify a hashed password against its unhashed counterpart.
+-- | Verify a hashed password against a password verification string.
+-- This returns True if successful.
 --
 -- @since 0.0.1.0
 scryptVerifyPassword :: StrictByteString -> ScryptHash -> IO Bool

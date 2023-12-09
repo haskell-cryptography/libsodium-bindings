@@ -14,7 +14,7 @@ bug-reports:
 author:             Hécate Moonlight, Koz Ross
 maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
-build-type:         Simple
+build-type:         Custom
 tested-with:
   GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.7 || ==9.6.2
 
@@ -31,6 +31,13 @@ flag use-pkg-config
 
 flag homebrew-libsodium
   description: Use Homebrew version of Libsodium (macOS only).
+  default:     False
+  manual:      True
+
+flag bundled-libsodium
+  description:
+    Use the version of libsodium-1.0.18-stable bundled with the library
+
   default:     False
   manual:      True
 
@@ -60,9 +67,19 @@ common common
 common common-rts-options
   ghc-options: -rtsopts -threaded -with-rtsopts=-N
 
+custom-setup
+  setup-depends:
+    , base       >=3    && <5
+    , Cabal      >=3.10
+    , directory
+    , filepath
+    , process
+
 library
-  import:          common
-  hs-source-dirs:  src
+  import:                  common
+  include-dirs:            include
+  extra-bundled-libraries: sodium
+  hs-source-dirs:          src
 
   -- cabal-fmt: expand src/
   exposed-modules:

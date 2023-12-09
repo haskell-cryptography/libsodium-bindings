@@ -37,7 +37,6 @@ flag homebrew-libsodium
 flag bundled-libsodium
   description:
     Use the version of libsodium-1.0.18-stable bundled with the library
-
   default:     False
   manual:      True
 
@@ -56,10 +55,10 @@ common common
     include-dirs:   /opt/local/include
     extra-lib-dirs: /user/local/opt/libsodium/lib
 
-  if flag(use-pkg-config)
+  elif flag(use-pkg-config)
     pkgconfig-depends: libsodium ==1.0.18
 
-  if flag(bundled-libsodium)
+  elif flag(bundled-libsodium)
     extra-bundled-libraries: sodium
 
   else

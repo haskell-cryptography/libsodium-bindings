@@ -71,9 +71,16 @@ instance Show ScryptHash where
 instance Display ScryptHash where
   displayBuilder = Builder.fromText . scryptHashToText
 
--- | Hash a password using the Scrypt algorithm.
--- The outputted hash includes: The hash itself, generated salt, opslimit,
--- and memlimit.
+-- | Hash the password with the Scrypt algorithm and a set of pre-defined parameters.
+--
+-- The hash is encoded in a human-readable format that includes:
+--
+--   * The result of a memory-hard, CPU-intensive hash function applied to the password;
+--   * The automatically generated salt used for the previous computation;
+--   * The other parameters required to verify the password, including the algorithm
+--     identifier, its version, opslimit, and memlimit.
+--
+-- Example output: "$7$C6..../....dLONLMz8YfO/.EKvzwOeqWVVLmXg62MC.hL1m1sYtO/$X9eNjVxdD4jHAhOVid3OLzNkpv6ADJSAXygOxXqGHg7\NUL"
 --
 -- @since 0.0.1.0
 scryptHashPassword :: StrictByteString -> IO ScryptHash

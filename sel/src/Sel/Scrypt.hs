@@ -51,23 +51,23 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 -- @since 0.0.1.0
 newtype ScryptHash = ScryptHash (ForeignPtr CChar)
 
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Eq ScryptHash where
   (ScryptHash sh1) == (ScryptHash sh2) =
     unsafeDupablePerformIO $
       foreignPtrEq sh1 sh2 cryptoPWHashScryptSalsa208SHA256StrBytes
 
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Ord ScryptHash where
   compare (ScryptHash sh1) (ScryptHash sh2) =
     unsafeDupablePerformIO $
       foreignPtrOrd sh1 sh2 cryptoPWHashScryptSalsa208SHA256StrBytes
 
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Show ScryptHash where
   show = Text.unpack . scryptHashToText
 
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Display ScryptHash where
   displayBuilder = Builder.fromText . scryptHashToText
 
@@ -112,7 +112,7 @@ scryptHashToByteString :: ScryptHash -> StrictByteString
 scryptHashToByteString (ScryptHash fPtr) =
   BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) (fromIntegral @CSize @Int cryptoPWHashScryptSalsa208SHA256StrBytes)
 
--- | Convert a 'ScryptHash' to a hexadecimal-enxoded 'Text'.
+-- | Convert a 'ScryptHash' to a hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.1.0
 scryptHashToText :: ScryptHash -> Text
@@ -120,7 +120,7 @@ scryptHashToText = Text.decodeASCII . scryptHashToByteString
 
 -- | Convert an ASCII-encoded password hash to a 'ScryptHash'
 --
--- This function does not perform ASCII validatoin.
+-- This function does not perform ASCII validation.
 --
 -- @since 0.0.1.0
 asciiByteStringToScryptHash :: StrictByteString -> ScryptHash
@@ -130,7 +130,7 @@ asciiByteStringToScryptHash textualHash =
 
 -- | Convert an ASCII-encoded password hash to a 'ScryptHash'
 --
--- This function does not perform ASCII validatoin.
+-- This function does not perform ASCII validation.
 --
 -- @since 0.0.1.0
 asciiTextToScryptHash :: Text -> ScryptHash

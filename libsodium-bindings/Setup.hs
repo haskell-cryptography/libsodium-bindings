@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedRecordDot #-}
-
 module Main where
 
 import Control.Monad
@@ -17,7 +15,7 @@ main =
   defaultMainWithHooks $
     simpleUserHooks
       { postConf = \_args configFlags _packageDescription localBuildInfo ->
-          case lookupFlagAssignment (mkFlagName "bundled-libsodium") configFlags.configConfigurationsFlags of
+          case lookupFlagAssignment (mkFlagName "bundled-libsodium") (configConfigurationsFlags configFlags) of
             Just True -> do
               -- Cabal, and indeed, GHC, don't understand the .lib extension on
               -- Windows, so we have the same name everywhere.

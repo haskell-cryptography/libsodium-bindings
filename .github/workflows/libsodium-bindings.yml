@@ -21,7 +21,7 @@ jobs:
           wget https://github.com/Kleidukos/get-tested/releases/download/v0.1.4.0/get-tested-0.1.4.0-linux-amd64 -O get-tested
           chmod +x get-tested
           ./get-tested --ubuntu --macos libsodium-bindings/libsodium-bindings.cabal >> $GITHUB_OUTPUT
-  tests:
+  system-libsodium:
     name: ${{ matrix.ghc }} on ${{ matrix.os }}
     needs: generateMatrix
     runs-on: ${{ matrix.os }}
@@ -39,6 +39,36 @@ jobs:
       - name: Configure
         run: |
           ./.github/workflows/install-libsodium.sh
+          cabal freeze
+      - name: Cache
+        uses: actions/cache@v3.3.2
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+      - name: Build
+        run: cabal build libsodium-bindings
+      - name: Test
+        run: cabal test libsodium-bindings
+
+  bundled-libsodium:
+    name: ${{ matrix.ghc }} on ${{ matrix.os }}
+    needs: generateMatrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: ${{ fromJSON(needs.generateMatrix.outputs.matrix) }}
+    steps:
+      - name: Checkout base repo
+        uses: actions/checkout@v4
+      - name: Set up Haskell
+        id: setup-haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: 'latest'
+      - name: Configure
+        run: |
+          cabal configure -f bundled-libsodium
           cabal freeze
       - name: Cache
         uses: actions/cache@v3.3.2

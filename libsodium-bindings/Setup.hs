@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedRecordDot #-}
+
 module Main where
 
 import Control.Monad
 import Debug.Trace
 import Distribution.Simple
+import Distribution.Simple.Setup
 import Distribution.System (OS (..), buildOS)
 import Distribution.Types.Flag
-import Distribution.Simple.Setup
 import Distribution.Types.LocalBuildInfo
-import System.Directory (copyFile, doesFileExist, withCurrentDirectory)
+import System.Directory (copyFile, doesFileExist, renameFile, withCurrentDirectory)
 import System.FilePath ((<.>), (</>))
 import System.Process (system)
 
@@ -20,8 +21,7 @@ main =
             Just True -> do
               -- Cabal, and indeed, GHC, don't understand the .lib extension on
               -- Windows, so we have the same name everywhere.
-              putStrLn "Building the bundled libsodium 1.0.18-stable"
-              let destinationPath = traceId $ buildDir localBuildInfo </> "libsodium" <.> "a"
+              let destinationPath = traceId $ buildDir localBuildInfo </> "libCsodium" <.> "a"
               case buildOS of
                 Windows -> do
                   -- We're in a bit of a bind when it comes to Windows. The chief
@@ -42,6 +42,7 @@ main =
                   -- this.
                   copyFile ("winlibs" </> "libsodium" <.> "lib") destinationPath
                 _ -> do
+                  putStrLn "Building the bundled libsodium 1.0.18-stable"
                   -- Since everything else is some flavour of POSIX, we can use the
                   -- Autotools to build in-place. This current (more involved) setup
                   -- avoids triggering unnecessary rebuilds by checking if configure
@@ -56,4 +57,4 @@ main =
                   copyFile sourcePath destinationPath
             _ ->
               putStrLn "Not using the bundled libsodium"
-          }
+      }

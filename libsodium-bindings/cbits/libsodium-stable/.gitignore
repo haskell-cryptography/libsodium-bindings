@@ -38,12 +38,9 @@ autom4te.cache
 build
 compile
 confdefs.h
-config.*
-configure
 configure.lineno
 coverage.info
 depcomp
-install-sh
 libsodium-*.tar.bz2
 libsodium-*.tar.gz
 libsodium-*.vcproj

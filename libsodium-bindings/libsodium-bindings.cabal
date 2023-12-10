@@ -61,7 +61,6 @@ common common
 
   elif flag(bundled-libsodium)
     extra-bundled-libraries: Csodium
-    include-dirs:            include
 
   else
     extra-libraries: sodium

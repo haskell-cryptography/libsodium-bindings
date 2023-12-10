@@ -12,19 +12,19 @@ spec :: TestTree
 spec =
   testGroup
     "Scrypt tests"
-    [ testCase "Store Scrypt password" testStoreScrypt
+    [ testCase "Hash Scrypt password" testHashScrypt
     , testCase "Verify Scrypt password" testVerifyScrypt
     ]
 
-testStoreScrypt :: Assertion
-testStoreScrypt = do
+testHashScrypt :: Assertion
+testHashScrypt = do
   let hash = "This is not a real hash." :: StrictByteString
-  scryptStorePassword hash
+  scryptHashPassword hash
   return ()
 
 testVerifyScrypt :: Assertion
 testVerifyScrypt = do
   let hash = "This is not a real hash." :: StrictByteString
-  sh <- scryptStorePassword hash
+  sh <- scryptHashPassword hash
   res <- scryptVerifyPassword hash sh
   assertBool "Verifier failed." res

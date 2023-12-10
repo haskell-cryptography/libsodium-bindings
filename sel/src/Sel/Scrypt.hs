@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 -- |
 --
 -- Module: Sel.Scrypt
@@ -10,19 +12,28 @@
 module Sel.Scrypt
   ( -- ** Introduction
     -- $introduction
-
-    -- ** Password storage.
     ScryptHash
-  , unScryptHash
-  , mkScryptHash
-  , scryptStorePassword
+
+    -- ** Password Hashing and Verifying.
+  , scryptHashPassword
   , scryptVerifyPassword
+
+    -- *** Conversion
+  , scryptHashToByteString
+  , scryptHashToText
+  , asciiTextToScryptHash
+  , asciiByteStringToScryptHash
   )
 where
 
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
+import Data.Text as Text
+import Data.Text.Display
+import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.Scrypt
@@ -31,48 +42,52 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
--- This API is used for storing and verifying Scrypt-hashed passwords.
--- There are no bindings in this module for hashing passwords using Scrypt.
--- Please use the "Sel.Hashing.Password" module instead.
+-- This API is used for hashing and verifying passwords using the Scrypt algorithm.
+-- This module is provided for interoperability with other applications. If you do
+-- not need to use Scrypt specifically, use "Sel.Hashing.Password".
 
--- | A pointer to a password hashed using Scrypt.
+-- | A hashed password from the Scrypt algorithm.
 --
 -- @since 0.0.1.0
-newtype ScryptHash = ScryptHash {unScryptHash :: ForeignPtr CChar}
+newtype ScryptHash = ScryptHash (ForeignPtr CChar)
 
--- | Make a ScryptHash out of an unwrapped foreign pointer.
---
 -- @since 0.0.1.0
-mkScryptHash :: ForeignPtr CChar -> ScryptHash
-mkScryptHash fptr = ScryptHash fptr
-
 instance Eq ScryptHash where
   (ScryptHash sh1) == (ScryptHash sh2) =
     unsafeDupablePerformIO $
-      foreignPtrEq sh1 sh2 cryptoPWHashScryptSalsa2018SHA256StrBytes
+      foreignPtrEq sh1 sh2 cryptoPWHashScryptSalsa208SHA256StrBytes
 
+-- @since 0.0.1.0
 instance Ord ScryptHash where
   compare (ScryptHash sh1) (ScryptHash sh2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd sh1 sh2 cryptoPWHashScryptSalsa2018SHA256StrBytes
+      foreignPtrOrd sh1 sh2 cryptoPWHashScryptSalsa208SHA256StrBytes
 
--- | Store an ASCII-encoded password verification string into a ScryptHash.
--- This string includes: A hash applied to the supplied bytestring, the
--- generated salt, opslimit, and memlimit.
+-- @since 0.0.1.0
+instance Show ScryptHash where
+  show = Text.unpack . scryptHashToText
+
+-- @since 0.0.1.0
+instance Display ScryptHash where
+  displayBuilder = Builder.fromText . scryptHashToText
+
+-- | Hash a password using the Scrypt algorithm.
+-- The outputted hash includes: The hash itself, generated salt, opslimit,
+-- and memlimit.
 --
 -- @since 0.0.1.0
-scryptStorePassword :: StrictByteString -> IO ScryptHash
-scryptStorePassword bytestring = do
+scryptHashPassword :: StrictByteString -> IO ScryptHash
+scryptHashPassword bytestring = do
   unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
-    hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashScryptSalsa2018SHA256StrBytes)
+    hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashScryptSalsa208SHA256StrBytes)
     withForeignPtr hashForeignPtr $ \hashPtr ->
       void $
-        cryptoPWHashScryptSalsa2018SHA256Str
+        cryptoPWHashScryptSalsa208SHA256Str
           hashPtr
           cString
           (fromIntegral cStringLen)
-          (fromIntegral cryptoPWHashScryptSalsa2018SHA256OpsLimitInteractive)
-          cryptoPWHashScryptSalsa2018SHA256MemLimitInteractive
+          (fromIntegral cryptoPWHashScryptSalsa208SHA256OpsLimitInteractive)
+          cryptoPWHashScryptSalsa208SHA256MemLimitInteractive
     pure $ ScryptHash hashForeignPtr
 
 -- | Verify a hashed password against a password verification string.
@@ -84,8 +99,39 @@ scryptVerifyPassword bytestring (ScryptHash sh) = do
   unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
     withForeignPtr sh $ \scryptHash -> do
       result <-
-        cryptoPWHashScryptSalsa2018SHA256StrVerify
+        cryptoPWHashScryptSalsa208SHA256StrVerify
           scryptHash
           cString
           (fromIntegral cStringLen)
       return (result == 0)
+
+-- | Convert a 'ScryptHash' to a binary 'StrictByteString'.
+--
+-- @since 0.0.1.0
+scryptHashToByteString :: ScryptHash -> StrictByteString
+scryptHashToByteString (ScryptHash fPtr) =
+  BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) (fromIntegral @CSize @Int cryptoPWHashScryptSalsa208SHA256StrBytes)
+
+-- | Convert a 'ScryptHash' to a hexadecimal-enxoded 'Text'.
+--
+-- @since 0.0.1.0
+scryptHashToText :: ScryptHash -> Text
+scryptHashToText = Text.decodeASCII . scryptHashToByteString
+
+-- | Convert an ASCII-encoded password hash to a 'ScryptHash'
+--
+-- This function does not perform ASCII validatoin.
+--
+-- @since 0.0.1.0
+asciiByteStringToScryptHash :: StrictByteString -> ScryptHash
+asciiByteStringToScryptHash textualHash =
+  let (fPtr, _length) = BS.toForeignPtr0 textualHash
+   in ScryptHash (castForeignPtr @Word8 @CChar fPtr)
+
+-- | Convert an ASCII-encoded password hash to a 'ScryptHash'
+--
+-- This function does not perform ASCII validatoin.
+--
+-- @since 0.0.1.0
+asciiTextToScryptHash :: Text -> ScryptHash
+asciiTextToScryptHash = asciiByteStringToScryptHash . Text.encodeUtf8

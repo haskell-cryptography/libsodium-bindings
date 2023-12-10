@@ -48,8 +48,6 @@ jobs:
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
       - name: Build
         run: cabal build libsodium-bindings
-      - name: Test
-        run: cabal test libsodium-bindings
 
   bundled-libsodium:
     name: ${{ matrix.ghc }} on ${{ matrix.os }}
@@ -78,5 +76,33 @@ jobs:
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
       - name: Build
         run: cabal build libsodium-bindings
+
+  sel-bundled-libsodium:
+    name: ${{ matrix.ghc }} on ${{ matrix.os }}
+    needs: bundled-libsodium
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: ${{ fromJSON(needs.generateMatrix.outputs.matrix) }}
+    steps:
+      - name: Checkout base repo
+        uses: actions/checkout@v4
+      - name: Set up Haskell
+        id: setup-haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: 'latest'
+      - name: Configure
+        run: |
+          cabal configure -f bundled-libsodium
+          cabal freeze
+      - name: Cache
+        uses: actions/cache@v3.3.2
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+      - name: Build
+        run: cabal build sel
       - name: Test
-        run: cabal test libsodium-bindings
+        run: cabal test sel

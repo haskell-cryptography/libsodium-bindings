@@ -2,9 +2,11 @@
 
 module Test.Hashing.Password where
 
+import qualified Data.ByteString.Char8 as BS
 import Data.Function (on)
 import Data.Maybe (isNothing)
 import Data.Text (Text)
+import qualified Data.Text as Text
 import qualified Sel.Hashing.Password as Sel
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -15,6 +17,7 @@ spec =
     "Password hashing tests"
     [ testCase "Round-trip test for password hashing" testRoundtripHash
     , testCase "Consistent password hashing with salt" testHashPasswordWSalt
+    , testCase "ASCII representation" testASCIIRepresentation
     ]
 
 testRoundtripHash :: Assertion
@@ -59,3 +62,18 @@ testHashPasswordWSalt = do
   assertBool
     "Bogus salt ByteString fails to generate Salt"
     (isNothing (Sel.hexByteStringToSalt "deadbeef"))
+
+testASCIIRepresentation :: Assertion
+testASCIIRepresentation = do
+  hash <- Sel.hashByteString "hunter3"
+  let textHash = Sel.passwordHashToText hash
+  assertBool
+    "Textual representation is stable using passwordHashToText"
+    ("$argon2id$v=19$m=262144,t=3,p=1$" `Text.isPrefixOf` textHash)
+
+  let bsHash = BS.dropWhileEnd (== '\NUL') $ Sel.passwordHashToByteString hash
+  let hash2 = Sel.asciiByteStringToPasswordHash bsHash
+  assertEqual
+    "Can import hash"
+    hash2
+    hash

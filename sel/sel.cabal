@@ -100,3 +100,4 @@ test-suite sel-tests
     , tasty               ^>=1.4
     , tasty-hunit         ^>=0.10
     , text
+    , text-display

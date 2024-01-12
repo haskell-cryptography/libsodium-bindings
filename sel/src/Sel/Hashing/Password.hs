@@ -54,6 +54,7 @@ where
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
@@ -188,23 +189,22 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
           (fromIntegral @Int @CULLong cStringLen)
       pure $ result == 0
 
--- | Convert a 'PasswordHash' to a binary 'StrictByteString'.
+-- | Convert a 'PasswordHash' to a 'StrictByteString'.
 --
 -- @since 0.0.1.0
 passwordHashToByteString :: PasswordHash -> StrictByteString
 passwordHashToByteString (PasswordHash fPtr) = unsafeDupablePerformIO $
-  Foreign.withForeignPtr fPtr $ \hashPtr ->
-    BS.unsafePackCStringLen (hashPtr, fromIntegral @CSize @Int cryptoPWHashStrBytes)
+  Foreign.withForeignPtr fPtr $ \hashPtr -> do
+    resultByteString <- BS.unsafePackCStringLen (hashPtr, fromIntegral @CSize @Int cryptoPWHashStrBytes)
+    pure $ Char8.dropWhileEnd (== '\NUL') resultByteString
 
--- | Convert a 'PasswordHash' to a strict hexadecimal-encoded 'Text'.
+-- | Convert a 'PasswordHash' to a strict 'Text'.
 --
 -- @since 0.0.1.0
 passwordHashToText :: PasswordHash -> Text
 passwordHashToText passwordHash =
   let bs = passwordHashToByteString passwordHash
    in Text.decodeASCII bs
-
---
 
 -- | Convert a 'PasswordHash' to a hexadecimal-encoded 'StrictByteString'.
 --

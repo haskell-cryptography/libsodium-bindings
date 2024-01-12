@@ -2,7 +2,6 @@
 
 module Test.Hashing.Password where
 
-import qualified Data.ByteString.Char8 as BS
 import Data.Function (on)
 import Data.Maybe (isNothing)
 import Data.Text (Text)
@@ -71,7 +70,7 @@ testASCIIRepresentation = do
     "Textual representation is stable using passwordHashToText"
     ("$argon2id$v=19$m=262144,t=3,p=1$" `Text.isPrefixOf` textHash)
 
-  let bsHash = BS.dropWhileEnd (== '\NUL') $ Sel.passwordHashToByteString hash
+  let bsHash = Sel.passwordHashToByteString hash
   let hash2 = Sel.asciiByteStringToPasswordHash bsHash
   assertEqual
     "Can import hash"

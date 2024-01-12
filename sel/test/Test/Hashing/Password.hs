@@ -23,8 +23,12 @@ testRoundtripHash :: Assertion
 testRoundtripHash = do
   let password = "hunter2" :: Text
   passwordHash <- Sel.hashText password
-  let textualHash = Sel.passwordHashToByteString passwordHash
-  let passwordHash' = Sel.asciiByteStringToPasswordHash textualHash
+  let passwordHash' = Sel.asciiByteStringToPasswordHash $ Sel.passwordHashToByteString passwordHash
+
+  assertEqual
+    "Original hash and hash from bytestring are the same"
+    passwordHash
+    passwordHash'
 
   assertBool
     "Password hashing is consistent"

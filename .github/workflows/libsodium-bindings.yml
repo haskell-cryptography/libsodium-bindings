@@ -17,7 +17,7 @@ jobs:
         id: set-matrix
         uses: kleidukos/get-tested@v0.1.6.0
         with:
-          cabal-file: get-tested.cabal
+          cabal-file: libsodium-bindings/libsodium-bindings.cabal
           ubuntu: true
           version: 0.1.6.0
   tests:

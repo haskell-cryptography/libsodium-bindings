@@ -19,6 +19,7 @@ jobs:
         with:
           cabal-file: libsodium-bindings/libsodium-bindings.cabal
           ubuntu: true
+          macos: true
           version: 0.1.6.0
   tests:
     name: ${{ matrix.ghc }} on ${{ matrix.os }}

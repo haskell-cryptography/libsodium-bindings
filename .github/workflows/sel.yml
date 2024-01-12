@@ -39,7 +39,6 @@ jobs:
       - name: Configure
         run: |
           ./.github/workflows/install-libsodium.sh
-          cabal freeze
       - name: Cache
         uses: actions/cache@v3.3.2
         with:

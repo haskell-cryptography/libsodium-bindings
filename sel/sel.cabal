@@ -15,7 +15,7 @@ maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
 build-type:         Simple
 tested-with:
-  GHC ==9.2.8 || ==9.4.7 || ==9.6.2
+  GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.7 || ==9.6.2
 
 extra-source-files:
   LICENSE
@@ -63,7 +63,7 @@ library
 
   other-modules:   Sel.Internal
   build-depends:
-    , base                >=4.16.4.0     && <5
+    , base                >=4.14     && <5
     , base16              ^>=1.0
     , bytestring          ^>=0.11
     , libsodium-bindings  ^>=0.0.1.0

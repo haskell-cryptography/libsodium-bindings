@@ -12,7 +12,7 @@ The Haskell Cryptography Group presents its suite of libsodium packages:
 | Name                 | Nature                                     | Dependencies                                                                 | GHC Support          
 |----------------------|--------------------------------------------|------------------------------------------------------------------------------|--------------------  
 | `libsodium‑bindings` | Low-level FFI bindings                     | `base`                                                                       | Starts with 8.10.7   
-| `sel`                | High-level Haskell interface               | `base`, `base16`,  `bytestring`, `text` `text-display`, `libsodium‑bindings` | Starts with 8.10.7 
+| `sel`                | High-level Haskell interface               | `base`, `base16`,  `bytestring`, `text` `text-display`, `libsodium‑bindings` | Starts with 9.2.8
 | `saltine`            | Both FFI bindings and high-level interface | `base`, `bytestring` `deepseq`, `text`, `hashable`, `profunctors`            | Starts with 8.0.2  
 | `libsodium`          | Low-level FFI bindings                     | `base`                                                                       | 8.6.5 to 8.10.1    
 | `crypto‑sodium`      | High-level Haskell interface               | `base`, `bytestring`, `random`, `cereal`, `libsodium`, `memory`,             | Unclear            

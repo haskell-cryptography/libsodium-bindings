@@ -13,14 +13,14 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout base repo
-        uses: actions/checkout@v4
       - name: Extract the tested GHC versions
         id: set-matrix
-        run: |
-          wget https://github.com/Kleidukos/get-tested/releases/download/v0.1.4.0/get-tested-0.1.4.0-linux-amd64 -O get-tested
-          chmod +x get-tested
-          ./get-tested --ubuntu --macos sel/sel.cabal >> $GITHUB_OUTPUT
+        uses: kleidukos/get-tested@v0.1.6.0
+        with:
+          cabal-file: sel/sel.cabal
+          ubuntu: true
+          macos: true
+          version: 0.1.6.0
   tests:
     name: ${{ matrix.ghc }} on ${{ matrix.os }}
     needs: generateMatrix
@@ -39,7 +39,6 @@ jobs:
       - name: Configure
         run: |
           ./.github/workflows/install-libsodium.sh
-          cabal freeze
       - name: Cache
         uses: actions/cache@v3.3.2
         with:

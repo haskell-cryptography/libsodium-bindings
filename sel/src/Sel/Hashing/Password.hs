@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -54,10 +55,10 @@ import Control.Monad (void)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
-import qualified Data.Text as Text
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy.Builder as Builder
@@ -68,6 +69,7 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 import Sel.Internal
 
 import qualified Data.Base16.Types as Base16
+import GHC.Generics
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
 
@@ -82,6 +84,7 @@ import LibSodium.Bindings.Random
 --
 -- @since 0.0.1.0
 newtype PasswordHash = PasswordHash (ForeignPtr CChar)
+  deriving stock (Generic)
 
 -- | @since 0.0.1.0
 instance Display PasswordHash where
@@ -101,7 +104,10 @@ instance Ord PasswordHash where
 
 -- | @since 0.0.1.0
 instance Show PasswordHash where
-  show = Text.unpack . passwordHashToText
+  show s = showHash s
+    where
+      showHash :: PasswordHash -> String
+      showHash = show . passwordHashToText
 
 -- | Hash the password with the Argon2id algorithm and a set of pre-defined parameters.
 --
@@ -183,18 +189,22 @@ verifyByteString (PasswordHash fPtr) clearTextPassword = unsafeDupablePerformIO 
           (fromIntegral @Int @CULLong cStringLen)
       pure $ result == 0
 
--- | Convert a 'PasswordHash' to a binary 'StrictByteString'.
+-- | Convert a 'PasswordHash' to a 'StrictByteString'.
 --
 -- @since 0.0.1.0
 passwordHashToByteString :: PasswordHash -> StrictByteString
-passwordHashToByteString (PasswordHash fPtr) =
-  BS.fromForeignPtr0 (Foreign.castForeignPtr fPtr) (fromIntegral @CSize @Int cryptoPWHashStrBytes)
+passwordHashToByteString (PasswordHash fPtr) = unsafeDupablePerformIO $
+  Foreign.withForeignPtr fPtr $ \hashPtr -> do
+    resultByteString <- BS.unsafePackCStringLen (hashPtr, fromIntegral @CSize @Int cryptoPWHashStrBytes)
+    pure $ Char8.dropWhileEnd (== '\NUL') resultByteString
 
--- | Convert a 'PasswordHash' to a strict hexadecimal-encoded 'Text'.
+-- | Convert a 'PasswordHash' to a strict 'Text'.
 --
 -- @since 0.0.1.0
 passwordHashToText :: PasswordHash -> Text
-passwordHashToText = Text.decodeASCII . passwordHashToByteString
+passwordHashToText passwordHash =
+  let bs = passwordHashToByteString passwordHash
+   in Text.decodeASCII bs
 
 -- | Convert a 'PasswordHash' to a hexadecimal-encoded 'StrictByteString'.
 --
@@ -226,9 +236,12 @@ asciiTextToPasswordHash = asciiByteStringToPasswordHash . Text.encodeUtf8
 --
 -- @since 0.0.1.0
 asciiByteStringToPasswordHash :: StrictByteString -> PasswordHash
-asciiByteStringToPasswordHash textualHash =
-  let (fPtr, _length) = BS.toForeignPtr0 textualHash
-   in PasswordHash (castForeignPtr @Word8 @CChar fPtr)
+asciiByteStringToPasswordHash textualHash = unsafeDupablePerformIO $ do
+  destinationFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
+  Foreign.withForeignPtr destinationFPtr $ \destinationPtr -> do
+    BS.useAsCStringLen textualHash $ \(sourcePtr, len) -> do
+      copyBytes destinationPtr sourcePtr len
+      pure $ PasswordHash destinationFPtr
 
 -- | The 'Salt' is used in conjunction with 'hashByteStringWithParams'
 -- when you want to manually provide the piece of data that will
@@ -267,19 +280,19 @@ genSalt =
       (fromIntegral cryptoPWHashSaltBytes)
       (`randombytesBuf` cryptoPWHashSaltBytes)
 
--- | Convert 'Salt to underlying 'StrictByteString' binary.
+-- | Convert 'Salt' to underlying 'StrictByteString' binary.
 --
 -- @since 0.0.2.0
 saltToBinary :: Salt -> StrictByteString
 saltToBinary (Salt bs) = bs
 
--- | Convert 'Salt to a strict hexadecimal-encoded 'Text'.
+-- | Convert 'Salt' to a strict hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.2.0
 saltToHexText :: Salt -> Text
 saltToHexText = Base16.extractBase16 . Base16.encodeBase16 . saltToBinary
 
--- | Convert 'Salt to a hexadecimal-encoded 'StrictByteString'.
+-- | Convert 'Salt' to a hexadecimal-encoded 'StrictByteString'.
 --
 -- @since 0.0.2.0
 saltToHexByteString :: Salt -> StrictByteString

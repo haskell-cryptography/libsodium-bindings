@@ -54,8 +54,8 @@ where
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Base16 as Base16
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)

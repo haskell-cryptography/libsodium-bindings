@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BangPatterns #-}
 
 -- |
 --
@@ -72,6 +73,7 @@ import qualified Data.Base16.Types as Base16
 import GHC.Generics
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
+import Debug.Trace
 
 -- $introduction
 --
@@ -203,8 +205,13 @@ passwordHashToByteString (PasswordHash fPtr) = unsafeDupablePerformIO $
 -- @since 0.0.1.0
 passwordHashToText :: PasswordHash -> Text
 passwordHashToText passwordHash =
-  let bs = passwordHashToByteString passwordHash
-   in Text.decodeASCII bs
+  let bs = traceShowId $ passwordHashToByteString passwordHash
+      (prefix, suffix) = Text.decodeASCIIPrefix bs
+   in   case BS.uncons suffix of
+    Nothing -> prefix
+    Just (word, _) ->
+      let !errPos = BS.length bs - BS.length suffix
+        in error $ "decodeASCII: detected non-ASCII codepoint " ++ show word ++ " at position " ++ show errPos <> ". " <> show bs
 
 -- | Convert a 'PasswordHash' to a hexadecimal-encoded 'StrictByteString'.
 --
@@ -240,7 +247,8 @@ asciiByteStringToPasswordHash textualHash = unsafeDupablePerformIO $ do
   destinationFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)
   Foreign.withForeignPtr destinationFPtr $ \destinationPtr -> do
     BS.useAsCStringLen textualHash $ \(sourcePtr, len) -> do
-      copyBytes destinationPtr sourcePtr len
+      Foreign.fillBytes destinationPtr 0 (fromIntegral cryptoPWHashStrBytes)
+      Foreign.copyBytes destinationPtr sourcePtr len
       pure $ PasswordHash destinationFPtr
 
 -- | The 'Salt' is used in conjunction with 'hashByteStringWithParams'

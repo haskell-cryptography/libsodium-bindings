@@ -39,6 +39,13 @@ jobs:
       - name: Configure
         run: |
           ./.github/workflows/install-libsodium.sh
+          if [[ $(uname -s) == "Darwin" ]] 
+          then
+            brew config
+            pkg-config --list-all
+            env
+            echo "PKG_CONFIG_PATH=$HOMEBREW_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
+          fi
       - name: Cache
         uses: actions/cache@v3.3.2
         with:
@@ -46,4 +53,5 @@ jobs:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
       - name: Build
-        run: cabal build libsodium-bindings
+        run: |
+          cabal build libsodium-bindings

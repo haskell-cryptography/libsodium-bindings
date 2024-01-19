@@ -65,9 +65,9 @@ library
   build-depends:
     , base                >=4.14     && <5
     , base16              ^>=1.0
-    , bytestring          ^>=0.11
+    , bytestring          ^>=0.12
     , libsodium-bindings  ^>=0.0.1.0
-    , text                ^>=2.0
+    , text                ^>=2.1
     , text-display        ^>=0.0
 
 test-suite sel-tests
@@ -94,10 +94,10 @@ test-suite sel-tests
     , base
     , base16
     , bytestring
-    , hedgehog            ^>=1.2
+    , hedgehog            ^>=1.4
     , libsodium-bindings
     , sel
-    , tasty               ^>=1.4
+    , tasty               ^>=1.5
     , tasty-hunit         ^>=0.10
     , text
     , text-display

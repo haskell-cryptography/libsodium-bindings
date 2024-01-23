@@ -67,7 +67,7 @@ library
     , base16              ^>=1.0
     , bytestring          >=0.10     && <0.13
     , libsodium-bindings  ^>=0.0.1.1
-    , text                >= 1.2     && <2.2
+    , text                >=1.2      && <2.2
     , text-display        ^>=0.0
 
 test-suite sel-tests

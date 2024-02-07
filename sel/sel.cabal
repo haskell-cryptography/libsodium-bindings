@@ -66,7 +66,7 @@ library
     , base                >=4.14     && <5
     , base16              ^>=1.0
     , bytestring          >=0.10     && <0.13
-    , libsodium-bindings  ^>=0.0.1.0
+    , libsodium-bindings  ^>=0.0.1.1
     , text                >= 1.2     && <2.2
     , text-display        ^>=0.0
 

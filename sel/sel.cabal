@@ -60,6 +60,7 @@ library
     Sel.Scrypt
     Sel.SecretKey.Authentication
     Sel.SecretKey.Cipher
+    Sel.SecretKey.Stream
 
   other-modules:   Sel.Internal
   build-depends:

@@ -24,8 +24,14 @@ module Sel.SecretKey.Stream
 
     -- ** Stream operations
     Multipart
-  , withMultipart
-  , pushMultipart
+
+    -- *** Stream Encryption
+  , encryptStream
+  , encryptChunk
+
+    -- *** Stream Decryption
+  , decryptStream
+  , decryptChunk
 
     -- ** Secret Key
   , SecretKey
@@ -35,6 +41,7 @@ module Sel.SecretKey.Stream
 
     -- ** Header
   , Header
+  , headerToHexByteString
 
     -- ** Message Tags
   , MessageTag (..)
@@ -71,9 +78,11 @@ import LibSodium.Bindings.SecretStream
   ( CryptoSecretStreamXChaCha20Poly1305State
   , cryptoSecretStreamXChaCha20Poly1305ABytes
   , cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+  , cryptoSecretStreamXChaCha20Poly1305InitPull
   , cryptoSecretStreamXChaCha20Poly1305InitPush
   , cryptoSecretStreamXChaCha20Poly1305KeyBytes
   , cryptoSecretStreamXChaCha20Poly1305KeyGen
+  , cryptoSecretStreamXChaCha20Poly1305Pull
   , cryptoSecretStreamXChaCha20Poly1305Push
   , cryptoSecretStreamXChaCha20Poly1305StateBytes
   , cryptoSecretStreamXChaCha20Poly1305TagFinal
@@ -96,16 +105,16 @@ import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 
 -- ** Hashing a multi-part message
 
--- | 'Multipart' is a cryptographic context for streaming hashing.
--- This API can be used when a message is too big to fit in memory or when the message is received in portions.
+-- | 'Multipart' is the cryptographic context for stream encryption.
 --
 -- Use it like this:
 --
--- >>> hash <- Stream.withMultipart $ \multipartState -> do -- we are in MonadIO
--- ...   message1 <- getMessage
--- ...   Stream.updateMultipart multipartState message1
+-- >>>
+-- >>> hash <- Stream.encryptStream $ \multipartState -> do -- we are in MonadIO
+-- ...   message1 <- getMessage -- This is your way to fetch a message from outside
+-- ...   Stream.encryptChunk multipartState message1
 -- ...   message2 <- getMessage
--- ...   Stream.updateMultipart multipartState message2
+-- ...   Stream.encryptChunk multipartState message2
 --
 -- @since 0.0.1.0
 newtype Multipart s = Multipart (Ptr CryptoSecretStreamXChaCha20Poly1305State)
@@ -114,60 +123,130 @@ type role Multipart nominal
 
 -- | Perform streaming hashing with a 'Multipart' cryptographic context.
 --
--- Use 'Stream.updateMultipart' within the continuation.
+-- Use 'Stream.encryptChunk' within the continuation.
 --
 -- The context is safely allocated first, then the continuation is run
 -- and then it is deallocated after that.
 --
 -- @since 0.0.1.0
-withMultipart
+encryptStream
   :: forall (a :: Type) (m :: Type -> Type)
    . MonadIO m
   => SecretKey
   -- ^ Generated with 'newSecretKey'.
-  -> (forall s. Header -> Multipart s -> m a)
+  -> (forall s. Multipart s -> m a)
   -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
-  -> m a
-withMultipart (SecretKey secretKeyForeignPtr) actions = allocateWith cryptoSecretStreamXChaCha20Poly1305StateBytes $ \statePtr -> do
+  -> m (Header, a)
+encryptStream (SecretKey secretKeyForeignPtr) actions = allocateWith cryptoSecretStreamXChaCha20Poly1305StateBytes $ \statePtr -> do
   headerPtr <- liftIO $ sodiumMalloc cryptoSecretStreamXChaCha20Poly1305HeaderBytes
   when (headerPtr == Foreign.nullPtr) $
     liftIO $
       throwErrno "sodium_malloc"
   headerForeignPtr <- liftIO $ Foreign.newForeignPtr finalizerSodiumFree headerPtr
-  liftIO $ Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr -> do
+  liftIO $ Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
     void $
       cryptoSecretStreamXChaCha20Poly1305InitPush
         statePtr
         headerPtr
         secretKeyPtr
   let part = Multipart statePtr
-  actions (Header headerForeignPtr) part
+  let header = Header headerForeignPtr
+  result <- actions part
+  pure (header, result)
 
--- | Add a message portion to be encrypted.
+-- | Add a message portion (/chunk/) to be encrypted.
 --
--- This function should be used within 'withMultipart'.
+-- Use this function within 'encryptStream'.
 --
 -- @since 0.0.1.0
-pushMultipart
+encryptChunk
   :: MonadIO m
   => Multipart s
+  -- ^ Cryptographic context
   -> MessageTag
+  -- ^ Tag that will be associated with the message. See the documentation of 'MessageTag' to know which to choose when.
   -> StrictByteString
-  -> m ()
-pushMultipart (Multipart statePtr) messageTag message = liftIO $ BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
-  cipherTextPtr <- sodiumMalloc (fromIntegral cStringLen)
-  let messagePtr = Foreign.castPtr @CChar @CUChar cString
-  let messageLen = fromIntegral @Int @CULLong cStringLen
-  void $
-    cryptoSecretStreamXChaCha20Poly1305Push
-      statePtr
-      cipherTextPtr
-      Foreign.nullPtr
-      messagePtr
-      messageLen
-      Foreign.nullPtr
-      0
-      (messageTagToConstant messageTag)
+  -- ^ Message to encrypt.
+  -> m CipherText
+encryptChunk (Multipart statePtr) messageTag message = liftIO $ BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+  cipherTextFPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
+  Foreign.withForeignPtr cipherTextFPtr $ \cipherTextPtr -> do
+    let messagePtr = Foreign.castPtr @CChar @CUChar cString
+    let messageLen = fromIntegral @Int @CULLong cStringLen
+    void $
+      cryptoSecretStreamXChaCha20Poly1305Push
+        statePtr
+        cipherTextPtr
+        Foreign.nullPtr
+        messagePtr
+        messageLen
+        Foreign.nullPtr
+        0
+        (messageTagToConstant messageTag)
+  pure $ CipherText (fromIntegral cStringLen) cipherTextFPtr
+
+-- | Perform streaming decryption with a 'Multipart' cryptographic context.
+--
+-- Use 'Stream.decryptChunk' within the continuation.
+--
+-- The context is safely allocated first, then the continuation is run
+-- and then it is deallocated after that.
+--
+-- @since 0.0.1.0
+decryptStream
+  :: forall (a :: Type) (m :: Type -> Type)
+   . MonadIO m
+  => SecretKey
+  -> Header
+  -- ^ Header used by the encrypting party. See its documentation
+  -> (forall s. Multipart s -> m a)
+  -- ^ Continuation that gives you access to a 'Multipart' cryptographic context
+  -> m (Maybe a)
+decryptStream (SecretKey secretKeyForeignPtr) (Header headerForeignPtr) actions = allocateWith cryptoSecretStreamXChaCha20Poly1305StateBytes $ \statePtr -> do
+  result <- liftIO $ Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr -> do
+    Foreign.withForeignPtr headerForeignPtr $ \headerPtr -> do
+      cryptoSecretStreamXChaCha20Poly1305InitPull
+        statePtr
+        headerPtr
+        secretKeyPtr
+  if result /= 0
+    then pure Nothing
+    else do
+      let part = Multipart statePtr
+      Just <$> actions part
+
+-- | Add a message portion (/chunk/) to be decrypted.
+--
+-- Use this function within 'decryptStream'.
+--
+-- @since 0.0.1.0
+decryptChunk
+  :: MonadIO m
+  => Multipart s
+  -- ^ Cryptographic context
+  -> StrictByteString
+  -- ^ Message portion to decrypt
+  -> m StrictByteString
+decryptChunk (Multipart statePtr) message = do
+  let clearTextLen = fromIntegral (BS.length message) - cryptoSecretStreamXChaCha20Poly1305ABytes
+  clearTextBuffer <- liftIO $ sodiumMalloc clearTextLen
+  clearTextForeignPtr <- liftIO $ Foreign.newForeignPtr finalizerSodiumFree clearTextBuffer
+  liftIO $ BS.unsafeUseAsCStringLen message $ \(cipherTextBuffer, cipherTextLen) -> do
+    tagBuffer <- sodiumMalloc 1
+    void $
+      cryptoSecretStreamXChaCha20Poly1305Pull
+        statePtr
+        clearTextBuffer
+        Foreign.nullPtr
+        tagBuffer
+        (Foreign.castPtr @CChar @CUChar cipherTextBuffer)
+        (fromIntegral @Int @CULLong cipherTextLen)
+        Foreign.nullPtr
+        0
+  pure $
+    BS.fromForeignPtr0
+      (Foreign.castForeignPtr @CUChar @Word8 clearTextForeignPtr)
+      (fromIntegral @CSize @Int clearTextLen)
 
 -- | A secret key of size 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
 --
@@ -212,7 +291,7 @@ newSecretKey = newSecretKeyWith cryptoSecretStreamXChaCha20Poly1305KeyGen
 -- usually from the network or disk.
 --
 -- The input secret key, once decoded from base16, must be of length
--- 'cryptoSecretboxKeyBytes'.
+-- 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
 --
 -- @since 0.0.1.0
 secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
@@ -261,8 +340,47 @@ newSecretKeyWith action = do
 --
 -- That header must be sent/stored before the sequence of encrypted messages, as it is required to decrypt the stream.
 --
--- The header content doesn’t have to be secret and decryption with a different header would fail.
+-- The header content doesn’t have to be secret and decryption with a different header will fail.
 newtype Header = Header (ForeignPtr CUChar)
+
+-- | @since 0.0.1.0
+instance Show Header where
+  show = BS.unpackChars . headerToHexByteString
+
+instance Display Header where
+  displayBuilder = Builder.fromText . headerToHexText
+
+-- |
+--
+-- @since 0.0.1.0
+instance Eq Header where
+  (Header header1) == (Header header2) =
+    unsafeDupablePerformIO $
+      foreignPtrEq header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+
+-- |
+--
+-- @since 0.0.1.0
+instance Ord Header where
+  compare (Header header1) (Header header2) =
+    unsafeDupablePerformIO $
+      foreignPtrOrd header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+
+-- | Convert a 'Header' to a hexadecimal-encoded 'StrictByteString'
+--
+-- @since 0.0.1.0
+headerToHexByteString :: Header -> StrictByteString
+headerToHexByteString (Header headerForeignPtr) =
+  Base16.extractBase16 . Base16.encodeBase16' $
+    BS.fromForeignPtr0
+      (Foreign.castForeignPtr @CUChar @Word8 headerForeignPtr)
+      (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+
+-- | Convert a 'Header' to a hexadecimal-encoded 'Text'.
+--
+-- @since 0.0.1.0
+headerToHexText :: Header -> Text
+headerToHexText = Base16.extractBase16 . Base16.encodeBase16 . headerToHexByteString
 
 -- | Each encrypted message is associated with a tag.
 --
@@ -290,7 +408,8 @@ messageTagToConstant = \case
   Push -> fromIntegral cryptoSecretStreamXChaCha20Poly1305TagPush
   Rekey -> fromIntegral cryptoSecretStreamXChaCha20Poly1305TagRekey
 
--- | A hashed value from the SHA-256 algorithm.
+-- | An encrypted message. It is guaranteed to be of size:
+--  @original_message_length + 'cryptoSecretStreamXChaCha20Poly1305ABytes'@
 --
 -- @since 0.0.1.0
 data CipherText = CipherText

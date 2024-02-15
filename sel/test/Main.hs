@@ -14,6 +14,7 @@ import qualified Test.PublicKey.Signature as PublicKey.Signature
 import qualified Test.Scrypt as Scrypt
 import qualified Test.SecretKey.Authentication as SecretKey.Authentication
 import qualified Test.SecretKey.Cipher as SecretKey.Cipher
+import qualified Test.SecretKey.Stream as SecretKey.Stream
 
 main :: IO ()
 main = do
@@ -31,6 +32,7 @@ specs =
   , Hashing.SHA2.spec
   , SecretKey.Cipher.spec
   , SecretKey.Authentication.spec
+  , SecretKey.Stream.spec
   , HMAC.spec
   , Scrypt.spec
   ]

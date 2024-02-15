@@ -21,14 +21,18 @@ spec =
 testEncryptStream :: Assertion
 testEncryptStream = do
   secretKey <- Stream.newSecretKey
+  let messages = ["Hello", "abcdf", "world"]
   (header, encryptedPayload) <- Stream.encryptStream secretKey $ \multipart -> do
-    let messages = ["Hello", "abcdf", "world"]
     ciphers <- forM (List.init messages) (Stream.encryptChunk multipart Stream.Message)
     lastMessage <- Stream.encryptChunk multipart Stream.Final (List.last messages)
-    pure $ List.map Stream.ciphertextToHexByteString (ciphers <> [lastMessage])
+    pure $ List.map Stream.ciphertextToBinary (ciphers <> [lastMessage])
 
   mResult <- Stream.decryptStream secretKey header $ \multipart -> do
     forM encryptedPayload $ \cipherText -> do
       Stream.decryptChunk multipart cipherText
   result <- assertJust mResult
-  print result
+
+  assertEqual
+    "Expected result"
+    result
+    messages

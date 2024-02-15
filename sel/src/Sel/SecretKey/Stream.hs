@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
@@ -52,9 +53,14 @@ module Sel.SecretKey.Stream
   , ciphertextToBinary
   , ciphertextToHexByteString
   , ciphertextToHexText
+
+    -- ** Exceptions
+  , StreamInitEncryptionException
+  , StreamEncryptionException
+  , StreamDecryptionException
   ) where
 
-import Control.Monad (void, when)
+import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
@@ -74,6 +80,8 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import Foreign.C.Error (throwErrno)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
+import Control.Exception (Exception, throw)
+import Data.Base16.Types (Base16)
 import LibSodium.Bindings.SecretStream
   ( CryptoSecretStreamXChaCha20Poly1305State
   , cryptoSecretStreamXChaCha20Poly1305ABytes
@@ -139,16 +147,15 @@ encryptStream
   -> m (Header, a)
 encryptStream (SecretKey secretKeyForeignPtr) actions = allocateWith cryptoSecretStreamXChaCha20Poly1305StateBytes $ \statePtr -> do
   headerPtr <- liftIO $ sodiumMalloc cryptoSecretStreamXChaCha20Poly1305HeaderBytes
-  when (headerPtr == Foreign.nullPtr) $
-    liftIO $
-      throwErrno "sodium_malloc"
   headerForeignPtr <- liftIO $ Foreign.newForeignPtr finalizerSodiumFree headerPtr
-  liftIO $ Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
-    void $
+  when (headerPtr == Foreign.nullPtr) $ liftIO (throwErrno "sodium_malloc")
+  liftIO $ Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr -> do
+    result <-
       cryptoSecretStreamXChaCha20Poly1305InitPush
         statePtr
         headerPtr
         secretKeyPtr
+    when (result /= 0) $ throw StreamInitEncryptionException
   let part = Multipart statePtr
   let header = Header headerForeignPtr
   result <- actions part
@@ -156,7 +163,9 @@ encryptStream (SecretKey secretKeyForeignPtr) actions = allocateWith cryptoSecre
 
 -- | Add a message portion (/chunk/) to be encrypted.
 --
--- Use this function within 'encryptStream'.
+-- Use it within 'encryptStream'.
+--
+-- This function can throw 'StreamEncryptionException' upon an error in the underlying implementation.
 --
 -- @since 0.0.1.0
 encryptChunk
@@ -169,20 +178,21 @@ encryptChunk
   -- ^ Message to encrypt.
   -> m CipherText
 encryptChunk (Multipart statePtr) messageTag message = liftIO $ BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+  let messagePtr = Foreign.castPtr @CChar @CUChar cString
+  let messageLen = fromIntegral @Int @CULLong cStringLen
   cipherTextFPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
-  Foreign.withForeignPtr cipherTextFPtr $ \cipherTextPtr -> do
-    let messagePtr = Foreign.castPtr @CChar @CUChar cString
-    let messageLen = fromIntegral @Int @CULLong cStringLen
-    void $
+  Foreign.withForeignPtr cipherTextFPtr $ \cipherTextBuffer -> do
+    result <-
       cryptoSecretStreamXChaCha20Poly1305Push
         statePtr
-        cipherTextPtr
-        Foreign.nullPtr
+        cipherTextBuffer
+        Foreign.nullPtr -- default size of messageLen + 'cryptoSecretStreamXChaCha20Poly1305ABytes'
         messagePtr
         messageLen
-        Foreign.nullPtr
-        0
+        Foreign.nullPtr -- No additional data
+        0 -- No additional data size
         (messageTagToConstant messageTag)
+    when (result /= 0) $ throw StreamEncryptionException
   pure $ CipherText (fromIntegral cStringLen) cipherTextFPtr
 
 -- | Perform streaming decryption with a 'Multipart' cryptographic context.
@@ -219,34 +229,37 @@ decryptStream (SecretKey secretKeyForeignPtr) (Header headerForeignPtr) actions 
 --
 -- Use this function within 'decryptStream'.
 --
+-- This function can throw 'StreamDecryptionException' if the chunk is invalid, incomplete, or corrupted.
+--
 -- @since 0.0.1.0
 decryptChunk
   :: MonadIO m
   => Multipart s
   -- ^ Cryptographic context
   -> StrictByteString
-  -- ^ Message portion to decrypt
+  -- ^ Encrypted message portion to decrypt
   -> m StrictByteString
+  -- ^ Decrypted message portion
 decryptChunk (Multipart statePtr) message = do
-  let clearTextLen = fromIntegral (BS.length message) - cryptoSecretStreamXChaCha20Poly1305ABytes
-  clearTextBuffer <- liftIO $ sodiumMalloc clearTextLen
-  clearTextForeignPtr <- liftIO $ Foreign.newForeignPtr finalizerSodiumFree clearTextBuffer
-  liftIO $ BS.unsafeUseAsCStringLen message $ \(cipherTextBuffer, cipherTextLen) -> do
-    tagBuffer <- sodiumMalloc 1
-    void $
-      cryptoSecretStreamXChaCha20Poly1305Pull
-        statePtr
-        clearTextBuffer
-        Foreign.nullPtr
-        tagBuffer
-        (Foreign.castPtr @CChar @CUChar cipherTextBuffer)
-        (fromIntegral @Int @CULLong cipherTextLen)
-        Foreign.nullPtr
-        0
-  pure $
-    BS.fromForeignPtr0
-      (Foreign.castForeignPtr @CUChar @Word8 clearTextForeignPtr)
-      (fromIntegral @CSize @Int clearTextLen)
+  let clearTextLen = BS.length message - fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305ABytes
+  clearTextForeignPtr <- liftIO $ Foreign.mallocForeignPtrBytes clearTextLen
+  liftIO $ Foreign.withForeignPtr clearTextForeignPtr $ \clearTextBuffer ->
+    liftIO $ BS.unsafeUseAsCStringLen message $ \(cipherTextBuffer, cipherTextLen) -> do
+      tagBuffer <- sodiumMalloc 1
+      result <-
+        cryptoSecretStreamXChaCha20Poly1305Pull
+          statePtr
+          clearTextBuffer
+          Foreign.nullPtr
+          tagBuffer
+          (Foreign.castPtr @CChar @CUChar cipherTextBuffer)
+          (fromIntegral @Int @CULLong cipherTextLen)
+          Foreign.nullPtr
+          0
+      when (result /= 0) $ throw StreamDecryptionException
+      bsPtr <- Foreign.mallocBytes clearTextLen
+      Foreign.copyBytes bsPtr (Foreign.castPtr clearTextBuffer) clearTextLen
+      BS.unsafePackMallocCStringLen (bsPtr, clearTextLen)
 
 -- | A secret key of size 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
 --
@@ -259,17 +272,13 @@ newtype SecretKey = SecretKey (ForeignPtr CUChar)
     )
     via (OpaqueInstance "[REDACTED]" SecretKey)
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Eq SecretKey where
   (SecretKey hk1) == (SecretKey hk2) =
     unsafeDupablePerformIO $
       foreignPtrEq hk1 hk2 cryptoSecretStreamXChaCha20Poly1305KeyBytes
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey hk1) (SecretKey hk2) =
     unsafeDupablePerformIO $
@@ -341,26 +350,25 @@ newSecretKeyWith action = do
 -- That header must be sent/stored before the sequence of encrypted messages, as it is required to decrypt the stream.
 --
 -- The header content doesn’t have to be secret and decryption with a different header will fail.
+--
+-- @since 0.0.1.0
 newtype Header = Header (ForeignPtr CUChar)
 
 -- | @since 0.0.1.0
 instance Show Header where
   show = BS.unpackChars . headerToHexByteString
 
+-- | @since 0.0.1.0
 instance Display Header where
   displayBuilder = Builder.fromText . headerToHexText
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Eq Header where
   (Header header1) == (Header header2) =
     unsafeDupablePerformIO $
       foreignPtrEq header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Ord Header where
   compare (Header header1) (Header header2) =
     unsafeDupablePerformIO $
@@ -430,26 +438,20 @@ instance Eq CipherText where
           (fromIntegral cipherTextLength1 + cryptoSecretStreamXChaCha20Poly1305ABytes)
       pure $ cipherTextLength1 == cipherTextLength2 && result1
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Ord CipherText where
   compare (CipherText cipherTextLength1 c1) (CipherText cipherTextLength2 c2) =
     unsafeDupablePerformIO $ do
       result1 <- foreignPtrOrd c1 c2 (fromIntegral cipherTextLength1 + cryptoSecretStreamXChaCha20Poly1305ABytes)
       pure $ compare cipherTextLength1 cipherTextLength2 <> result1
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Display CipherText where
-  displayBuilder = Builder.fromText . ciphertextToHexText
+  displayBuilder = Builder.fromText . Base16.extractBase16 . ciphertextToHexText
 
--- |
---
--- @since 0.0.1.0
+-- | @since 0.0.1.0
 instance Show CipherText where
-  show = BS.unpackChars . ciphertextToHexByteString
+  show = BS.unpackChars . Base16.extractBase16 . ciphertextToHexByteString
 
 -- | Create a 'CipherText' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk. It must be a valid hash built from the concatenation
@@ -464,15 +466,15 @@ ciphertextFromHexByteString hexCipherText = unsafeDupablePerformIO $
     Right bytestring ->
       if BS.length bytestring >= fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideCipherTextPtr, outsideCipherTextLength) -> do
-          hashForeignPtr <- BS.mallocByteString @CChar outsideCipherTextLength -- The foreign pointer that will receive the hash data.
-          Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-            -- We copy bytes from 'outsideCipherTextPtr' to 'hashPtr'.
-            Foreign.copyArray hashPtr outsideCipherTextPtr outsideCipherTextLength
+          cipherTextFPtr <- BS.mallocByteString @CChar outsideCipherTextLength -- The foreign pointer that will receive the hash data.
+          Foreign.withForeignPtr cipherTextFPtr $ \cipherTextPtr ->
+            -- We copy bytes from 'outsideCipherTextPtr' to 'cipherTextPtr.
+            Foreign.copyArray cipherTextPtr outsideCipherTextPtr outsideCipherTextLength
           pure $
             Right $
               CipherText
                 (fromIntegral @Int @CULLong outsideCipherTextLength - fromIntegral @CSize @CULLong cryptoSecretStreamXChaCha20Poly1305ABytes)
-                (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+                (Foreign.castForeignPtr @CChar @CUChar cipherTextFPtr)
         else pure $ Left $ Text.pack "CipherText is too short"
     Left msg -> pure $ Left msg
 
@@ -481,16 +483,16 @@ ciphertextFromHexByteString hexCipherText = unsafeDupablePerformIO $
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-ciphertextToHexText :: CipherText -> Text
-ciphertextToHexText = Base16.extractBase16 . Base16.encodeBase16 . ciphertextToBinary
+ciphertextToHexText :: CipherText -> Base16 Text
+ciphertextToHexText = Base16.encodeBase16 . ciphertextToBinary
 
 -- | Convert a 'CipherText' to a hexadecimal-encoded 'StrictByteString'.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-ciphertextToHexByteString :: CipherText -> StrictByteString
-ciphertextToHexByteString = Base16.extractBase16 . Base16.encodeBase16' . ciphertextToBinary
+ciphertextToHexByteString :: CipherText -> Base16 StrictByteString
+ciphertextToHexByteString = Base16.encodeBase16' . ciphertextToBinary
 
 -- | Convert a 'CipherText' to a binary 'StrictByteString'.
 --
@@ -502,3 +504,18 @@ ciphertextToBinary (CipherText cipherTextLength fPtr) =
   BS.fromForeignPtr0
     (Foreign.castForeignPtr fPtr)
     (fromIntegral cipherTextLength + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
+
+-- | @since 0.0.1.0
+data StreamEncryptionException = StreamEncryptionException
+  deriving stock (Eq, Ord, Show)
+  deriving anyclass (Exception)
+
+-- | @since 0.0.1.0
+data StreamInitEncryptionException = StreamInitEncryptionException
+  deriving stock (Eq, Ord, Show)
+  deriving anyclass (Exception)
+
+-- | @since 0.0.1.0
+data StreamDecryptionException = StreamDecryptionException
+  deriving stock (Eq, Ord, Show)
+  deriving anyclass (Exception)

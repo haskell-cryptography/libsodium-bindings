@@ -116,18 +116,20 @@ import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 -- * Messages can have different sizes.
 -- * There are no practical limits to the total length of the stream, or to the total number of individual messages.
 
--- ** Hashing a multi-part message
+-- $usage
+--
+-- >>> secretKey <- Stream.newSecretKey
+-- >>> (header, cipherTexts) <- Stream.encryptStream secretKey $ \multipartState -> do -- we are in MonadIO
+-- ...   message1 <- getMessage -- This is your way to fetch a message from outside
+-- ...   encryptedChunk1 <- Stream.encryptChunk multipartState Stream.messag message1
+-- ...   message2 <- getMessage
+-- ...   encryptedChunk2 <- Stream.encryptChunk multipartState Stream.Final message2
+-- ...   pure [message1, message2]
+-- >>> result <- Stream.decryptStream secretKey header $ \multipartState-> do
+-- ...    forM encryptedMessages $ \cipherText -> do
+-- ...      decryptChunk multipartState cipherText
 
 -- | 'Multipart' is the cryptographic context for stream encryption.
---
--- Use it like this:
---
--- >>>
--- >>> hash <- Stream.encryptStream $ \multipartState -> do -- we are in MonadIO
--- ...   message1 <- getMessage -- This is your way to fetch a message from outside
--- ...   Stream.encryptChunk multipartState message1
--- ...   message2 <- getMessage
--- ...   Stream.encryptChunk multipartState message2
 --
 -- @since 0.0.1.0
 newtype Multipart s = Multipart (Ptr CryptoSecretStreamXChaCha20Poly1305State)

@@ -3,6 +3,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -24,13 +25,15 @@ module Sel.SecretKey.Stream
     -- $usage
 
     -- ** Stream operations
-    Multipart
 
-    -- *** Stream Encryption
+    -- *** Linked List operations
+    encryptList
+  , decryptList
+
+    -- *** Chunk operations
+  , Multipart
   , encryptStream
   , encryptChunk
-
-    -- *** Stream Decryption
   , decryptStream
   , decryptChunk
 
@@ -43,6 +46,7 @@ module Sel.SecretKey.Stream
     -- ** Header
   , Header
   , headerToHexByteString
+  , headerFromHexByteString
 
     -- ** Message Tags
   , MessageTag (..)
@@ -60,7 +64,7 @@ module Sel.SecretKey.Stream
   , StreamDecryptionException
   ) where
 
-import Control.Monad (when)
+import Control.Monad (forM, when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
@@ -82,6 +86,7 @@ import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Exception (Exception, throw)
 import Data.Base16.Types (Base16)
+import qualified Data.List as List
 import LibSodium.Bindings.SecretStream
   ( CryptoSecretStreamXChaCha20Poly1305State
   , cryptoSecretStreamXChaCha20Poly1305ABytes
@@ -169,7 +174,8 @@ encryptStream (SecretKey secretKeyForeignPtr) actions = allocateWith cryptoSecre
 --
 -- @since 0.0.1.0
 encryptChunk
-  :: MonadIO m
+  :: forall m s
+   . MonadIO m
   => Multipart s
   -- ^ Cryptographic context
   -> MessageTag
@@ -194,6 +200,23 @@ encryptChunk (Multipart statePtr) messageTag message = liftIO $ BS.unsafeUseAsCS
         (messageTagToConstant messageTag)
     when (result /= 0) $ throw StreamEncryptionException
   pure $ CipherText (fromIntegral cStringLen) cipherTextFPtr
+
+-- | Perform streaming encryption of a finite Linked List.
+--
+-- This function can throw 'StreamEncryptionException' upon an error in the underlying implementation.
+--
+-- @since 0.0.1.0
+encryptList :: forall m. MonadIO m => SecretKey -> [StrictByteString] -> m (Header, [CipherText])
+encryptList secretKey messages = encryptStream secretKey $ \multipart -> go multipart messages []
+  where
+    go :: Multipart s -> [StrictByteString] -> [CipherText] -> m [CipherText]
+    go multipart [lastMsg] acc = do
+      encryptedChunk <- encryptChunk multipart Final lastMsg
+      pure $ List.reverse $ encryptedChunk : acc
+    go multipart (msg : rest) acc = do
+      encryptedChunk <- encryptChunk multipart Message msg
+      go multipart rest (encryptedChunk : acc)
+    go _ [] acc = pure acc
 
 -- | Perform streaming decryption with a 'Multipart' cryptographic context.
 --
@@ -233,18 +256,19 @@ decryptStream (SecretKey secretKeyForeignPtr) (Header headerForeignPtr) actions 
 --
 -- @since 0.0.1.0
 decryptChunk
-  :: MonadIO m
+  :: forall m s
+   . MonadIO m
   => Multipart s
   -- ^ Cryptographic context
-  -> StrictByteString
+  -> CipherText
   -- ^ Encrypted message portion to decrypt
   -> m StrictByteString
   -- ^ Decrypted message portion
-decryptChunk (Multipart statePtr) message = do
-  let clearTextLen = BS.length message - fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305ABytes
-  clearTextForeignPtr <- liftIO $ Foreign.mallocForeignPtrBytes clearTextLen
-  liftIO $ Foreign.withForeignPtr clearTextForeignPtr $ \clearTextBuffer ->
-    liftIO $ BS.unsafeUseAsCStringLen message $ \(cipherTextBuffer, cipherTextLen) -> do
+decryptChunk (Multipart statePtr) CipherText{messageLength, cipherTextForeignPtr} = do
+  clearTextForeignPtr <- liftIO $ Foreign.mallocForeignPtrBytes (fromIntegral messageLength)
+  let cipherTextLen = messageLength + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
+  liftIO $ Foreign.withForeignPtr cipherTextForeignPtr $ \cipherTextBuffer -> do
+    liftIO $ Foreign.withForeignPtr clearTextForeignPtr $ \clearTextBuffer -> do
       tagBuffer <- sodiumMalloc 1
       result <-
         cryptoSecretStreamXChaCha20Poly1305Pull
@@ -252,14 +276,25 @@ decryptChunk (Multipart statePtr) message = do
           clearTextBuffer
           Foreign.nullPtr
           tagBuffer
-          (Foreign.castPtr @CChar @CUChar cipherTextBuffer)
-          (fromIntegral @Int @CULLong cipherTextLen)
+          cipherTextBuffer
+          cipherTextLen
           Foreign.nullPtr
           0
       when (result /= 0) $ throw StreamDecryptionException
-      bsPtr <- Foreign.mallocBytes clearTextLen
-      Foreign.copyBytes bsPtr (Foreign.castPtr clearTextBuffer) clearTextLen
-      BS.unsafePackMallocCStringLen (bsPtr, clearTextLen)
+      bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
+      Foreign.copyBytes bsPtr (Foreign.castPtr clearTextBuffer) (fromIntegral messageLength)
+      BS.unsafePackMallocCStringLen (bsPtr, fromIntegral messageLength)
+
+-- | Perform streaming decryption of a finite Linked List.
+--
+-- This function can throw 'StreamDecryptionException' if the chunk is invalid, incomplete, or corrupted.
+--
+-- @since 0.0.1.0
+decryptList :: forall m. MonadIO m => SecretKey -> Header -> [CipherText] -> m (Maybe [StrictByteString])
+decryptList secretKey header encryptedMessages =
+  decryptStream secretKey header $ \multipart -> do
+    forM encryptedMessages $ \cipherText -> do
+      decryptChunk multipart cipherText
 
 -- | A secret key of size 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
 --
@@ -303,19 +338,19 @@ newSecretKey = newSecretKeyWith cryptoSecretStreamXChaCha20Poly1305KeyGen
 -- 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
 --
 -- @since 0.0.1.0
-secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
-secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
-  case Base16.decodeBase16Untyped hexNonce of
+secretKeyFromHexByteString :: Base16 StrictByteString -> Either Text SecretKey
+secretKeyFromHexByteString hexSecretKey = unsafeDupablePerformIO $
+  case Base16.decodeBase16Untyped (Base16.extractBase16 hexSecretKey) of
     Right bytestring ->
       if BS.length bytestring == fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes
-        then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
-          fmap Right $
-            newSecretKeyWith $ \secretKeyPtr ->
-              Foreign.copyArray
-                (Foreign.castPtr @CUChar @CChar secretKeyPtr)
-                outsideSecretKeyPtr
-                (fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes)
-        else pure $ Left $ Text.pack "Secret Key is too short"
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
+          secretKey <- newSecretKeyWith $ \secretKeyPtr ->
+            Foreign.copyArray
+              (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+              outsideSecretKeyPtr
+              (fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes)
+          pure $ Right secretKey
+        else pure $ Left $ Text.pack ("Secret Key is not of size " <> show cryptoSecretStreamXChaCha20Poly1305KeyBytes)
     Left msg -> pure $ Left msg
 
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
@@ -323,9 +358,9 @@ secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-unsafeSecretKeyToHexByteString :: SecretKey -> StrictByteString
+unsafeSecretKeyToHexByteString :: SecretKey -> Base16 StrictByteString
 unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
-  Base16.extractBase16 . Base16.encodeBase16' $
+  Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 secretKeyForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305KeyBytes)
@@ -340,8 +375,7 @@ newSecretKeyWith :: (Ptr CUChar -> IO ()) -> IO SecretKey
 newSecretKeyWith action = do
   ptr <- sodiumMalloc cryptoSecretStreamXChaCha20Poly1305KeyBytes
   when (ptr == Foreign.nullPtr) $ throwErrno "sodium_malloc"
-  fPtr <- Foreign.newForeignPtr_ ptr
-  Foreign.addForeignPtrFinalizer finalizerSodiumFree fPtr
+  fPtr <- Foreign.newForeignPtr finalizerSodiumFree ptr
   action ptr
   pure $ SecretKey fPtr
 
@@ -356,11 +390,11 @@ newtype Header = Header (ForeignPtr CUChar)
 
 -- | @since 0.0.1.0
 instance Show Header where
-  show = BS.unpackChars . headerToHexByteString
+  show = BS.unpackChars . Base16.extractBase16 . headerToHexByteString
 
 -- | @since 0.0.1.0
 instance Display Header where
-  displayBuilder = Builder.fromText . headerToHexText
+  displayBuilder = Builder.fromText . Base16.extractBase16 . headerToHexText
 
 -- | @since 0.0.1.0
 instance Eq Header where
@@ -377,18 +411,32 @@ instance Ord Header where
 -- | Convert a 'Header' to a hexadecimal-encoded 'StrictByteString'
 --
 -- @since 0.0.1.0
-headerToHexByteString :: Header -> StrictByteString
+headerToHexByteString :: Header -> Base16 StrictByteString
 headerToHexByteString (Header headerForeignPtr) =
-  Base16.extractBase16 . Base16.encodeBase16' $
+  Base16.encodeBase16' $
     BS.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 headerForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
 
+headerFromHexByteString :: Base16 StrictByteString -> Either Text Header
+headerFromHexByteString hexHeader = unsafeDupablePerformIO $
+  case Base16.decodeBase16Untyped (Base16.extractBase16 hexHeader) of
+    Right bytestring ->
+      if BS.length bytestring == fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideHeaderPtr, _) -> do
+          let headerLength = fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+          headerForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+          Foreign.withForeignPtr headerForeignPtr $ \headerPtr -> do
+            Foreign.copyBytes headerPtr (Foreign.castPtr outsideHeaderPtr) headerLength
+            pure $ Right $ Header headerForeignPtr
+        else pure $ Left $ Text.pack ("Secret Key is not of size " <> show cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+    Left msg -> pure $ Left msg
+
 -- | Convert a 'Header' to a hexadecimal-encoded 'Text'.
 --
 -- @since 0.0.1.0
-headerToHexText :: Header -> Text
-headerToHexText = Base16.extractBase16 . Base16.encodeBase16 . headerToHexByteString
+headerToHexText :: Header -> Base16 Text
+headerToHexText = Base16.encodeBase16 . Base16.extractBase16 . headerToHexByteString
 
 -- | Each encrypted message is associated with a tag.
 --
@@ -460,9 +508,9 @@ instance Show CipherText where
 -- The input hash must at least of length 'cryptoSecretStreamXChaCha20Poly1305ABytes'
 --
 -- @since 0.0.1.0
-ciphertextFromHexByteString :: StrictByteString -> Either Text CipherText
+ciphertextFromHexByteString :: Base16 StrictByteString -> Either Text CipherText
 ciphertextFromHexByteString hexCipherText = unsafeDupablePerformIO $
-  case Base16.decodeBase16Untyped hexCipherText of
+  case Base16.decodeBase16Untyped (Base16.extractBase16 hexCipherText) of
     Right bytestring ->
       if BS.length bytestring >= fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideCipherTextPtr, outsideCipherTextLength) -> do

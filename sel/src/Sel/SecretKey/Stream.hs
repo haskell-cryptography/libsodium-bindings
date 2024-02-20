@@ -203,7 +203,7 @@ encryptChunk (Multipart statePtr) messageTag message = liftIO $ BS.unsafeUseAsCS
     when (result /= 0) $ throw StreamEncryptionException
   pure $ CipherText (fromIntegral cStringLen) cipherTextFPtr
 
--- | Perform streaming encryption of a finite Linked List.
+-- | Perform streaming encryption of a finite list.
 --
 -- This function can throw 'StreamEncryptionException' upon an error in the underlying implementation.
 --

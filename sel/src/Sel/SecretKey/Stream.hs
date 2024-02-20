@@ -64,8 +64,10 @@ module Sel.SecretKey.Stream
   , StreamDecryptionException
   ) where
 
+import Control.Exception (Exception, throw)
 import Control.Monad (forM, when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Base16.Types (Base16)
 import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
@@ -73,6 +75,7 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Kind (Type)
+import qualified Data.List as List
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Display (Display (..), OpaqueInstance (..))
@@ -84,9 +87,6 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import Foreign.C.Error (throwErrno)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import Control.Exception (Exception, throw)
-import Data.Base16.Types (Base16)
-import qualified Data.List as List
 import LibSodium.Bindings.SecretStream
   ( CryptoSecretStreamXChaCha20Poly1305State
   , cryptoSecretStreamXChaCha20Poly1305ABytes
@@ -124,7 +124,7 @@ import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 -- ...   encryptedChunk1 <- Stream.encryptChunk multipartState Stream.messag message1
 -- ...   message2 <- getMessage
 -- ...   encryptedChunk2 <- Stream.encryptChunk multipartState Stream.Final message2
--- ...   pure [message1, message2]
+-- ...   pure [encryptedChunk1, encryptedChunk2]
 -- >>> result <- Stream.decryptStream secretKey header $ \multipartState-> do
 -- ...    forM encryptedMessages $ \cipherText -> do
 -- ...      decryptChunk multipartState cipherText

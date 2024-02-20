@@ -166,8 +166,7 @@ newSecretKeyWith action = do
   when (ptr == Foreign.nullPtr) $ do
     throwErrno "sodium_malloc"
 
-  fPtr <- Foreign.newForeignPtr_ ptr
-  Foreign.addForeignPtrFinalizer finalizerSodiumFree fPtr
+  fPtr <- Foreign.newForeignPtr finalizerSodiumFree ptr
   action ptr
   pure $ SecretKey fPtr
 

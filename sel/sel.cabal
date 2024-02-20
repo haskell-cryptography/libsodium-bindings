@@ -60,6 +60,7 @@ library
     Sel.Scrypt
     Sel.SecretKey.Authentication
     Sel.SecretKey.Cipher
+    Sel.SecretKey.Stream
 
   other-modules:   Sel.Internal
   build-depends:
@@ -67,7 +68,7 @@ library
     , base16              ^>=1.0
     , bytestring          >=0.10     && <0.13
     , libsodium-bindings  ^>=0.0.1.1
-    , text                >= 1.2     && <2.2
+    , text                >=1.2      && <2.2
     , text-display        ^>=0.0
 
 test-suite sel-tests
@@ -87,6 +88,7 @@ test-suite sel-tests
     Test.Scrypt
     Test.SecretKey.Authentication
     Test.SecretKey.Cipher
+    Test.SecretKey.Stream
     TestUtils
 
   hs-source-dirs: test

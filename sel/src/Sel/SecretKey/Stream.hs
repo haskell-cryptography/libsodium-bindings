@@ -72,8 +72,8 @@ import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
-import qualified Data.ByteString.Internal as BS
-import qualified Data.ByteString.Unsafe as BS
+import qualified Data.ByteString.Internal as BSI
+import qualified Data.ByteString.Unsafe as BSU
 import Data.Kind (Type)
 import qualified Data.List as List
 import Data.Text (Text)
@@ -185,7 +185,7 @@ encryptChunk
   -> StrictByteString
   -- ^ Message to encrypt.
   -> m CipherText
-encryptChunk (Multipart statePtr) messageTag message = liftIO $ BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
+encryptChunk (Multipart statePtr) messageTag message = liftIO $ BSU.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
   let messagePtr = Foreign.castPtr @CChar @CUChar cString
   let messageLen = fromIntegral @Int @CULLong cStringLen
   cipherTextFPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
@@ -285,7 +285,7 @@ decryptChunk (Multipart statePtr) CipherText{messageLength, cipherTextForeignPtr
       when (result /= 0) $ throw StreamDecryptionException
       bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
       Foreign.copyBytes bsPtr (Foreign.castPtr clearTextBuffer) (fromIntegral messageLength)
-      BS.unsafePackMallocCStringLen (bsPtr, fromIntegral messageLength)
+      BSU.unsafePackMallocCStringLen (bsPtr, fromIntegral messageLength)
 
 -- | Perform streaming decryption of a finite Linked List.
 --
@@ -345,7 +345,7 @@ secretKeyFromHexByteString hexSecretKey = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped (Base16.extractBase16 hexSecretKey) of
     Right bytestring ->
       if BS.length bytestring == fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes
-        then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
+        then BSU.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) -> do
           secretKey <- newSecretKeyWith $ \secretKeyPtr ->
             Foreign.copyArray
               (Foreign.castPtr @CUChar @CChar secretKeyPtr)
@@ -363,7 +363,7 @@ secretKeyFromHexByteString hexSecretKey = unsafeDupablePerformIO $
 unsafeSecretKeyToHexByteString :: SecretKey -> Base16 StrictByteString
 unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
   Base16.encodeBase16' $
-    BS.fromForeignPtr0
+    BSI.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 secretKeyForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305KeyBytes)
 
@@ -392,7 +392,7 @@ newtype Header = Header (ForeignPtr CUChar)
 
 -- | @since 0.0.1.0
 instance Show Header where
-  show = BS.unpackChars . Base16.extractBase16 . headerToHexByteString
+  show = BSI.unpackChars . Base16.extractBase16 . headerToHexByteString
 
 -- | @since 0.0.1.0
 instance Display Header where
@@ -416,7 +416,7 @@ instance Ord Header where
 headerToHexByteString :: Header -> Base16 StrictByteString
 headerToHexByteString (Header headerForeignPtr) =
   Base16.encodeBase16' $
-    BS.fromForeignPtr0
+    BSI.fromForeignPtr0
       (Foreign.castForeignPtr @CUChar @Word8 headerForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
 
@@ -425,7 +425,7 @@ headerFromHexByteString hexHeader = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped (Base16.extractBase16 hexHeader) of
     Right bytestring ->
       if BS.length bytestring == fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes
-        then BS.unsafeUseAsCStringLen bytestring $ \(outsideHeaderPtr, _) -> do
+        then BSU.unsafeUseAsCStringLen bytestring $ \(outsideHeaderPtr, _) -> do
           let headerLength = fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes
           headerForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
           Foreign.withForeignPtr headerForeignPtr $ \headerPtr -> do
@@ -501,7 +501,7 @@ instance Display CipherText where
 
 -- | @since 0.0.1.0
 instance Show CipherText where
-  show = BS.unpackChars . Base16.extractBase16 . ciphertextToHexByteString
+  show = BSI.unpackChars . Base16.extractBase16 . ciphertextToHexByteString
 
 -- | Create a 'CipherText' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk. It must be a valid hash built from the concatenation
@@ -515,8 +515,8 @@ ciphertextFromHexByteString hexCipherText = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped (Base16.extractBase16 hexCipherText) of
     Right bytestring ->
       if BS.length bytestring >= fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
-        then BS.unsafeUseAsCStringLen bytestring $ \(outsideCipherTextPtr, outsideCipherTextLength) -> do
-          cipherTextFPtr <- BS.mallocByteString @CChar outsideCipherTextLength -- The foreign pointer that will receive the hash data.
+        then BSU.unsafeUseAsCStringLen bytestring $ \(outsideCipherTextPtr, outsideCipherTextLength) -> do
+          cipherTextFPtr <- BSI.mallocByteString @CChar outsideCipherTextLength -- The foreign pointer that will receive the hash data.
           Foreign.withForeignPtr cipherTextFPtr $ \cipherTextPtr ->
             -- We copy bytes from 'outsideCipherTextPtr' to 'cipherTextPtr.
             Foreign.copyArray cipherTextPtr outsideCipherTextPtr outsideCipherTextLength
@@ -551,7 +551,7 @@ ciphertextToHexByteString = Base16.encodeBase16' . ciphertextToBinary
 -- @since 0.0.1.0
 ciphertextToBinary :: CipherText -> StrictByteString
 ciphertextToBinary (CipherText cipherTextLength fPtr) =
-  BS.fromForeignPtr0
+  BSI.fromForeignPtr0
     (Foreign.castForeignPtr fPtr)
     (fromIntegral cipherTextLength + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
 

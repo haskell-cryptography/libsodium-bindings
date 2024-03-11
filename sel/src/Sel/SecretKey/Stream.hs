@@ -115,6 +115,8 @@ import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 -- * Each message can include additional data (ex: timestamp, protocol version) in the computation of the authentication tag.
 -- * Messages can have different sizes.
 -- * There are no practical limits to the total length of the stream, or to the total number of individual messages.
+--
+-- It uses the [XChaCha20-Poly1305 algorithm](https://en.wikipedia.org/wiki/ChaCha20-Poly1305).
 
 -- $usage
 --

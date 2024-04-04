@@ -422,6 +422,9 @@ headerToHexByteString (Header headerForeignPtr) =
       (Foreign.castForeignPtr @CUChar @Word8 headerForeignPtr)
       (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
 
+-- | Build a 'Header' from a base16-encoded 'StrictByteString'
+--
+-- @since 0.0.1.0
 headerFromHexByteString :: Base16 StrictByteString -> Either Text Header
 headerFromHexByteString hexHeader = unsafeDupablePerformIO $
   case Base16.decodeBase16Untyped (Base16.extractBase16 hexHeader) of

@@ -8,8 +8,7 @@ We need you to read, acknowledge, and abide by our [Code of Conduct][CoC].
 
 ### Pull Requests
 
-When making a PR, ensure that you have a Github issue that explains the context
-for your changes.
+When making a PR, ensure that you have a Github issue that explains the context for your changes.
 
 ## Code Style 
 
@@ -35,6 +34,8 @@ are being used:
   configuration file.
 * The Cabal file is formatted with
   [`cabal-fmt`](https://github.com/phadej/cabal-fmt)
+
+Check the version of these tools in https://github.com/haskell-cryptography/libsodium-bindings/blob/main/.github/workflows/linting.yml.
 
 To ensure that you are using the git hook, run the following, once:
 

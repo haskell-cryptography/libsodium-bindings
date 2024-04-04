@@ -38,7 +38,7 @@ import System.Exit (die)
 -- action. Abort with an error message if security-related functionality cannot
 -- be initialised. This will also indicate failure to the shell, as with 'die'.
 --
--- = Use
+-- === Usage:
 --
 -- > main :: IO ()
 -- > main = secureMain doTheThingIActuallyWant
@@ -54,7 +54,7 @@ secureMain = secureMainWithError (die "libsodium-bindings: Could not initialise 
 -- | Similar to 'secureMain', but allows responding to a failure of
 -- initialisation.
 --
--- = Use
+-- === Usage:
 --
 -- > main :: IO ()
 -- > main = secureMainWith reportErrorWithLogging doTheThingIActuallyWant

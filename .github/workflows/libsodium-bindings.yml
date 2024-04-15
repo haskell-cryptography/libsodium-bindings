@@ -40,10 +40,29 @@ jobs:
         run: |
           ./.github/workflows/install-libsodium.sh
       - name: Cache
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+          key: ${{ runner.os }}-ghc-x86_64-${{ matrix.ghc }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-x86_64-${{ matrix.ghc }}
       - name: Build
         run: cabal build libsodium-bindings
+
+  armv7:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.ghc }} on ARMv7 
+    needs: generateMatrix
+    strategy:
+      matrix: ${{ fromJSON(needs.generateMatrix.outputs.matrix) }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pguyot/arm-runner-action@v2
+      with:
+        base_image: raspios_lite_arm64:latest
+        cpu: cortex-a8
+        commands: |
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+          ghcup install ghc ${{ matrix.ghc }}
+          ghcup set ghc ${{ matrix.ghc }}
+          ./.github/workflows/install-libsodium.sh
+          cabal build libsodium-bindings

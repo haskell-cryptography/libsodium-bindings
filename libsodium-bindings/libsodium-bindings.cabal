@@ -50,7 +50,7 @@ common common
     extra-lib-dirs: /user/local/opt/libsodium/lib
 
   if flag(use-pkg-config)
-    pkgconfig-depends: libsodium >=1.0.18
+    pkgconfig-depends: libsodium ==1.0.18 || ==1.0.19
 
   else
     extra-libraries: sodium

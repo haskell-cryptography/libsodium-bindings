@@ -5,9 +5,14 @@ on:
   pull_request:
   push:
     branches: ["main"]
+  workflow_run:
+    workflows: ["libsodium-bindings"]
+    types:
+      - completed
 
 jobs:
   generateMatrix:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: "Generate matrix from cabal"
     runs-on: ubuntu-latest
     outputs:

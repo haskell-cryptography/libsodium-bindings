@@ -83,8 +83,9 @@ import Sel.Internal
 -- $usage
 --
 -- > import qualified Sel.SecretKey.Cipher as Cipher
+-- > import Sel (secureMain)
 -- >
--- > main = do
+-- > main = secureMain $ do
 -- >   -- We get the secretKey from the other party or with 'newSecretKey'.
 -- >   -- We get the nonce from the other party with the message, or with 'encrypt' and our own message.
 -- >   -- Do not reuse a nonce with the same secret key!

@@ -93,8 +93,9 @@ import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 -- $usage
 --
 -- > import Sel.HMAC.SHA512_256 qualified as HMAC
+-- > import Sel (secureMain)
 -- >
--- > main = do
+-- > main = secureMain $ do
 -- >   -- The parties agree on a shared secret key
 -- >   authKey <- HMAC.newAuthenticationKey
 -- >   -- An authentication tag is computed for the message by the server

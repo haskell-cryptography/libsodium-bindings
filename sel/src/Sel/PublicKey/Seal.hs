@@ -62,8 +62,9 @@ import Sel.PublicKey.Cipher (CipherText (CipherText), EncryptionError (..), KeyP
 -- $usage
 --
 -- > import qualified Sel.PublicKey.Seal as Seal
+-- > import Sel (secureMain)
 -- >
--- > main = do
+-- > main = secureMain $ do
 -- >   -- We get the recipient their pair of keys:
 -- > (recipientPublicKey, recipientSecretKey) <- newKeyPair
 -- >   encryptedMessage <- Seal.encrypt "hello hello" recipientPublicKey

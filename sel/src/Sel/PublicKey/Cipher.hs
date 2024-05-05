@@ -89,8 +89,9 @@ import Sel.Internal
 -- $usage
 --
 -- > import qualified Sel.PublicKey.Cipher as Cipher
+-- > import Sel (secureMain)
 -- >
--- > main = do
+-- > main = secureMain $ do
 -- >   -- We get the sender their pair of keys:
 -- >   (senderSecretKey, senderPublicKey) <- newKeyPair
 -- >   -- We get the nonce from the other party with the message, or with 'encrypt' and our own message.

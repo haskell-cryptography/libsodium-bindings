@@ -2,7 +2,7 @@ module Main where
 
 import Test.Tasty
 
-import LibSodium.Bindings.Main (sodiumInit)
+import Sel (secureMain)
 import qualified Test.HMAC as HMAC
 import qualified Test.Hashing as Hashing
 import qualified Test.Hashing.Password as Password
@@ -17,8 +17,7 @@ import qualified Test.SecretKey.Cipher as SecretKey.Cipher
 import qualified Test.SecretKey.Stream as SecretKey.Stream
 
 main :: IO ()
-main = do
-  sodiumInit
+main = secureMain $ do
   defaultMain . testGroup "sel tests" $ specs
 
 specs :: [TestTree]

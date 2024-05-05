@@ -70,8 +70,9 @@ import Sel.Internal
 -- $usage
 --
 -- > import Sel.SecretKey.Authentication qualified as Auth
+-- > import Sel (secureMain)
 -- >
--- > main = do
+-- > main = secureMain $ do
 -- >   -- The parties agree on a shared secret key
 -- >   authKey <- Auth.newAuthenticationKey
 -- >   -- An authentication tag is computed for the message by the server

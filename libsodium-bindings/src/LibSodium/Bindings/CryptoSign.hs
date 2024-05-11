@@ -321,7 +321,7 @@ foreign import capi "sodium.h crypto_sign_final_verify"
     -- ^ Returns 0 on success, -1 on error.
 
 -- | This function extracts the seed from the
--- secret key secret key and copies it into the buffer holding the seed.
+-- secret key and copies it into the buffer holding the seed.
 -- The size of the seed will be equal to 'cryptoSignSeedBytes'.
 --
 -- /See:/ [crypto_sign_ed25519_sk_to_seed()](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#extracting-the-seed-and-the-public-key-from-the-secret-key)
@@ -336,7 +336,7 @@ foreign import capi "sodium.h crypto_sign_ed25519_sk_to_seed"
     -> IO CInt
     -- ^ Returns 0 on success, -1 on error.
 
--- | This function extracts the public key from the secret key secret key
+-- | This function extracts the public key from the secret key
 -- and copies it into public key.
 -- The size of public key will be equal to 'cryptoSignPublicKeyBytes'.
 --

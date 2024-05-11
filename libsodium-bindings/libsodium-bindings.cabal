@@ -16,7 +16,7 @@ maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
 build-type:         Simple
 tested-with:
-  GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.4 || ==9.8.2
+  GHC ==9.2.8 || ==9.4.8 || ==9.6.4 || ==9.8.2
 
 extra-source-files:
   LICENSE
@@ -46,12 +46,11 @@ common common
     -fhide-source-paths -Wno-unused-do-bind -haddock
 
   if (os(osx) && flag(homebrew-libsodium))
-    include-dirs:   /opt/local/include
-    extra-lib-dirs: /user/local/opt/libsodium/lib
+    include-dirs:   /opt/local/include /opt/homebrew/include
+    extra-lib-dirs: /user/local/opt/libsodium/lib /opt/homebrew/lib
 
   if flag(use-pkg-config)
-    pkgconfig-depends: libsodium ==1.0.18 
-    -- || ==1.0.19
+    pkgconfig-depends: libsodium ==1.0.18 || ==1.0.19
 
   else
     extra-libraries: sodium

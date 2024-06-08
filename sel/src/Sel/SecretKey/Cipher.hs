@@ -132,7 +132,7 @@ instance Show SecretKey where
 newSecretKey :: IO SecretKey
 newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 
--- | Create a 'SecretKey' from a binary 'StrictByteString' that you have obtained on your own,
+-- | Create a 'SecretKey' from a hexadecimal-encoded 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.
 --
 -- The input secret key, once decoded from base16, must be of length
@@ -140,8 +140,8 @@ newSecretKey = newSecretKeyWith cryptoSecretboxKeygen
 --
 -- @since 0.0.1.0
 secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
-secretKeyFromHexByteString hexNonce = unsafeDupablePerformIO $
-  case Base16.decodeBase16Untyped hexNonce of
+secretKeyFromHexByteString hexSecretKey = unsafeDupablePerformIO $
+  case Base16.decodeBase16Untyped hexSecretKey of
     Right bytestring ->
       if BS.length bytestring == fromIntegral cryptoSecretboxKeyBytes
         then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->

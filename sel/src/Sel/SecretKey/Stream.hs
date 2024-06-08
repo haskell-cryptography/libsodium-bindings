@@ -1,6 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -38,13 +41,27 @@ module Sel.SecretKey.Stream
   , ciphertextToHexText
   ) where
 
+import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString.Internal as BS
+import qualified Data.Text as Text
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Base16 as Base16
+import qualified Data.Base16.Types as Base16
+import qualified Data.ByteString.Unsafe as BS
 import Data.Kind (Type)
-import Data.Text.Display (Display, OpaqueInstance)
-import Foreign (ForeignPtr, Ptr)
-import Foreign.C (CChar, CUChar, CULLong)
-import LibSodium.Bindings.SecretStream (CryptoSecretStreamXChaCha20Poly1305State)
+import Data.Text.Display (Display (..), OpaqueInstance (..))
+import qualified Data.Text.Lazy.Builder as Builder
+import Foreign (ForeignPtr, Ptr, Storable (..))
+import qualified Foreign
+import Foreign.C (CChar, CUChar, CULLong, CSize)
+import qualified Foreign.ForeignPtr as Foreign
+import qualified Foreign.Ptr as Foreign
+
+import LibSodium.Bindings.SecretStream
+import Data.Text (Text)
+import Data.Word
 
 -- $introduction
 -- This high-level API encrypts a sequence of messages, or a single message split into an arbitrary number of chunks, using a secret key, with the following properties:
@@ -108,7 +125,7 @@ finaliseMultipart (Multipart statePtr) = do
       cryptoSecretStreamXChaCha20Poly1305Final
         statePtr
         hashPtr
-  pure $ Hash hashForeignPtr
+  pure $ Ciphertext hashForeignPtr
 
 -- | Add a message portion to be hashed.
 --
@@ -165,6 +182,41 @@ instance Show SecretKey where
 newSecretKey :: IO SecretKey
 newSecretKey = newSecretKeyWith cryptoSecretStreamXChaCha20Poly1305KeyGen
 
+-- | Create a 'SecretKey' from a hexadecimal-encoded 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk.
+--
+-- The input secret key, once decoded from base16, must be of length
+-- 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
+--
+-- @since 0.0.1.0
+secretKeyFromHexByteString :: StrictByteString -> Either Text SecretKey
+secretKeyFromHexByteString hexSecretKey = unsafeDupablePerformIO $
+  case Base16.decodeBase16Untyped hexSecretKey of
+    Right bytestring ->
+      if BS.length bytestring == fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideSecretKeyPtr, _) ->
+          fmap Right $
+            newSecretKeyWith $ \secretKeyPtr ->
+              Foreign.copyArray
+                (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+                outsideSecretKeyPtr
+                (fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes)
+        else pure $ Left $ Text.pack "Secret Key is too short"
+    Left msg -> pure $ Left msg
+
+-- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.0.1.0
+unsafeSecretKeyToHexByteString :: SecretKey -> StrictByteString
+unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
+  Base16.extractBase16 . Base16.encodeBase16' $
+    BS.fromForeignPtr0
+      (Foreign.castForeignPtr @CUChar @Word8 secretKeyForeignPtr)
+      (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305KeyBytes)
+
+
 -- | Prepare memory for a 'SecretKey' and use the provided action to fill it.
 --
 -- Memory is allocated with 'LibSodium.Bindings.SecureMemory.sodiumMalloc' (see the note attached there).
@@ -184,55 +236,76 @@ newSecretKeyWith action = do
 -- | A hashed value from the SHA-256 algorithm.
 --
 -- @since 0.0.1.0
-newtype Hash = Hash (ForeignPtr CUChar)
+newtype Ciphertext = Ciphertext (ForeignPtr CUChar)
 
 -- |
 --
 -- @since 0.0.1.0
-instance Eq Hash where
-  (Hash h1) == (Hash h2) =
+instance Eq Ciphertext where
+  (Ciphertext h1) == (Ciphertext h2) =
     unsafeDupablePerformIO $
       foreignPtrEq h1 h2 cryptoHashSHA256Bytes
 
 -- |
 --
 -- @since 0.0.1.0
-instance Ord Hash where
-  compare (Hash h1) (Hash h2) =
+instance Ord Ciphertext where
+  compare (Ciphertext h1) (Ciphertext h2) =
     unsafeDupablePerformIO $
       foreignPtrOrd h1 h2 cryptoHashSHA256Bytes
 
 -- |
 --
 -- @since 0.0.1.0
-instance Storable Hash where
-  sizeOf :: Hash -> Int
+instance Storable Ciphertext where
+  sizeOf :: Ciphertext -> Int
   sizeOf _ = fromIntegral cryptoHashSHA256Bytes
 
   --  Aligned on the size of 'cryptoHashSHA256Bytes'
-  alignment :: Hash -> Int
+  alignment :: Ciphertext -> Int
   alignment _ = 32
 
-  poke :: Ptr Hash -> Hash -> IO ()
-  poke ptr (Hash hashForeignPtr) =
+  poke :: Ptr Ciphertext -> Ciphertext -> IO ()
+  poke ptr (Ciphertext hashForeignPtr) =
     Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
       Foreign.copyArray (Foreign.castPtr ptr) hashPtr (fromIntegral cryptoHashSHA256Bytes)
 
-  peek :: Ptr Hash -> IO Hash
+  peek :: Ptr Ciphertext -> IO Ciphertext
   peek ptr = do
     hashfPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA256Bytes)
     Foreign.withForeignPtr hashfPtr $ \hashPtr ->
       Foreign.copyArray hashPtr (Foreign.castPtr ptr) (fromIntegral cryptoHashSHA256Bytes)
-    pure $ Hash hashfPtr
+    pure $ Ciphertext hashfPtr
 
 -- |
 --
 -- @since 0.0.1.0
-instance Display Hash where
+instance Display Ciphertext where
   displayBuilder = Builder.fromText . hashToHexText
 
 -- |
 --
 -- @since 0.0.1.0
-instance Show Hash where
+instance Show Ciphertext where
   show = BS.unpackChars . hashToHexByteString
+
+ciphertextFromHexByteString :: StrictByteString -> Either Text Ciphertext
+ciphertextFromHexByteString hexCiphertext = unsafeDupablePerformIO $
+  case Base16.decodeBase16Untyped hexHash of
+    Right bytestring ->
+      if BS.length bytestring >= fromIntegral cryptoSecretboxMACBytes
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
+          hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength -- The foreign pointer that will receive the hash data.
+          Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
+            -- We copy bytes from 'outsideHashPtr' to 'hashPtr'.
+            Foreign.copyArray hashPtr outsideHashPtr outsideHashLength
+          pure $
+            Right $
+              Hash
+                (fromIntegral @Int @CULLong outsideHashLength - fromIntegral @CSize @CULLong cryptoSecretboxMACBytes)
+                (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+        else pure $ Left $ Text.pack "Hash is too short"
+    Left msg -> pure $ Left msg
+-- ciphertextToBinary
+-- ciphertextToHexByteString
+-- ciphertextToHexText

@@ -18,9 +18,8 @@ jobs:
         uses: kleidukos/get-tested@v0.1.7.0
         with:
           cabal-file: sel/sel.cabal
-          ubuntu: true
-          macos: true
-          version: 0.1.6.0
+          ubuntu-version: "latest"
+          version: 0.1.7.0
   tests:
     name: ${{ matrix.ghc }} on ${{ matrix.os }}
     needs: generateMatrix

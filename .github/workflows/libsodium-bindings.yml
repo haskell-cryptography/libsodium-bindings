@@ -45,4 +45,9 @@ jobs:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
       - name: Build
-        run: cabal build libsodium-bindings
+        run: cabal build --ghc-options="-v3" libsodium-bindings
+      - name: Build with pkg-config
+        run: |
+          cabal clean
+          cabal configure -f use-pkg-config
+          cabal build --ghc-options="-v3" libsodium-bindings

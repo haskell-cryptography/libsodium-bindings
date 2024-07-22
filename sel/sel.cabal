@@ -15,7 +15,7 @@ maintainer:         The Haskell Cryptography contributors
 license:            BSD-3-Clause
 build-type:         Simple
 tested-with:
-  GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.4 || ==9.8.2
+  GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.6 || ==9.8.2
 
 extra-source-files:
   LICENSE

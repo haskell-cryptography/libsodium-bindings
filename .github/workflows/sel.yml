@@ -46,6 +46,13 @@ jobs:
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
 
       - name: Build
-        run: cabal build sel
+        run: cabal build --write-ghc-environment-files=always sel
       - name: Test
         run: cabal test sel
+      - name: Diff the expected and actual package APIs
+        uses: kleidukos/diff-package-api@v0.1.0.1
+        with:
+          package-name: sel
+          expected-interface: sel/test/package-api-${{ matrix.ghc }}.txt
+          ghc: ${{ matrix.ghc }}
+          version: 0.1.0.1 # This is the version of the print-api tool

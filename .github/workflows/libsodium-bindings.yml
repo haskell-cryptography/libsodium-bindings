@@ -18,13 +18,12 @@ jobs:
         uses: kleidukos/get-tested@0.1.7.1
         with:
           cabal-file: libsodium-bindings/libsodium-bindings.cabal
-          ubuntu-version: "latest"
-          macos-version: "latest"
           version: 0.1.7.0
-  tests:
-    name: ${{ matrix.ghc }} on ${{ matrix.os }}
+
+  ubuntu-tests:
+    name: ${{ matrix.ghc }} on ubuntu-latest
     needs: generateMatrix
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJSON(needs.generateMatrix.outputs.matrix) }}
     steps:
@@ -39,7 +38,6 @@ jobs:
           cabal-version: 'latest'
 
       - name: Install libsodium-dev on ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt install libsodium-dev
 
@@ -53,38 +51,66 @@ jobs:
           key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
 
-      - name: Build libsodium-bindings with homebrew
-        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Build libsodium-bindings
+        run: |
+          cabal build --project-file=cabal.pkg-config.project libsodium-bindings
+
+      - name: Build sel
+        run: |
+          cabal build --project-file=cabal.pkg-config.project sel
+
+      - name: Test sel
+        run: |
+          cabal test --project-file=cabal.pkg-config.project sel
+
+  macos-tests:
+    name: ${{ matrix.ghc }} on macos-latest
+    needs: generateMatrix
+    runs-on: macos-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.generateMatrix.outputs.matrix) }}
+    steps:
+      - name: Checkout base repo
+        uses: actions/checkout@v4
+
+      - name: Set up Haskell
+        id: setup-haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: 'latest'
+
+      - name: Freeze
+        run: cabal freeze --project-file=cabal.homebrew.config
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+
+      - name: Build libsodium-bindings
         run: |
           cabal build --project-file=cabal.homebrew.project --ghc-options="-v3" libsodium-bindings
 
-      - name: Build libsodium-bindings with homebrew
-        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Build sel
         run: |
-          cabal build --project-file=cabal.homebrew.project --ghc-options="-v3" sel
+          cabal build --project-file=cabal.homebrew.project sel
+
+      - name: Test sel
+        run: |
           cabal test --project-file=cabal.homebrew.project sel
-
-      - name: Build libsodium-bindings with pkg-config
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          cabal build --project-file=cabal.pkg-config.project --ghc-options="-v3" libsodium-bindings
-
-      - name: Build libsodium-bindings with pkg-config
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          cabal build --project-file=cabal.pkg-config.project --ghc-options="-v3" sel
-          cabal test --project-file=cabal.pkg-config.project sel
 
   api-stabiity:
     name: API Stability check
-    needs: tests
+    needs: [macos-tests, ubuntu-tests]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base repo
         uses: actions/checkout@v4
 
       - name: Install libsodium-dev on ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt install libsodium-dev
 
@@ -99,7 +125,7 @@ jobs:
         run: cabal freeze --project-file=cabal.pkg-config.project
 
       - name: Cache
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key: ${{ runner.os }}-ghc-${{ steps.setup-haskell.outputs.ghc-version }}-cabal-${{ hashFiles('**/plan.json') }}

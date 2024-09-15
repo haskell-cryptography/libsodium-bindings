@@ -24,12 +24,12 @@ extra-source-files:
 
 extra-doc-files:    CHANGELOG.md
 
-flag use-pkg-config
+flag pkg-config
   description: Use pkg-config to find Libsodium (macOS and linux only).
   default:     False
   manual:      True
 
-flag homebrew-libsodium
+flag homebrew
   description: Use Homebrew version of Libsodium (macOS only).
   default:     False
   manual:      True
@@ -43,13 +43,13 @@ common common
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
-    -fhide-source-paths -Wno-unused-do-bind -haddock
+    -fhide-source-paths -Wno-unused-do-bind
 
-  if (os(osx) && flag(homebrew-libsodium))
+  if (os(osx) && flag(homebrew))
     include-dirs:   /opt/local/include /opt/homebrew/include
     extra-lib-dirs: /user/local/opt/libsodium/lib /opt/homebrew/lib
 
-  if flag(use-pkg-config)
+  if flag(pkg-config)
     pkgconfig-depends: libsodium ==1.0.18 || ==1.0.19
 
   else

@@ -1,0 +1,4 @@
+import: ./cabal.project
+
+package libsodium-bindings
+  flags: +homebrew -pkg-config

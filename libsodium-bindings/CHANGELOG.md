@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 0.0.2.0 (2024-09-15)
+## 0.0.2.0
 
 * Add secret key Stream [#144](https://github.com/haskell-cryptography/libsodium-bindings/pull/144)
 

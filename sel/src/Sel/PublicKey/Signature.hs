@@ -1,8 +1,3 @@
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-
 -- |
 --
 -- Module: Sel.PublicKey.Signature
@@ -12,229 +7,240 @@
 -- Maintainer: The Haskell Cryptography Group
 -- Portability: GHC only
 module Sel.PublicKey.Signature
-  ( -- ** Introduction
+  ( -- * Public-key Signatures
     -- $introduction
-    PublicKey
-  , SecretKey
-  , SignedMessage
+
+    -- ** Public keys
+    -- $publicKeys
+    PublicKey -- ^ @since 0.0.1.0
+
+    -- ** Secret keys
+    -- $secretKeys
+  , SecretKey -- ^ @since 0.0.1.0
+  , publicKey -- ^ @since 0.0.3.0
+
+    -- *** ⚠️ Handle with care
+  , UnsafeSecretKey (..) -- ^ @since 0.0.3.0
+  , unsafeSecretKeyToHexByteString -- ^ @since 0.0.3.0
 
     -- ** Key Pair generation
-  , generateKeyPair
+  , KeyPair (..) -- ^ @since 0.0.3.0
+  , keyPair -- ^ @since 0.0.3.0
+
+    -- *** Deprecated functions
+  , generateKeyPair -- ^ @since 0.0.1.0
 
     -- ** Message Signing
-  , signMessage
-  , openMessage
+  , SignedMessage -- ^ @since 0.0.1.0
+  , signWith -- ^ @since 0.0.3.0
+  , signMessage -- ^ @since 0.0.1.0
 
-    -- ** Constructing and Deconstructing
-  , getSignature
-  , unsafeGetMessage
-  , mkSignature
+    -- *** Inspecting signed messages
+  , verifiedMessage -- ^ @since 0.0.3.0
+  , SignatureVerification (..) -- ^ @since 0.0.3.0
+  , signature -- ^ @since 0.0.3.0
+  , unverifiedMessage -- ^ @since 0.0.3.0
+
+    -- *** Detached signatures
+  , signedMessage -- ^ @since 0.0.3.0
+
+    -- *** Deprecated functions
+  , openMessage -- ^ @since 0.0.1.0
+  , getSignature -- ^ @since 0.0.1.0
+  , unsafeGetMessage -- ^ @since 0.0.1.0
+  , mkSignature -- ^ @since 0.0.1.0
+
+    -- ** Exceptions
+  , PublicKeyExtractionException (..) -- ^ @since 0.0.3.0
   )
 where
 
-import Control.Monad (void)
 import Data.ByteString (StrictByteString)
-import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
-import qualified Data.ByteString.Unsafe as ByteString
-import Foreign
-  ( ForeignPtr
-  , Ptr
-  , castPtr
-  , mallocBytes
-  , mallocForeignPtrBytes
-  , withForeignPtr
-  )
-import Foreign.C (CChar, CSize, CUChar, CULLong)
-import qualified Foreign.Marshal.Array as Foreign
-import qualified Foreign.Ptr as Foreign
-import GHC.IO.Handle.Text (memcpy)
+import Sel.ByteString.Codec (encodeHexByteString)
+import Sel.Internal.Scoped (use)
+import Sel.PublicKey.Internal.Signature
 import System.IO.Unsafe (unsafeDupablePerformIO)
-
-import LibSodium.Bindings.CryptoSign
-  ( cryptoSignBytes
-  , cryptoSignDetached
-  , cryptoSignKeyPair
-  , cryptoSignPublicKeyBytes
-  , cryptoSignSecretKeyBytes
-  , cryptoSignVerifyDetached
-  )
-import Sel.Internal
 
 -- $introduction
 --
--- Public-key Signatures work with a 'SecretKey' and 'PublicKey'
+-- Append a signature to any number of messages using a
+-- t'SecretKey'. Distribute a t'PublicKey' so third-parties can verify
+-- that the messages were signed with a particular t'SecretKey'.
 --
--- * The 'SecretKey' is used to append a signature to any number of messages. It must stay private;
--- * The 'PublicKey' is used by third-parties to to verify that the signature appended to a message was
--- issued by the creator of the public key. It must be distributed to third-parties.
+-- * The t'SecretKey' must stay private.
 --
--- Verifiers need to already know and ultimately trust a public key before messages signed
--- using it can be verified.
+-- * The t'PublicKey' is not a proof of identity, only control. Ensure
+-- that t'PublicKey's are trusted before verifying signatures.
 
--- |
+-- $publicKeys
 --
--- @since 0.0.1.0
-newtype PublicKey = PublicKey (ForeignPtr CUChar)
+-- Public keys are intended to be shared with any party or process
+-- which may need to verify that a given message was signed by a
+-- particular secret key.
+--
+-- === Serialization
+--
+-- * @'Sel.ByteString.Codec.encodeHexBytes' :: t'PublicKey' -> 'Data.ByteString.Base16.Types.Base16' 'StrictByteString'@ for @base16@ consumers
+-- * @'encodeHexByteString' :: t'PublicKey' -> 'StrictByteString'@ for @bytestring@ consumers
+--
+-- === Deserialization
+--
+-- * @'Sel.ByteString.Codec.decodeHexBytes' :: 'Data.ByteString.Base16.Types.Base16' 'StrictByteString' -> t'PublicKey'@ for @base16@ producers
+-- * @'Sel.ByteString.Codec.decodeHexByteString' :: 'StrictByteString' -> t'PublicKey'@ for @bytestring@ producers
+--
+-- === Human-readable output
+--
+-- * @'Data.Text.Display.display' :: t'PublicKey' -> 'Data.Text.Text'@, the hexadecimal encoding of the t'PublicKey' in a 'Data.Text.Text'
+-- * @'show' :: t'PublicKey' -> 'String'@, the hexadecimal encoding of the t'PublicKey' in a 'String'
 
--- |
+-- $secretKeys
 --
--- @since 0.0.1.0
-instance Eq PublicKey where
-  (PublicKey pk1) == (PublicKey pk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
+-- Secret keys are intended to be private and never shared without
+-- extreme care. Leaking a secret key allows anyone to impersonate the
+-- creator of that key and sign messages with their identity.
+--
+-- If a secret key is compromised, all messages signed by that key
+-- should be considered compromised.
+--
+-- Secret keys are compared for equality using the constant-time
+-- 'LibSodium.Bindings.Comparison.sodiumMemcmp' to avoid timing attacks.
+--
+-- === Deserialization
+--
+-- * @'Sel.ByteString.Codec.decodeHexBytes' :: 'Data.ByteString.Base16.Types.Base16' 'StrictByteString' -> t'SecretKey'@ for @base16@ producers
+-- * @'Sel.ByteString.Codec.decodeHexByteString' :: 'StrictByteString' -> t'SecretKey'@ for @bytestring@ producers
+--
+-- === ⚠️ Deserialization
+--
+-- __NB:__ Prefer being explicit with t'UnsafeSecretKey' to signal your
+-- intent to transmit sensitive key material.
+--
+-- * @'Sel.ByteString.Codec.encodeHexBytes' :: t'UnsafeSecretKey' -> 'Data.ByteString.Base16.Types.Base16' 'StrictByteString'@ for @base16@ consumers
+-- * @'encodeHexByteString' :: t'UnsafeSecretKey' -> 'StrictByteString'@ for @bytestring@ consumers
+-- * @'unsafeSecretKeyToHexByteString' :: t'SecretKey' -> 'StrictByteString'@, equivalent to @'encodeHexByteString' . t'UnsafeSecretKey'@
+--
+-- === ⚠️ Human-readable output
+--
+-- * @'Text.Display.display' :: t'UnsafeSecretKey' -> 'Data.Text.Text'@, the hexadecimal encoding of the wrapped t'SecretKey' in a 'Data.Text.Text'
+-- * @'show' :: t'UnsafeSecretKey' -> 'String'@, the hexadecimal encoding of the wrapped t'SecretKey' in a 'String'
 
--- |
+-- | Convert a t'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
 --
--- @since 0.0.1.0
-instance Ord PublicKey where
-  compare (PublicKey pk1) (PublicKey pk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
+-- ⚠️ Serializing secret keys is a security risk. Be careful how you
+-- use the output of this function.
+--
+-- @since 0.0.3.0
+unsafeSecretKeyToHexByteString :: SecretKey -> StrictByteString
+unsafeSecretKeyToHexByteString = encodeHexByteString . UnsafeSecretKey
 
--- |
+-- | Sign a message with a t'SecretKey'.
 --
--- @since 0.0.1.0
-newtype SecretKey = SecretKey (ForeignPtr CUChar)
+-- === Example
+--
+-- Given @messages :: 'Traversable' t => t 'StrictByteString'@ and
+-- @key :: t'SecretKey'@, we can sign each message with our key.
+--
+-- @
+--   traverse (signWith key) messages -- :: Traversable t => IO (t SignedMessage)
+--   -- or, equivalently
+--   for messages (signWith key)
+-- @
+--
+-- @since 0.0.3.0
+signWith :: SecretKey -> StrictByteString -> IO SignedMessage
+signWith secretKey message = use $ sign secretKey message
 
--- |
+-- | Sign a message with a t'SecretKey'.
 --
--- @since 0.0.1.0
-instance Eq SecretKey where
-  (SecretKey sk1) == (SecretKey sk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
-
--- |
+-- === Example
 --
--- @since 0.0.1.0
-instance Ord SecretKey where
-  compare (SecretKey sk1) (SecretKey sk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
-
--- |
+-- Given @keys :: 'Traversable' t => t t'SecretKey'@ and @message ::
+-- 'StrictByteString'@, we can sign our message with each key.
 --
--- @since 0.0.1.0
-data SignedMessage = SignedMessage
-  { messageLength :: CSize
-  , messageForeignPtr :: ForeignPtr CUChar
-  , signatureForeignPtr :: ForeignPtr CUChar
-  }
-
--- |
---
--- @since 0.0.1.0
-instance Eq SignedMessage where
-  (SignedMessage len1 msg1 sig1) == (SignedMessage len2 msg2 sig2) =
-    unsafeDupablePerformIO $ do
-      result1 <- foreignPtrEq msg1 msg2 len1
-      result2 <- foreignPtrEq sig1 sig2 cryptoSignBytes
-      return $ (len1 == len2) && result1 && result2
-
--- |
---
--- @since 0.0.1.0
-instance Ord SignedMessage where
-  compare (SignedMessage len1 msg1 sig1) (SignedMessage len2 msg2 sig2) =
-    unsafeDupablePerformIO $ do
-      result1 <- foreignPtrOrd msg1 msg2 len1
-      result2 <- foreignPtrOrd sig1 sig2 cryptoSignBytes
-      return $ compare len1 len2 <> result1 <> result2
-
--- | Generate a pair of public and secret key.
---
--- The length parameters used are 'cryptoSignPublicKeyBytes'
--- and 'cryptoSignSecretKeyBytes'.
---
--- @since 0.0.1.0
-generateKeyPair :: IO (PublicKey, SecretKey)
-generateKeyPair = do
-  publicKeyForeignPtr <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignPublicKeyBytes)
-  secretKeyForeignPtr <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignSecretKeyBytes)
-  withForeignPtr publicKeyForeignPtr $ \pkPtr ->
-    withForeignPtr secretKeyForeignPtr $ \skPtr ->
-      void $
-        cryptoSignKeyPair
-          pkPtr
-          skPtr
-  pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
-
--- | Sign a message.
+-- @
+--   traverse (signMessage message) keys -- :: Traversable t => IO (t 'SignedMessage')
+--   -- or, equivalently
+--   for keys (signMessage message)
+-- @
 --
 -- @since 0.0.1.0
 signMessage :: StrictByteString -> SecretKey -> IO SignedMessage
-signMessage message (SecretKey skFPtr) =
-  ByteString.unsafeUseAsCStringLen message $ \(cString, messageLength) -> do
-    let sigLength = fromIntegral @CSize @Int cryptoSignBytes
-    (messageForeignPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes messageLength
-    signatureForeignPtr <- Foreign.mallocForeignPtrBytes sigLength
-    withForeignPtr messageForeignPtr $ \messagePtr ->
-      withForeignPtr signatureForeignPtr $ \signaturePtr ->
-        withForeignPtr skFPtr $ \skPtr -> do
-          Foreign.copyArray messagePtr (Foreign.castPtr @CChar @CUChar cString) messageLength
-          void $
-            cryptoSignDetached
-              signaturePtr
-              Foreign.nullPtr -- Always of size 'cryptoSignBytes'
-              (castPtr @CChar @CUChar cString)
-              (fromIntegral @Int @CULLong messageLength)
-              skPtr
-    pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr
+signMessage = flip signWith
 
--- | Open a signed message with the signatory's public key.
--- The function returns 'Nothing' if there is a key mismatch.
+-- | Attempt to extract a the message from a t'SignedMessage',
+-- verifying that the message was signed with the t'SecretKey'
+-- corresponding to the given t'PublicKey'.
+--
+-- @since 0.0.3.0
+verifiedMessage :: SignedMessage -> PublicKey -> SignatureVerification StrictByteString
+verifiedMessage message key = unsafeDupablePerformIO . use $ open message key
+
+-- | Get the signature part of a t'SignedMessage'.
+--
+-- @since 0.0.3.0
+signature :: SignedMessage -> StrictByteString
+signature = unsafeDupablePerformIO . use . extractSignature
+
+-- | Get the message part of a t'SignedMessage' __without verifying the signature__.
+--
+-- @since 0.0.3.0
+unverifiedMessage :: SignedMessage -> StrictByteString
+unverifiedMessage = unsafeDupablePerformIO . use . extractUnverifiedMessage
+
+-- | Construct a signed message from a message and a detached signature.
+--
+-- @since 0.0.3.0
+signedMessage :: StrictByteString -> StrictByteString -> SignedMessage
+signedMessage messageBytes signatureBytes =
+  unsafeDupablePerformIO . use $
+    buildSignedMessage messageBytes signatureBytes
+
+{- Deprecated API -}
+
+{- KeyPair -}
+{-# DEPRECATED generateKeyPair "Prefer 'keyPair'" #-}
+
+-- | Generate a pair of public and secret key.
+--
+-- The length parameters used are 'LibSodium.Bindings.CryptoSign.cryptoSignPublicKeyBytes'
+-- and 'LibSodium.Bindings.CryptoSign.cryptoSignSecretKeyBytes'.
+--
+-- @since 0.0.1.0
+generateKeyPair :: IO (PublicKey, SecretKey)
+generateKeyPair = liftA2 (,) public secret <$> keyPair
+
+{- SignedMessage -}
+{-# DEPRECATED openMessage "Prefer 'verifiedMessage'" #-}
+{-# DEPRECATED getSignature "Prefer 'signature'" #-}
+{-# DEPRECATED unsafeGetMessage "Prefer 'unverifiedMessage'" #-}
+{-# DEPRECATED mkSignature "Prefer 'signedMessage'" #-}
+
+-- | Attempt to extract a the message from a t'SignedMessage',
+-- verifying that the message was signed with the t'SecretKey'
+-- corresponding to the given t'PublicKey', yielding `Nothing` if the
+-- key is not applicable.
 --
 -- @since 0.0.1.0
 openMessage :: SignedMessage -> PublicKey -> Maybe StrictByteString
-openMessage SignedMessage{messageLength, messageForeignPtr, signatureForeignPtr} (PublicKey pkForeignPtr) = unsafeDupablePerformIO $
-  withForeignPtr pkForeignPtr $ \publicKeyPtr ->
-    withForeignPtr signatureForeignPtr $ \signaturePtr -> do
-      withForeignPtr messageForeignPtr $ \messagePtr -> do
-        result <-
-          cryptoSignVerifyDetached
-            signaturePtr
-            messagePtr
-            (fromIntegral @CSize @CULLong messageLength)
-            publicKeyPtr
-        case result of
-          (-1) -> pure Nothing
-          _ -> do
-            bsPtr <- mallocBytes (fromIntegral messageLength)
-            memcpy bsPtr (castPtr messagePtr) messageLength
-            Just <$> unsafePackMallocCStringLen (castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
+openMessage message key =
+  case verifiedMessage message key of
+    Valid msg -> Just msg
+    Invalid -> Nothing
 
--- | Get the signature part of a 'SignedMessage'.
---
--- @since 0.0.1.0
-getSignature :: SignedMessage -> StrictByteString
-getSignature SignedMessage{signatureForeignPtr} = unsafeDupablePerformIO $
-  withForeignPtr signatureForeignPtr $ \signaturePtr -> do
-    bsPtr <- Foreign.mallocBytes (fromIntegral cryptoSignBytes)
-    memcpy bsPtr signaturePtr cryptoSignBytes
-    unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral cryptoSignBytes)
-
--- | Get the message part of a 'SignedMessage' __without verifying the signature__.
+-- | Get the message part of a t'SignedMessage' __without verifying the signature__.
 --
 -- @since 0.0.1.0
 unsafeGetMessage :: SignedMessage -> StrictByteString
-unsafeGetMessage SignedMessage{messageLength, messageForeignPtr} = unsafeDupablePerformIO $
-  withForeignPtr messageForeignPtr $ \messagePtr -> do
-    bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
-    memcpy bsPtr messagePtr messageLength
-    unsafePackMallocCStringLen (Foreign.castPtr bsPtr :: Ptr CChar, fromIntegral messageLength)
+unsafeGetMessage = unverifiedMessage
 
--- | Combine a message and a signature into a 'SignedMessage'.
+-- | Construct a signed message from a message and a detached signature.
 --
 -- @since 0.0.1.0
 mkSignature :: StrictByteString -> StrictByteString -> SignedMessage
-mkSignature message signature = unsafeDupablePerformIO $
-  ByteString.unsafeUseAsCStringLen message $ \(messageStringPtr, messageLength) ->
-    ByteString.unsafeUseAsCStringLen signature $ \(signatureStringPtr, _) -> do
-      (messageForeignPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes messageLength
-      signatureForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSignBytes)
-      withForeignPtr messageForeignPtr $ \messagePtr ->
-        withForeignPtr signatureForeignPtr $ \signaturePtr -> do
-          Foreign.copyArray messagePtr (Foreign.castPtr messageStringPtr) messageLength
-          Foreign.copyArray signaturePtr (Foreign.castPtr signatureStringPtr) (fromIntegral cryptoSignBytes)
-      pure $ SignedMessage (fromIntegral @Int @CSize messageLength) messageForeignPtr signatureForeignPtr
+mkSignature = signedMessage
+
+-- | Get the signature part of a t'SignedMessage'.
+--
+-- @since 0.0.1.0
+getSignature :: SignedMessage -> StrictByteString
+getSignature = signature

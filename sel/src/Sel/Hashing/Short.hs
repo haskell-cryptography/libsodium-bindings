@@ -55,7 +55,6 @@ import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C (CSize, CUChar, CULLong)
 import GHC.Exception (Exception)
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import qualified Data.Base16.Types as Base16
@@ -66,7 +65,8 @@ import LibSodium.Bindings.ShortHashing
   , cryptoShortHashX24
   , cryptoShortHashX24KeyGen
   )
-import Sel.Internal
+import Sel.Internal.Instances
+import Sel.Internal.FFI (memcpy)
 
 -- $introduction
 --

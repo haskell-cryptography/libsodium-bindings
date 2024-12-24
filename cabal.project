@@ -5,9 +5,12 @@ packages:
 package libsodium-bindings
   ghc-options: -Werror
 
+package sel
+  ghc-options: -Werror
+
 package *
   ghc-options: -haddock
-  documentation: True
 
 test-show-details: direct
 tests: True
+documentation: True

@@ -67,7 +67,7 @@ import Foreign hiding (void)
 import Foreign.C
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import Sel.Internal
+import Sel.Internal.Instances
 
 import qualified Data.Base16.Types as Base16
 import GHC.Generics
@@ -95,13 +95,13 @@ instance Display PasswordHash where
 instance Eq PasswordHash where
   (PasswordHash ph1) == (PasswordHash ph2) =
     unsafeDupablePerformIO $
-      foreignPtrEq ph1 ph2 cryptoPWHashStrBytes
+      foreignPtrEq (Foreign.castForeignPtr ph1) (Foreign.castForeignPtr ph2) cryptoPWHashStrBytes
 
 -- | @since 0.0.1.0
 instance Ord PasswordHash where
   (PasswordHash ph1) `compare` (PasswordHash ph2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd ph1 ph2 cryptoPWHashStrBytes
+      foreignPtrOrd (Foreign.castForeignPtr ph1) (Foreign.castForeignPtr ph2) cryptoPWHashStrBytes
 
 -- | @since 0.0.1.0
 instance Show PasswordHash where

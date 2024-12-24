@@ -70,7 +70,7 @@ import LibSodium.Bindings.Secretbox
   , cryptoSecretboxOpenEasy
   )
 import LibSodium.Bindings.SecureMemory
-import Sel.Internal
+import Sel.Internal.Instances
 
 -- $introduction
 -- "Authenticated Encryption" uses a secret key along with a single-use number

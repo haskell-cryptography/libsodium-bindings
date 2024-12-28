@@ -45,6 +45,9 @@ library
   hs-source-dirs:  src
   exposed-modules:
     Sel
+    Sel.ByteString.Codec
+    Sel.ByteString.Codec.KeyMaterialDecodeError
+    Sel.ByteString.Codec.KeyPointer
     Sel.Hashing
     Sel.Hashing.Password
     Sel.Hashing.SHA256

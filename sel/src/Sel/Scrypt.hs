@@ -55,13 +55,19 @@ newtype ScryptHash = ScryptHash (ForeignPtr CChar)
 instance Eq ScryptHash where
   (ScryptHash sh1) == (ScryptHash sh2) =
     unsafeDupablePerformIO $
-      foreignPtrEq sh1 sh2 cryptoPWHashScryptSalsa208SHA256StrBytes
+      foreignPtrEq
+        (Foreign.castForeignPtr @CChar @CUChar sh1)
+        (Foreign.castForeignPtr @CChar @CUChar sh2)
+        cryptoPWHashScryptSalsa208SHA256StrBytes
 
 -- | @since 0.0.1.0
 instance Ord ScryptHash where
   compare (ScryptHash sh1) (ScryptHash sh2) =
     unsafeDupablePerformIO $
-      foreignPtrOrd sh1 sh2 cryptoPWHashScryptSalsa208SHA256StrBytes
+      foreignPtrOrd
+        (Foreign.castForeignPtr @CChar @CUChar sh1)
+        (Foreign.castForeignPtr @CChar @CUChar sh2)
+        cryptoPWHashScryptSalsa208SHA256StrBytes
 
 -- | @since 0.0.1.0
 instance Show ScryptHash where

@@ -53,9 +53,8 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
-import Foreign.C (CSize, CUChar, CULLong)
+import Foreign.C (CChar, CSize, CUChar, CULLong)
 import GHC.Exception (Exception)
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import qualified Data.Base16.Types as Base16
@@ -250,7 +249,10 @@ binaryToShortHashKey binaryKey =
       BS.unsafeUseAsCString binaryKey $ \cString -> do
         shortHashKeyFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoShortHashSipHashX24KeyBytes)
         Foreign.withForeignPtr shortHashKeyFPtr $ \shortHashKeyPtr ->
-          memcpy shortHashKeyPtr (Foreign.castPtr cString) cryptoShortHashSipHashX24KeyBytes
+          Foreign.copyBytes
+            shortHashKeyPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoShortHashSipHashX24KeyBytes)
         pure $ Just $ ShortHashKey shortHashKeyFPtr
 
 -- | Convert a strict hexadecimal-encoded 'Text' to a 'ShortHashKey'.

@@ -57,7 +57,6 @@ import Data.Word (Word8)
 import Foreign (ForeignPtr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import LibSodium.Bindings.Random (randombytesBuf)
@@ -70,7 +69,7 @@ import LibSodium.Bindings.Secretbox
   , cryptoSecretboxOpenEasy
   )
 import LibSodium.Bindings.SecureMemory
-import Sel.Internal
+import Sel.Internal.Instances
 
 -- $introduction
 -- "Authenticated Encryption" uses a secret key along with a single-use number
@@ -413,7 +412,7 @@ decrypt Hash{messageLength, hashForeignPtr} (SecretKey secretKeyForeignPtr) (Non
           (-1) -> pure Nothing
           _ -> do
             bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
-            memcpy bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLength)
+            Foreign.copyBytes bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLength)
             Just
               <$> BS.unsafePackMallocCStringLen
                 (Foreign.castPtr @CChar bsPtr, fromIntegral messageLength)

@@ -66,6 +66,7 @@ import LibSodium.Bindings.GenericHashing
   , cryptoGenericHashUpdate
   )
 import Sel.Internal
+import Sel.Internal.Instances
 
 -- $introduction
 --

@@ -59,6 +59,7 @@ import Control.Monad.IO.Class (MonadIO (liftIO))
 import qualified Data.Base16.Types as Base16
 import Data.Kind (Type)
 import Sel.Internal
+import Sel.Internal.Instances
 
 -- $usage
 --

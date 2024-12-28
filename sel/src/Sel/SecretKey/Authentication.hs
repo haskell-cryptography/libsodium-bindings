@@ -56,7 +56,7 @@ import LibSodium.Bindings.CryptoAuth
   , cryptoAuthVerify
   )
 import LibSodium.Bindings.SecureMemory
-import Sel.Internal
+import Sel.Internal.Instances
 
 -- $introduction
 -- The 'authenticate' function computes an authentication tag for a message and a secret key,

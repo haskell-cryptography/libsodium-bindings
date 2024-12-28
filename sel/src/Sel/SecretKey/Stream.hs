@@ -104,7 +104,8 @@ import LibSodium.Bindings.SecretStream
   , cryptoSecretStreamXChaCha20Poly1305TagRekey
   )
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumMalloc)
-import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
+import Sel.Internal
+import Sel.Internal.Instances
 
 -- $introduction
 -- This high-level API encrypts a sequence of messages, or a single message split into an arbitrary number of chunks, using a secret key, with the following properties:

@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               sel
-version:            0.0.2.0
+version:            0.0.3.0
 category:           Cryptography
 synopsis:           Cryptography for the casual user
 description:
@@ -45,6 +45,9 @@ library
   hs-source-dirs:  src
   exposed-modules:
     Sel
+    Sel.ByteString.Codec
+    Sel.ByteString.Codec.KeyMaterialDecodeError
+    Sel.ByteString.Codec.KeyPointer
     Sel.Hashing
     Sel.Hashing.Password
     Sel.Hashing.SHA256
@@ -54,6 +57,7 @@ library
     Sel.HMAC.SHA256
     Sel.HMAC.SHA512
     Sel.HMAC.SHA512_256
+    Sel.Key
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
@@ -62,7 +66,13 @@ library
     Sel.SecretKey.Cipher
     Sel.SecretKey.Stream
 
-  other-modules:   Sel.Internal
+  other-modules:
+    Sel.Internal
+    Sel.Internal.Instances
+    Sel.Internal.Scoped
+    Sel.Internal.Scoped.Foreign
+    Sel.PublicKey.Internal.Signature
+
   build-depends:
     , base                >=4.14     && <5
     , base16              ^>=1.0
@@ -70,6 +80,7 @@ library
     , libsodium-bindings  ^>=0.0.2
     , text                >=1.2      && <2.2
     , text-display        ^>=0.0
+    , transformers        ^>=0.6.0
 
 test-suite sel-tests
   import:         common

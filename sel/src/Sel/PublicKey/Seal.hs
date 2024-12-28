@@ -38,11 +38,21 @@ import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Unsafe as BS
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
-import LibSodium.Bindings.SealedBoxes (cryptoBoxSeal, cryptoBoxSealOpen, cryptoBoxSealbytes)
-import Sel.PublicKey.Cipher (CipherText (CipherText), EncryptionError (..), KeyPairGenerationException, PublicKey (PublicKey), SecretKey (..), newKeyPair)
+import LibSodium.Bindings.SealedBoxes
+  ( cryptoBoxSeal
+  , cryptoBoxSealOpen
+  , cryptoBoxSealbytes
+  )
+import Sel.PublicKey.Cipher
+  ( CipherText (CipherText)
+  , EncryptionError (..)
+  , KeyPairGenerationException
+  , PublicKey (PublicKey)
+  , SecretKey (..)
+  , newKeyPair
+  )
 
 -- $introduction
 -- Ephemeral authenticated encryption allows to anonymously send message to
@@ -133,7 +143,7 @@ open
             (-1) -> pure Nothing
             _ -> do
               bsPtr <- Foreign.mallocBytes (fromIntegral messageLen)
-              memcpy bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLen)
+              Foreign.copyBytes bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLen)
               Just
                 <$> BS.unsafePackMallocCStringLen
-                  (Foreign.castPtr @CChar bsPtr, fromIntegral messageLen)
+                  (Foreign.castPtr @CUChar @CChar bsPtr, fromIntegral messageLen)

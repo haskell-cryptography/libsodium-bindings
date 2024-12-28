@@ -57,6 +57,7 @@ library
     Sel.HMAC.SHA256
     Sel.HMAC.SHA512
     Sel.HMAC.SHA512_256
+    Sel.Key
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
@@ -65,12 +66,13 @@ library
     Sel.SecretKey.Cipher
     Sel.SecretKey.Stream
 
-  other-modules:   Sel.Internal
   other-modules:
     Sel.Internal
     Sel.Internal.Instances
     Sel.Internal.Scoped
     Sel.Internal.Scoped.Foreign
+    Sel.PublicKey.Internal.Signature
+
   build-depends:
     , base                >=4.14     && <5
     , base16              ^>=1.0

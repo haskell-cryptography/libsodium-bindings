@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Test.PublicKey.Signature where
@@ -8,52 +9,81 @@ import Test.Tasty.HUnit
 import TestUtils
 
 spec :: TestTree
-spec =
-  testGroup
-    "Signing tests"
-    [ testCase "Sign a message with a public key and decrypt it with a secret key" testSignMessage
-    , testCase "Extract the public key from a secret key" testExtractPublicKey
-    , testCase "Round-trip secret key serialisation" testSecretKeySerdeRoundtrip
-    , testCase "Round-trip public key serialisation" testPublicKeySerdeRoundtrip
-    ]
+spec = withKeyPair $ \kp ->
+  testGroup "Signature" $
+    sequence [serdes, signing] kp
 
-testSecretKeySerdeRoundtrip :: Assertion
-testSecretKeySerdeRoundtrip = do
-  (_, secretKey) <- generateKeyPair
+serdes :: IO KeyPair -> TestTree
+serdes kp =
+  testGroup "Key pair serdes" $
+    keyPairCases
+      kp
+      [ ("Public key round-trip", publicKeyRoundTrip)
+      , ("Secret key round-trip", secretKeyRoundTrip)
+      , ("Public key extraction", publicKeyExtraction)
+      ]
 
-  let secretKeyByteString = unsafeSecretKeyToHexByteString secretKey
-  reconstructedSecretKey <- assertRight $ secretKeyFromHexByteString secretKeyByteString
+signing :: IO KeyPair -> TestTree
+signing kp =
+  testGroup "Message signing" $
+    keyPairCases
+      kp
+      [ ("Sign and open with the same key", signAndOpenSelf)
+      , ("Sign and open with another key", signAndOpenOther)
+      , ("Detached signature round-trip", signRoundTrip)
+      ]
+
+keyPairCases :: IO KeyPair -> [(String, KeyPair -> Assertion)] -> [TestTree]
+keyPairCases = fmap . uncurry . usingKeyPair
+
+withKeyPair :: (IO KeyPair -> TestTree) -> TestTree
+withKeyPair = withResource keyPair mempty
+
+usingKeyPair :: IO KeyPair -> String -> (KeyPair -> Assertion) -> TestTree
+usingKeyPair kp testName test = testCase testName (test =<< kp)
+
+publicKeyRoundTrip :: KeyPair -> Assertion
+publicKeyRoundTrip kp = do
+  let encoded = encodePublicKeyHexByteString kp.public
+  decoded <- assertRight $ decodePublicKeyHexByteString encoded
+  assertEqual "Public key hex decode" kp.public decoded
+
+secretKeyRoundTrip :: KeyPair -> Assertion
+secretKeyRoundTrip kp = do
+  let encoded = encodeSecretKeyHexByteString $ UnsafeSecretKey kp.secret
+  decoded <- assertRight $ decodeSecretKeyHexByteString encoded
+  assertEqual "Secret key hex decode" kp.secret decoded
+
+publicKeyExtraction :: KeyPair -> Assertion
+publicKeyExtraction kp =
+  assertEqual "Public key extraction" kp.public (publicKey kp.secret)
+
+signAndOpenSelf :: KeyPair -> Assertion
+signAndOpenSelf kp = do
+  let message = "SIGNED"
+  signed <- signWith kp.secret message
+  let result = verifiedMessage signed kp.public
   assertEqual
-    "Secret key cannot be read from hex bytestring"
-    secretKey
-    reconstructedSecretKey
-
-testPublicKeySerdeRoundtrip :: Assertion
-testPublicKeySerdeRoundtrip = do
-  (publicKey, _) <- generateKeyPair
-
-  let publicKeyByteString = publicKeyToHexByteString publicKey
-  reconstructedPublicKey <- assertRight $ publicKeyFromHexByteString publicKeyByteString
-  assertEqual
-    "Public key cannot be read from hex bytestring"
-    publicKey
-    reconstructedPublicKey
-
-testSignMessage :: Assertion
-testSignMessage = do
-  (publicKey, secretKey) <- generateKeyPair
-  signedMessage <- signMessage "hello hello" secretKey
-  let result = openMessage signedMessage publicKey
-  assertEqual
-    "Message is well-opened with the correct key"
-    (Just "hello hello")
+    "Open self-signed message"
+    (Valid message)
     result
 
-testExtractPublicKey :: Assertion
-testExtractPublicKey = do
-  (publicKey, secretKey) <- generateKeyPair
-  let extractedPublicKey' = publicKeyFromSecretKey secretKey
+signAndOpenOther :: KeyPair -> Assertion
+signAndOpenOther kp = do
+  let message = "SIGNED"
+  other <- keyPair
+  signed <- signWith kp.secret message
+  let result = verifiedMessage signed other.public
   assertEqual
-    "Public key extracted from Secret Key is not correct"
-    publicKey
-    extractedPublicKey'
+    "Fail to open with another key"
+    Invalid
+    result
+
+signRoundTrip :: KeyPair -> Assertion
+signRoundTrip kp = do
+  let message = "SIGNED"
+  signed <- signWith kp.secret message
+  let unverified = unverifiedMessage signed
+      detachedSignature = signature signed
+      reconstructed = signedMessage unverified detachedSignature
+  assertEqual "Round trip" signed reconstructed

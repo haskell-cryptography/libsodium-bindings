@@ -21,13 +21,13 @@ import Foreign (ForeignPtr, Ptr)
 import Foreign qualified
 import Foreign.C (CSize, CUChar, throwErrno)
 import Foreign.C.Types (CChar)
-import LibSodium.Bindings.Comparison (sodiumMemcmp)
+import LibSodium.Bindings.Comparison (sodiumCompare, sodiumMemcmp)
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumFree, sodiumMalloc)
 import Sel.Internal.Scoped
 import Sel.Internal.Scoped.Foreign
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
--- | Compare the contents of two byte arrays in constant time.
+-- | Compare the contents of two byte arrays for equality in constant time.
 --
 -- /See:/ [Constant-time test for equality](https://doc.libsodium.org/helpers#constant-time-test-for-equality)
 --
@@ -50,6 +50,16 @@ foreignPtrOrd p q size =
       <$> foreignPtr (coerce p)
       <*> foreignPtr (coerce q)
       <*> pure (fromIntegral size)
+
+-- | Lexicographically compare the contents of two byte arrays in constant time.
+--
+-- /See:/ [Comparing large numbers](https://libsodium.gitbook.io/doc/helpers#comparing-large-numbers)
+--
+-- @since 0.0.3.0
+foreignPtrOrdConstantTime :: ForeignPtr CUChar -> ForeignPtr CUChar -> CSize -> Ordering
+foreignPtrOrdConstantTime p q size =
+  unsafeDupablePerformIO . fmap (`compare` 0) . useM $
+    sodiumCompare <$> foreignPtr p <*> foreignPtr q <*> pure size
 
 -- | Compare two byte arrays for lexicographic equality.
 --

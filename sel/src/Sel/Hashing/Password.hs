@@ -94,20 +94,18 @@ instance Display PasswordHash where
 -- | @since 0.0.1.0
 instance Eq PasswordHash where
   (PasswordHash ph1) == (PasswordHash ph2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq
-        (Foreign.castForeignPtr @CChar @CUChar ph1)
-        (Foreign.castForeignPtr @CChar @CUChar ph2)
-        cryptoPWHashStrBytes
+    foreignPtrEq
+      (Foreign.castForeignPtr @CChar @CUChar ph1)
+      (Foreign.castForeignPtr @CChar @CUChar ph2)
+      cryptoPWHashStrBytes
 
 -- | @since 0.0.1.0
 instance Ord PasswordHash where
   (PasswordHash ph1) `compare` (PasswordHash ph2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd
-        (Foreign.castForeignPtr @CChar @CUChar ph1)
-        (Foreign.castForeignPtr @CChar @CUChar ph2)
-        cryptoPWHashStrBytes
+    foreignPtrOrd
+      (Foreign.castForeignPtr @CChar @CUChar ph1)
+      (Foreign.castForeignPtr @CChar @CUChar ph2)
+      cryptoPWHashStrBytes
 
 -- | @since 0.0.1.0
 instance Show PasswordHash where

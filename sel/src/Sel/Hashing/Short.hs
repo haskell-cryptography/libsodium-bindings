@@ -89,16 +89,14 @@ newtype ShortHash = ShortHash (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq ShortHash where
   (ShortHash sh1) == (ShortHash sh2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq sh1 sh2 cryptoShortHashSipHashX24Bytes
+    foreignPtrEq sh1 sh2 cryptoShortHashSipHashX24Bytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord ShortHash where
   compare (ShortHash sh1) (ShortHash sh2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd sh1 sh2 cryptoShortHashSipHashX24Bytes
+    foreignPtrOrd sh1 sh2 cryptoShortHashSipHashX24Bytes
 
 -- |
 --
@@ -188,16 +186,14 @@ newtype ShortHashKey = ShortHashKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq ShortHashKey where
   (ShortHashKey sh1) == (ShortHashKey sh2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq sh1 sh2 cryptoShortHashSipHashX24Bytes
+    foreignPtrEq sh1 sh2 cryptoShortHashSipHashX24Bytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord ShortHashKey where
   compare (ShortHashKey sh1) (ShortHashKey sh2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd sh1 sh2 cryptoShortHashSipHashX24Bytes
+    foreignPtrOrd sh1 sh2 cryptoShortHashSipHashX24Bytes
 
 -- |
 --

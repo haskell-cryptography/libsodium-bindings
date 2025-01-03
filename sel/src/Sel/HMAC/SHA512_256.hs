@@ -79,7 +79,7 @@ import LibSodium.Bindings.SHA2
   , cryptoAuthHMACSHA512256Verify
   )
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumMalloc)
-import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
+import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrEqConstantTime, foreignPtrOrd)
 
 -- $introduction
 -- The 'authenticate' function computes an authentication tag for a message and a secret key,
@@ -242,16 +242,14 @@ newtype AuthenticationKey = AuthenticationKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq AuthenticationKey where
   (AuthenticationKey hk1) == (AuthenticationKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthHMACSHA512256KeyBytes
+    foreignPtrEqConstantTime hk1 hk2 cryptoAuthHMACSHA512256KeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord AuthenticationKey where
   compare (AuthenticationKey hk1) (AuthenticationKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA512256KeyBytes
+    foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA512256KeyBytes
 
 -- | > show authenticationKey == "[REDACTED]"
 --
@@ -341,16 +339,14 @@ newtype AuthenticationTag = AuthenticationTag (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq AuthenticationTag where
   (AuthenticationTag hk1) == (AuthenticationTag hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthHMACSHA512256Bytes
+    foreignPtrEq hk1 hk2 cryptoAuthHMACSHA512256Bytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord AuthenticationTag where
   compare (AuthenticationTag hk1) (AuthenticationTag hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA512256Bytes
+    foreignPtrOrd hk1 hk2 cryptoAuthHMACSHA512256Bytes
 
 -- |
 --

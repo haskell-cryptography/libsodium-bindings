@@ -314,14 +314,12 @@ newtype SecretKey = SecretKey (ForeignPtr CUChar)
 -- | @since 0.0.1.0
 instance Eq SecretKey where
   (SecretKey hk1) == (SecretKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoSecretStreamXChaCha20Poly1305KeyBytes
+    foreignPtrEq hk1 hk2 cryptoSecretStreamXChaCha20Poly1305KeyBytes
 
 -- | @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey hk1) (SecretKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoSecretStreamXChaCha20Poly1305KeyBytes
+    foreignPtrOrd hk1 hk2 cryptoSecretStreamXChaCha20Poly1305KeyBytes
 
 -- | > show secretKey == "[REDACTED]"
 --
@@ -403,14 +401,12 @@ instance Display Header where
 -- | @since 0.0.1.0
 instance Eq Header where
   (Header header1) == (Header header2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+    foreignPtrEq header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
 
 -- | @since 0.0.1.0
 instance Ord Header where
   compare (Header header1) (Header header2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+    foreignPtrOrd header1 header2 cryptoSecretStreamXChaCha20Poly1305HeaderBytes
 
 -- | Convert a 'Header' to a hexadecimal-encoded 'StrictByteString'
 --
@@ -485,20 +481,28 @@ data CipherText = CipherText
 -- @since 0.0.1.0
 instance Eq CipherText where
   (CipherText cipherTextLength1 h1) == (CipherText cipherTextLength2 h2) =
-    unsafeDupablePerformIO $ do
-      result1 <-
+    let
+      textLength = cipherTextLength1 == cipherTextLength2
+      content =
         foreignPtrEq
           h1
           h2
           (fromIntegral cipherTextLength1 + cryptoSecretStreamXChaCha20Poly1305ABytes)
-      pure $ cipherTextLength1 == cipherTextLength2 && result1
+     in
+      textLength && content
 
 -- | @since 0.0.1.0
 instance Ord CipherText where
   compare (CipherText cipherTextLength1 c1) (CipherText cipherTextLength2 c2) =
-    unsafeDupablePerformIO $ do
-      result1 <- foreignPtrOrd c1 c2 (fromIntegral cipherTextLength1 + cryptoSecretStreamXChaCha20Poly1305ABytes)
-      pure $ compare cipherTextLength1 cipherTextLength2 <> result1
+    let
+      textLength = compare cipherTextLength1 cipherTextLength2
+      content =
+        foreignPtrOrd
+          c1
+          c2
+          (fromIntegral cipherTextLength1 + cryptoSecretStreamXChaCha20Poly1305ABytes)
+     in
+      textLength <> content
 
 -- | @since 0.0.1.0
 instance Display CipherText where

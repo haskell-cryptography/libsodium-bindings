@@ -81,16 +81,14 @@ newtype PublicKey = PublicKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq PublicKey where
   (PublicKey pk1) == (PublicKey pk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
+    foreignPtrEq pk1 pk2 cryptoSignPublicKeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord PublicKey where
   compare (PublicKey pk1) (PublicKey pk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
+    foreignPtrOrd pk1 pk2 cryptoSignPublicKeyBytes
 
 -- |
 --
@@ -102,16 +100,14 @@ newtype SecretKey = SecretKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq SecretKey where
   (SecretKey sk1) == (SecretKey sk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq sk1 sk2 cryptoSignSecretKeyBytes
+    foreignPtrEqConstantTime sk1 sk2 cryptoSignSecretKeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey sk1) (SecretKey sk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
+    foreignPtrOrd sk1 sk2 cryptoSignSecretKeyBytes
 
 -- |
 --
@@ -127,20 +123,24 @@ data SignedMessage = SignedMessage
 -- @since 0.0.1.0
 instance Eq SignedMessage where
   (SignedMessage len1 msg1 sig1) == (SignedMessage len2 msg2 sig2) =
-    unsafeDupablePerformIO $ do
-      result1 <- foreignPtrEq msg1 msg2 len1
-      result2 <- foreignPtrEq sig1 sig2 cryptoSignBytes
-      return $ (len1 == len2) && result1 && result2
+    let
+      messageLength = len1 == len2
+      msg1Eq = foreignPtrEq msg1 msg2 len1
+      msg2Eq = foreignPtrEq sig1 sig2 cryptoSignBytes
+     in
+      messageLength && msg1Eq && msg2Eq
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord SignedMessage where
   compare (SignedMessage len1 msg1 sig1) (SignedMessage len2 msg2 sig2) =
-    unsafeDupablePerformIO $ do
-      result1 <- foreignPtrOrd msg1 msg2 len1
-      result2 <- foreignPtrOrd sig1 sig2 cryptoSignBytes
-      return $ compare len1 len2 <> result1 <> result2
+    let
+      messageLength = compare len1 len2
+      msg1Ord = foreignPtrOrd msg1 msg2 len1
+      msg2Ord = foreignPtrOrd sig1 sig2 cryptoSignBytes
+     in
+      messageLength <> msg1Ord <> msg2Ord
 
 -- | Generate a pair of public and secret key.
 --

@@ -38,7 +38,6 @@ import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.Scrypt
 import Sel.Internal
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- $introduction
 --
@@ -54,20 +53,18 @@ newtype ScryptHash = ScryptHash (ForeignPtr CChar)
 -- | @since 0.0.1.0
 instance Eq ScryptHash where
   (ScryptHash sh1) == (ScryptHash sh2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq
-        (Foreign.castForeignPtr @CChar @CUChar sh1)
-        (Foreign.castForeignPtr @CChar @CUChar sh2)
-        cryptoPWHashScryptSalsa208SHA256StrBytes
+    foreignPtrEq
+      (Foreign.castForeignPtr @CChar @CUChar sh1)
+      (Foreign.castForeignPtr @CChar @CUChar sh2)
+      cryptoPWHashScryptSalsa208SHA256StrBytes
 
 -- | @since 0.0.1.0
 instance Ord ScryptHash where
   compare (ScryptHash sh1) (ScryptHash sh2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd
-        (Foreign.castForeignPtr @CChar @CUChar sh1)
-        (Foreign.castForeignPtr @CChar @CUChar sh2)
-        cryptoPWHashScryptSalsa208SHA256StrBytes
+    foreignPtrOrd
+      (Foreign.castForeignPtr @CChar @CUChar sh1)
+      (Foreign.castForeignPtr @CChar @CUChar sh2)
+      cryptoPWHashScryptSalsa208SHA256StrBytes
 
 -- | @since 0.0.1.0
 instance Show ScryptHash where

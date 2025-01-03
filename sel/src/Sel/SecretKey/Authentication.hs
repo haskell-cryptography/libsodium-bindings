@@ -145,16 +145,14 @@ newtype AuthenticationKey = AuthenticationKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq AuthenticationKey where
   (AuthenticationKey hk1) == (AuthenticationKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthKeyBytes
+    foreignPtrEqConstantTime hk1 hk2 cryptoAuthKeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord AuthenticationKey where
   compare (AuthenticationKey hk1) (AuthenticationKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthKeyBytes
+    foreignPtrOrd hk1 hk2 cryptoAuthKeyBytes
 
 -- | > show authenticationKey == "[REDACTED]"
 --
@@ -233,16 +231,14 @@ newtype AuthenticationTag = AuthenticationTag (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq AuthenticationTag where
   (AuthenticationTag hk1) == (AuthenticationTag hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoAuthBytes
+    foreignPtrEqConstantTime hk1 hk2 cryptoAuthBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord AuthenticationTag where
   compare (AuthenticationTag hk1) (AuthenticationTag hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoAuthBytes
+    foreignPtrOrd hk1 hk2 cryptoAuthBytes
 
 -- |
 --

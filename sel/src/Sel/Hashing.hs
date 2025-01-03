@@ -49,7 +49,6 @@ import qualified Foreign
 import Foreign.C (CChar, CInt, CSize, CUChar, CULLong)
 import Foreign.ForeignPtr
 import Foreign.Storable
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Base16.Types as Base16
@@ -94,13 +93,11 @@ newtype HashKey = HashKey (ForeignPtr CUChar)
 
 instance Eq HashKey where
   (HashKey hk1) == (HashKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoGenericHashKeyBytes
+    foreignPtrEq hk1 hk2 cryptoGenericHashKeyBytes
 
 instance Ord HashKey where
   compare (HashKey hk1) (HashKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoGenericHashKeyBytes
+    foreignPtrOrd hk1 hk2 cryptoGenericHashKeyBytes
 
 -- | Create a new 'HashKey' of size 'cryptoGenericHashKeyBytes'.
 --
@@ -127,16 +124,14 @@ newtype Hash = Hash (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq Hash where
   (Hash h1) == (Hash h2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq h1 h2 cryptoGenericHashBytes
+    foreignPtrEq h1 h2 cryptoGenericHashBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord Hash where
   compare (Hash h1) (Hash h2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd h1 h2 cryptoGenericHashBytes
+    foreignPtrOrd h1 h2 cryptoGenericHashBytes
 
 -- |
 --

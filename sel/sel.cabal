@@ -64,11 +64,11 @@ library
 
   other-modules:   Sel.Internal
   build-depends:
-    , base                >=4.14     && <5
+    , base                >=4.14   && <5
     , base16              ^>=1.0
-    , bytestring          >=0.10     && <0.13
+    , bytestring          >=0.10   && <0.13
     , libsodium-bindings  ^>=0.0.2
-    , text                >=1.2      && <2.2
+    , text                >=1.2    && <2.2
     , text-display        ^>=0.0
 
 test-suite sel-tests
@@ -99,7 +99,7 @@ test-suite sel-tests
     , hedgehog            ^>=1.4
     , libsodium-bindings
     , sel
-    , tasty               ^>=1.5
+    , tasty               >=1.4   && <1.6
     , tasty-hunit         ^>=0.10
     , text
     , text-display

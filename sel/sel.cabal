@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               sel
-version:            0.0.2.0
+version:            0.0.3.0
 category:           Cryptography
 synopsis:           Cryptography for the casual user
 description:
@@ -62,7 +62,11 @@ library
     Sel.SecretKey.Cipher
     Sel.SecretKey.Stream
 
-  other-modules:   Sel.Internal
+  other-modules:
+    Sel.Internal
+    Sel.Internal.Scoped
+    Sel.Internal.Scoped.Foreign
+
   build-depends:
     , base                >=4.14   && <5
     , base16              ^>=1.0
@@ -70,6 +74,7 @@ library
     , libsodium-bindings  ^>=0.0.2
     , text                >=1.2    && <2.2
     , text-display        ^>=0.0
+    , transformers        ^>=0.6.0
 
 test-suite sel-tests
   import:         common

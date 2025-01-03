@@ -123,7 +123,7 @@ instance Eq SecretKey where
 -- @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey hk1) (SecretKey hk2) =
-    foreignPtrOrd hk1 hk2 cryptoBoxSecretKeyBytes
+    foreignPtrOrdConstantTime hk1 hk2 cryptoBoxSecretKeyBytes
 
 -- | > show secretKey == "[REDACTED]"
 --
@@ -359,7 +359,7 @@ instance Ord CipherText where
   compare (CipherText messageLength1 hk1) (CipherText messageLength2 hk2) =
     let
       messageLength = compare messageLength1 messageLength2
-      content = foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoBoxMACBytes)
+      content = foreignPtrOrdConstantTime hk1 hk2 (fromIntegral messageLength1 + cryptoBoxMACBytes)
      in
       messageLength <> content
 

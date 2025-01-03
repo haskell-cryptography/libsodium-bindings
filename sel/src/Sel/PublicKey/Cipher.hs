@@ -116,16 +116,14 @@ newtype SecretKey = SecretKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq SecretKey where
   (SecretKey hk1) == (SecretKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoBoxSecretKeyBytes
+    foreignPtrEqConstantTime hk1 hk2 cryptoBoxSecretKeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey hk1) (SecretKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoBoxSecretKeyBytes
+    foreignPtrOrd hk1 hk2 cryptoBoxSecretKeyBytes
 
 -- | > show secretKey == "[REDACTED]"
 --
@@ -148,16 +146,14 @@ newtype PublicKey = PublicKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq PublicKey where
   (PublicKey hk1) == (PublicKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoBoxPublicKeyBytes
+    foreignPtrEq hk1 hk2 cryptoBoxPublicKeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord PublicKey where
   compare (PublicKey hk1) (PublicKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoBoxPublicKeyBytes
+    foreignPtrOrd hk1 hk2 cryptoBoxPublicKeyBytes
 
 -- |
 --
@@ -263,14 +259,6 @@ unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
       (Foreign.castForeignPtr @CUChar @Word8 secretKeyForeignPtr)
       (fromIntegral @CSize @Int cryptoBoxSecretKeyBytes)
 
---
-
--- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString'.
---
--- ⚠️  Be prudent as to where you store it!
---
--- @since 0.0.1.0
-
 -- | A random number that must only be used once per exchanged message.
 -- It does not have to be confidential.
 -- It is of size 'cryptoBoxNonceBytes'.
@@ -288,16 +276,14 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq Nonce where
   (Nonce hk1) == (Nonce hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoBoxNonceBytes
+    foreignPtrEq hk1 hk2 cryptoBoxNonceBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord Nonce where
   compare (Nonce hk1) (Nonce hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoBoxNonceBytes
+    foreignPtrOrd hk1 hk2 cryptoBoxNonceBytes
 
 -- |
 --
@@ -360,24 +346,22 @@ data CipherText = CipherText
 -- @since 0.0.1.0
 instance Eq CipherText where
   (CipherText messageLength1 hk1) == (CipherText messageLength2 hk2) =
-    unsafeDupablePerformIO $ do
-      let result1 = messageLength1 == messageLength2
-      result2 <-
-        foreignPtrEq
-          hk1
-          hk2
-          (fromIntegral messageLength1)
-      pure $ result1 && result2
+    let
+      messageLength = messageLength1 == messageLength2
+      content = foreignPtrEqConstantTime hk1 hk2 (fromIntegral messageLength1)
+     in
+      messageLength && content
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord CipherText where
   compare (CipherText messageLength1 hk1) (CipherText messageLength2 hk2) =
-    unsafeDupablePerformIO $ do
-      let result1 = compare messageLength1 messageLength2
-      result2 <- foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoBoxMACBytes)
-      pure $ result1 <> result2
+    let
+      messageLength = compare messageLength1 messageLength2
+      content = foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoBoxMACBytes)
+     in
+      messageLength <> content
 
 -- | ⚠️  Be prudent as to what you do with it!
 --

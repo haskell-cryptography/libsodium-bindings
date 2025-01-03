@@ -110,16 +110,14 @@ newtype SecretKey = SecretKey (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq SecretKey where
   (SecretKey hk1) == (SecretKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoSecretboxKeyBytes
+    foreignPtrEqConstantTime hk1 hk2 cryptoSecretboxKeyBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord SecretKey where
   compare (SecretKey hk1) (SecretKey hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
+    foreignPtrOrd hk1 hk2 cryptoSecretboxKeyBytes
 
 -- | > show secretKey == "[REDACTED]"
 --
@@ -200,16 +198,14 @@ newtype Nonce = Nonce (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq Nonce where
   (Nonce hk1) == (Nonce hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq hk1 hk2 cryptoSecretboxNonceBytes
+    foreignPtrEq hk1 hk2 cryptoSecretboxNonceBytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord Nonce where
   compare (Nonce hk1) (Nonce hk2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd hk1 hk2 cryptoSecretboxNonceBytes
+    foreignPtrOrd hk1 hk2 cryptoSecretboxNonceBytes
 
 -- |
 --
@@ -275,22 +271,30 @@ data Hash = Hash
 -- @since 0.0.1.0
 instance Eq Hash where
   (Hash messageLength1 hk1) == (Hash messageLength2 hk2) =
-    unsafeDupablePerformIO $ do
-      result1 <-
-        foreignPtrEq
+    let
+      messageLength = messageLength1 == messageLength2
+      content =
+        foreignPtrEqConstantTime
           hk1
           hk2
           (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
-      pure $ (messageLength1 == messageLength2) && result1
+     in
+      messageLength && content
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord Hash where
   compare (Hash messageLength1 hk1) (Hash messageLength2 hk2) =
-    unsafeDupablePerformIO $ do
-      result1 <- foreignPtrOrd hk1 hk2 (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
-      pure $ compare messageLength1 messageLength2 <> result1
+    let
+      messageLength = compare messageLength1 messageLength2
+      content =
+        foreignPtrOrd
+          hk1
+          hk2
+          (fromIntegral messageLength1 + cryptoSecretboxMACBytes)
+     in
+      messageLength <> content
 
 -- | ⚠️  Be prudent as to what you do with it!
 --

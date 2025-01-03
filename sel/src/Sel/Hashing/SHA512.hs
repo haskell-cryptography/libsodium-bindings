@@ -53,7 +53,6 @@ import LibSodium.Bindings.SHA2
   , cryptoHashSHA512StateBytes
   , cryptoHashSHA512Update
   )
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Base16.Types as Base16
@@ -83,16 +82,14 @@ newtype Hash = Hash (ForeignPtr CUChar)
 -- @since 0.0.1.0
 instance Eq Hash where
   (Hash h1) == (Hash h2) =
-    unsafeDupablePerformIO $
-      foreignPtrEq h1 h2 cryptoHashSHA512Bytes
+    foreignPtrEq h1 h2 cryptoHashSHA512Bytes
 
 -- |
 --
 -- @since 0.0.1.0
 instance Ord Hash where
   compare (Hash h1) (Hash h2) =
-    unsafeDupablePerformIO $
-      foreignPtrOrd h1 h2 cryptoHashSHA512Bytes
+    foreignPtrOrd h1 h2 cryptoHashSHA512Bytes
 
 -- |
 --

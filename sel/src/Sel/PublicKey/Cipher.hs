@@ -64,7 +64,6 @@ import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import qualified Foreign.C as Foreign
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Control.Exception
@@ -496,10 +495,10 @@ decrypt
               (-1) -> pure Nothing
               _ -> do
                 bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
-                memcpy bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLength)
+                Foreign.copyBytes bsPtr messagePtr (fromIntegral messageLength)
                 Just
                   <$> BS.unsafePackMallocCStringLen
-                    (Foreign.castPtr @CChar bsPtr, fromIntegral messageLength)
+                    (Foreign.castPtr @CUChar @CChar bsPtr, fromIntegral messageLength)
 
 -- | Exception thrown upon error during the generation of
 -- the key pair by 'newKeyPair'.

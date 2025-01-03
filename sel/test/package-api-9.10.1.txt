@@ -1,0 +1,485 @@
+
+module Sel where
+  secureMain :: forall a. GHC.Types.IO a -> GHC.Types.IO a
+  secureMainWithError :: forall a. GHC.Types.IO a -> GHC.Types.IO a -> GHC.Types.IO a
+
+module Sel.HMAC where
+
+
+module Sel.HMAC.SHA256 where
+  type AuthenticationKey :: *
+  newtype AuthenticationKey = ...
+  type AuthenticationTag :: *
+  newtype AuthenticationTag = ...
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationKey
+  authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationTag
+  authenticationTagToBinary :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  authenticationTagToHexByteString :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  newAuthenticationKey :: GHC.Types.IO AuthenticationKey
+  unsafeAuthenticationKeyToBinary :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  updateMultipart :: forall s. Multipart s -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ()
+  verify :: AuthenticationTag -> AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.Bool
+  withMultipart :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => AuthenticationKey -> (forall s. Multipart s -> m a) -> m AuthenticationTag
+
+module Sel.HMAC.SHA512 where
+  type AuthenticationKey :: *
+  newtype AuthenticationKey = ...
+  type AuthenticationTag :: *
+  newtype AuthenticationTag = ...
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationKey
+  authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationTag
+  authenticationTagToBinary :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  authenticationTagToHexByteString :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  newAuthenticationKey :: GHC.Types.IO AuthenticationKey
+  unsafeAuthenticationKeyToBinary :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  updateMultipart :: forall s. Multipart s -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ()
+  verify :: AuthenticationTag -> AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.Bool
+  withMultipart :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => AuthenticationKey -> (forall s. Multipart s -> m a) -> m AuthenticationTag
+
+module Sel.HMAC.SHA512_256 where
+  type AuthenticationKey :: *
+  newtype AuthenticationKey = ...
+  type AuthenticationTag :: *
+  newtype AuthenticationTag = ...
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationKey
+  authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationTag
+  authenticationTagToBinary :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  authenticationTagToHexByteString :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  newAuthenticationKey :: GHC.Types.IO AuthenticationKey
+  unsafeAuthenticationKeyToBinary :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  updateMultipart :: forall s. Multipart s -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ()
+  verify :: AuthenticationTag -> AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.Bool
+  withMultipart :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => AuthenticationKey -> (forall s. Multipart s -> m a) -> m AuthenticationTag
+
+module Sel.Hashing where
+  type Hash :: *
+  newtype Hash = ...
+  type HashKey :: *
+  newtype HashKey = ...
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  hashByteString :: GHC.Internal.Maybe.Maybe HashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO Hash
+  hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexText :: Hash -> Data.Text.Internal.Text
+  newHashKey :: GHC.Types.IO HashKey
+  updateMultipart :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> m ()
+  withMultipart :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => GHC.Internal.Maybe.Maybe HashKey -> (forall s. Multipart s -> m a) -> m Hash
+
+module Sel.Hashing.Password where
+  type Argon2Params :: *
+  data Argon2Params = Argon2Params {...}
+  type PasswordHash :: *
+  newtype PasswordHash = ...
+  type Salt :: *
+  newtype Salt = ...
+  asciiByteStringToPasswordHash :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> PasswordHash
+  asciiTextToPasswordHash :: Data.Text.Internal.Text -> PasswordHash
+  binaryToSalt :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Maybe.Maybe Salt
+  defaultArgon2Params :: Argon2Params
+  genSalt :: GHC.Types.IO Salt
+  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO PasswordHash
+  hashByteStringWithParams :: Argon2Params -> Salt -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO PasswordHash
+  hashText :: Data.Text.Internal.Text -> GHC.Types.IO PasswordHash
+  hexByteStringToSalt :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Maybe.Maybe Salt
+  hexTextToSalt :: Data.Text.Internal.Text -> GHC.Internal.Maybe.Maybe Salt
+  passwordHashToByteString :: PasswordHash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  passwordHashToHexByteString :: PasswordHash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  passwordHashToHexText :: PasswordHash -> Data.Text.Internal.Text
+  passwordHashToText :: PasswordHash -> Data.Text.Internal.Text
+  saltToBinary :: Salt -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  saltToHexByteString :: Salt -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  saltToHexText :: Salt -> Data.Text.Internal.Text
+  verifyByteString :: PasswordHash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.Bool
+  verifyText :: PasswordHash -> Data.Text.Internal.Text -> GHC.Types.Bool
+
+module Sel.Hashing.SHA256 where
+  type Hash :: *
+  newtype Hash = ...
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO Hash
+  hashText :: Data.Text.Internal.Text -> GHC.Types.IO Hash
+  hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexText :: Hash -> Data.Text.Internal.Text
+  updateMultipart :: forall s. Multipart s -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ()
+  withMultipart :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => (forall s. Multipart s -> m a) -> m Hash
+
+module Sel.Hashing.SHA512 where
+  type Hash :: *
+  newtype Hash = ...
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO Hash
+  hashText :: Data.Text.Internal.Text -> GHC.Types.IO Hash
+  hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexText :: Hash -> Data.Text.Internal.Text
+  updateMultipart :: forall s. Multipart s -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ()
+  withMultipart :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => (forall s. Multipart s -> m a) -> m Hash
+
+module Sel.Hashing.Short where
+  type ShortHash :: *
+  newtype ShortHash = ...
+  type ShortHashKey :: *
+  newtype ShortHashKey = ...
+  type ShortHashingException :: *
+  data ShortHashingException = ShortHashingException
+  binaryToShortHashKey :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Maybe.Maybe ShortHashKey
+  hashByteString :: ShortHashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ShortHash
+  hashText :: ShortHashKey -> Data.Text.Internal.Text -> GHC.Types.IO ShortHash
+  hexByteStringToShortHashKey :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Maybe.Maybe ShortHashKey
+  hexTextToShortHashKey :: Data.Text.Internal.Text -> GHC.Internal.Maybe.Maybe ShortHashKey
+  newKey :: GHC.Types.IO ShortHashKey
+  shortHashKeyToBinary :: ShortHashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  shortHashKeyToHexByteString :: ShortHashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  shortHashKeyToHexText :: ShortHashKey -> Data.Text.Internal.Text
+  shortHashToBinary :: ShortHash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  shortHashToHexByteString :: ShortHash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  shortHashToHexText :: ShortHash -> Data.Text.Internal.Text
+
+module Sel.KeyMaterialDecodeError where
+  type InputLength :: *
+  newtype InputLength = InputLength GHC.Types.Int
+  type KeyMaterialDecodeError :: *
+  data KeyMaterialDecodeError = ByteLengthMismatch RequiredLength InputLength | DecodingFailure Data.Text.Internal.Text
+  type RequiredLength :: *
+  newtype RequiredLength = RequiredLength GHC.Types.Int
+  validKeyMaterial :: GHC.Internal.Foreign.C.Types.CSize -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either KeyMaterialDecodeError bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+
+module Sel.PublicKey.Cipher where
+  type CipherText :: *
+  data CipherText = CipherText {messageLength :: GHC.Internal.Foreign.C.Types.CULLong, cipherTextForeignPtr :: GHC.Internal.ForeignPtr.ForeignPtr GHC.Internal.Foreign.C.Types.CUChar}
+  type EncryptionError :: *
+  data EncryptionError = EncryptionError
+  type KeyPairGenerationException :: *
+  data KeyPairGenerationException = KeyPairGenerationException
+  type Nonce :: *
+  newtype Nonce = Nonce (GHC.Internal.ForeignPtr.ForeignPtr GHC.Internal.Foreign.C.Types.CUChar)
+  type PublicKey :: *
+  newtype PublicKey = PublicKey (GHC.Internal.ForeignPtr.ForeignPtr GHC.Internal.Foreign.C.Types.CUChar)
+  type SecretKey :: *
+  newtype SecretKey = SecretKey (GHC.Internal.ForeignPtr.ForeignPtr GHC.Internal.Foreign.C.Types.CUChar)
+  cipherTextFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text CipherText
+  cipherTextToBinary :: CipherText -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  cipherTextToHexByteString :: CipherText -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  cipherTextToHexText :: CipherText -> Data.Text.Internal.Text
+  decrypt :: CipherText -> PublicKey -> SecretKey -> Nonce -> GHC.Internal.Maybe.Maybe bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  encrypt :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> PublicKey -> SecretKey -> GHC.Types.IO (Nonce, CipherText)
+  keyPairFromHexByteStrings :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text (PublicKey, SecretKey)
+  newKeyPair :: GHC.Types.IO (PublicKey, SecretKey)
+  nonceFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text Nonce
+  nonceToHexByteString :: Nonce -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  publicKeyToHexByteString :: PublicKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  unsafeSecretKeyToHexByteString :: SecretKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+
+module Sel.PublicKey.Seal where
+  type EncryptionError :: *
+  data EncryptionError = ...
+  type KeyPairGenerationException :: *
+  data KeyPairGenerationException = ...
+  type PublicKey :: *
+  newtype PublicKey = PublicKey (GHC.Internal.ForeignPtr.ForeignPtr GHC.Internal.Foreign.C.Types.CUChar)
+  type SecretKey :: *
+  newtype SecretKey = SecretKey (GHC.Internal.ForeignPtr.ForeignPtr GHC.Internal.Foreign.C.Types.CUChar)
+  newKeyPair :: GHC.Types.IO (PublicKey, SecretKey)
+  open :: Sel.PublicKey.Cipher.CipherText -> PublicKey -> SecretKey -> GHC.Internal.Maybe.Maybe bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  seal :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> PublicKey -> GHC.Types.IO Sel.PublicKey.Cipher.CipherText
+
+module Sel.PublicKey.Signature where
+  type KeyPair :: *
+  data KeyPair = KeyPair {public :: PublicKey, secret :: SecretKey}
+  type PublicKey :: *
+  newtype PublicKey = ...
+  type PublicKeyExtractionException :: *
+  data PublicKeyExtractionException = PublicKeyExtractionException
+  type SecretKey :: *
+  newtype SecretKey = ...
+  type SignatureVerification :: * -> *
+  data SignatureVerification a = Valid a | Invalid
+  type SignedMessage :: *
+  data SignedMessage = ...
+  decodePublicKeyHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Sel.KeyMaterialDecodeError.KeyMaterialDecodeError PublicKey
+  decodeSecretKeyHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Sel.KeyMaterialDecodeError.KeyMaterialDecodeError SecretKey
+  encodePublicKeyHexByteString :: PublicKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  generateKeyPair :: GHC.Types.IO (PublicKey, SecretKey)
+  getSignature :: SignedMessage -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  keyPair :: GHC.Types.IO KeyPair
+  mkSignature :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> SignedMessage
+  openMessage :: SignedMessage -> PublicKey -> GHC.Internal.Maybe.Maybe bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  publicKey :: SecretKey -> PublicKey
+  signMessage :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> SecretKey -> GHC.Types.IO SignedMessage
+  signWith :: SecretKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO SignedMessage
+  signature :: SignedMessage -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  signedMessage :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> SignedMessage
+  unsafeEncodeSecretKeyHexByteString :: SecretKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  unsafeGetMessage :: SignedMessage -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  unverifiedMessage :: SignedMessage -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  verifiedMessage :: SignedMessage -> PublicKey -> SignatureVerification bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+
+module Sel.Scrypt where
+  type ScryptHash :: *
+  newtype ScryptHash = ...
+  asciiByteStringToScryptHash :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> ScryptHash
+  asciiTextToScryptHash :: Data.Text.Internal.Text -> ScryptHash
+  scryptHashPassword :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ScryptHash
+  scryptHashToByteString :: ScryptHash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  scryptHashToText :: ScryptHash -> Data.Text.Internal.Text
+  scryptVerifyPassword :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> ScryptHash -> GHC.Types.IO GHC.Types.Bool
+
+module Sel.SecretKey.Authentication where
+  type AuthenticationKey :: *
+  newtype AuthenticationKey = ...
+  type AuthenticationTag :: *
+  newtype AuthenticationTag = ...
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationKey
+  authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text AuthenticationTag
+  authenticationTagToHexByteString :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  newAuthenticationKey :: GHC.Types.IO AuthenticationKey
+  unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  verify :: AuthenticationTag -> AuthenticationKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.Bool
+
+module Sel.SecretKey.Cipher where
+  type Hash :: *
+  data Hash = ...
+  type Nonce :: *
+  newtype Nonce = ...
+  type SecretKey :: *
+  newtype SecretKey = ...
+  decrypt :: Hash -> SecretKey -> Nonce -> GHC.Internal.Maybe.Maybe bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  encrypt :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> SecretKey -> GHC.Types.IO (Nonce, Hash)
+  hashFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text Hash
+  hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  hashToHexText :: Hash -> Data.Text.Internal.Text
+  newSecretKey :: GHC.Types.IO SecretKey
+  nonceFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text Nonce
+  nonceToHexByteString :: Nonce -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  secretKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text SecretKey
+  unsafeSecretKeyToHexByteString :: SecretKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+
+module Sel.SecretKey.Stream where
+  type CipherText :: *
+  data CipherText = ...
+  type Header :: *
+  newtype Header = ...
+  type MessageTag :: *
+  data MessageTag = Message | Final | Push | Rekey
+  type role Multipart nominal
+  type Multipart :: * -> *
+  newtype Multipart s = ...
+  type SecretKey :: *
+  newtype SecretKey = ...
+  type StreamDecryptionException :: *
+  data StreamDecryptionException = ...
+  type StreamEncryptionException :: *
+  data StreamEncryptionException = ...
+  type StreamInitEncryptionException :: *
+  data StreamInitEncryptionException = ...
+  ciphertextFromHexByteString :: base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text CipherText
+  ciphertextToBinary :: CipherText -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  ciphertextToHexByteString :: CipherText -> base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  ciphertextToHexText :: CipherText -> base16-1.0:Data.Base16.Types.Internal.Base16 Data.Text.Internal.Text
+  decryptChunk :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> CipherText -> m bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  decryptList :: forall (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> Header -> [CipherText] -> m (GHC.Internal.Maybe.Maybe [bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString])
+  decryptStream :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> Header -> (forall s. Multipart s -> m a) -> m (GHC.Internal.Maybe.Maybe a)
+  encryptChunk :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> MessageTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> m CipherText
+  encryptList :: forall (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> [bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString] -> m (Header, [CipherText])
+  encryptStream :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> (forall s. Multipart s -> m a) -> m (Header, a)
+  headerFromHexByteString :: base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text Header
+  headerToHexByteString :: Header -> base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  newSecretKey :: GHC.Types.IO SecretKey
+  secretKeyFromHexByteString :: base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Internal.Data.Either.Either Data.Text.Internal.Text SecretKey
+  unsafeSecretKeyToHexByteString :: SecretKey -> base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+
+
+-- Instances:
+instance GHC.Internal.Base.Functor sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Data.Foldable.Foldable sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Data.Traversable.Traversable sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Exception.Type.Exception Sel.Hashing.Short.ShortHashingException -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Internal.Exception.Type.Exception Sel.KeyMaterialDecodeError.KeyMaterialDecodeError -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Internal.Exception.Type.Exception Sel.PublicKey.Cipher.EncryptionError -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Exception.Type.Exception Sel.PublicKey.Cipher.KeyPairGenerationException -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Exception.Type.Exception sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKeyExtractionException -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Exception.Type.Exception Sel.SecretKey.Stream.StreamDecryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Exception.Type.Exception Sel.SecretKey.Stream.StreamEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Exception.Type.Exception Sel.SecretKey.Stream.StreamInitEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Foreign.Storable.Storable Sel.Hashing.Hash -- Defined in ‘Sel.Hashing’
+instance GHC.Internal.Foreign.Storable.Storable Sel.Hashing.SHA256.Hash -- Defined in ‘Sel.Hashing.SHA256’
+instance GHC.Internal.Foreign.Storable.Storable Sel.Hashing.SHA512.Hash -- Defined in ‘Sel.Hashing.SHA512’
+instance GHC.Internal.Generics.Generic Sel.Hashing.Password.PasswordHash -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Internal.Show.Show Sel.HMAC.SHA256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA256’
+instance GHC.Internal.Show.Show Sel.HMAC.SHA256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA256’
+instance GHC.Internal.Show.Show Sel.HMAC.SHA512.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512’
+instance GHC.Internal.Show.Show Sel.HMAC.SHA512.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512’
+instance GHC.Internal.Show.Show Sel.HMAC.SHA512_256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512_256’
+instance GHC.Internal.Show.Show Sel.HMAC.SHA512_256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512_256’
+instance GHC.Internal.Show.Show Sel.Hashing.Hash -- Defined in ‘Sel.Hashing’
+instance GHC.Internal.Show.Show Sel.Hashing.Password.PasswordHash -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Internal.Show.Show Sel.Hashing.Password.Salt -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Internal.Show.Show Sel.Hashing.SHA256.Hash -- Defined in ‘Sel.Hashing.SHA256’
+instance GHC.Internal.Show.Show Sel.Hashing.SHA512.Hash -- Defined in ‘Sel.Hashing.SHA512’
+instance GHC.Internal.Show.Show Sel.Hashing.Short.ShortHash -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Internal.Show.Show Sel.Hashing.Short.ShortHashKey -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Internal.Show.Show Sel.Hashing.Short.ShortHashingException -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Internal.Show.Show Sel.KeyMaterialDecodeError.InputLength -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Internal.Show.Show Sel.KeyMaterialDecodeError.KeyMaterialDecodeError -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Internal.Show.Show Sel.KeyMaterialDecodeError.RequiredLength -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Internal.Show.Show Sel.PublicKey.Cipher.CipherText -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Show.Show Sel.PublicKey.Cipher.EncryptionError -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Show.Show Sel.PublicKey.Cipher.KeyPairGenerationException -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Show.Show Sel.PublicKey.Cipher.Nonce -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Show.Show Sel.PublicKey.Cipher.PublicKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Show.Show Sel.PublicKey.Cipher.SecretKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Internal.Show.Show sel-0.0.3.0:Sel.PublicKey.Internal.Signature.KeyPair -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Show.Show sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Show.Show sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKeyExtractionException -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Show.Show sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SecretKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance forall a. GHC.Internal.Show.Show a => GHC.Internal.Show.Show (sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification a) -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Show.Show sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignedMessage -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Internal.Show.Show Sel.Scrypt.ScryptHash -- Defined in ‘Sel.Scrypt’
+instance GHC.Internal.Show.Show Sel.SecretKey.Authentication.AuthenticationKey -- Defined in ‘Sel.SecretKey.Authentication’
+instance GHC.Internal.Show.Show Sel.SecretKey.Authentication.AuthenticationTag -- Defined in ‘Sel.SecretKey.Authentication’
+instance GHC.Internal.Show.Show Sel.SecretKey.Cipher.Hash -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Internal.Show.Show Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Internal.Show.Show Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Internal.Show.Show Sel.SecretKey.Stream.CipherText -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Show.Show Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Show.Show Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Show.Show Sel.SecretKey.Stream.StreamDecryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Show.Show Sel.SecretKey.Stream.StreamEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Internal.Show.Show Sel.SecretKey.Stream.StreamInitEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.HMAC.SHA256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA256’
+instance GHC.Classes.Eq Sel.HMAC.SHA256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA256’
+instance GHC.Classes.Eq Sel.HMAC.SHA512.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512’
+instance GHC.Classes.Eq Sel.HMAC.SHA512.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512’
+instance GHC.Classes.Eq Sel.HMAC.SHA512_256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512_256’
+instance GHC.Classes.Eq Sel.HMAC.SHA512_256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512_256’
+instance GHC.Classes.Eq Sel.Hashing.Hash -- Defined in ‘Sel.Hashing’
+instance GHC.Classes.Eq Sel.Hashing.HashKey -- Defined in ‘Sel.Hashing’
+instance GHC.Classes.Eq Sel.Hashing.Password.PasswordHash -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Classes.Eq Sel.Hashing.Password.Salt -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Classes.Eq Sel.Hashing.SHA256.Hash -- Defined in ‘Sel.Hashing.SHA256’
+instance GHC.Classes.Eq Sel.Hashing.SHA512.Hash -- Defined in ‘Sel.Hashing.SHA512’
+instance GHC.Classes.Eq Sel.Hashing.Short.ShortHash -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Classes.Eq Sel.Hashing.Short.ShortHashKey -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Classes.Eq Sel.Hashing.Short.ShortHashingException -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Classes.Eq Sel.KeyMaterialDecodeError.InputLength -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Classes.Eq Sel.KeyMaterialDecodeError.KeyMaterialDecodeError -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Classes.Eq Sel.KeyMaterialDecodeError.RequiredLength -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance GHC.Classes.Eq Sel.PublicKey.Cipher.CipherText -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Eq Sel.PublicKey.Cipher.EncryptionError -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Eq Sel.PublicKey.Cipher.KeyPairGenerationException -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Eq Sel.PublicKey.Cipher.Nonce -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Eq Sel.PublicKey.Cipher.PublicKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Eq Sel.PublicKey.Cipher.SecretKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Eq sel-0.0.3.0:Sel.PublicKey.Internal.Signature.KeyPair -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Eq sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Eq sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKeyExtractionException -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Eq sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SecretKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance forall a. GHC.Classes.Eq a => GHC.Classes.Eq (sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification a) -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Eq sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignedMessage -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Eq Sel.Scrypt.ScryptHash -- Defined in ‘Sel.Scrypt’
+instance GHC.Classes.Eq Sel.SecretKey.Authentication.AuthenticationKey -- Defined in ‘Sel.SecretKey.Authentication’
+instance GHC.Classes.Eq Sel.SecretKey.Authentication.AuthenticationTag -- Defined in ‘Sel.SecretKey.Authentication’
+instance GHC.Classes.Eq Sel.SecretKey.Cipher.Hash -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Eq Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Eq Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.CipherText -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.StreamDecryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.StreamEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.StreamInitEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Ord Sel.HMAC.SHA256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA256’
+instance GHC.Classes.Ord Sel.HMAC.SHA256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA256’
+instance GHC.Classes.Ord Sel.HMAC.SHA512.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512’
+instance GHC.Classes.Ord Sel.HMAC.SHA512.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512’
+instance GHC.Classes.Ord Sel.HMAC.SHA512_256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512_256’
+instance GHC.Classes.Ord Sel.HMAC.SHA512_256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512_256’
+instance GHC.Classes.Ord Sel.Hashing.Hash -- Defined in ‘Sel.Hashing’
+instance GHC.Classes.Ord Sel.Hashing.HashKey -- Defined in ‘Sel.Hashing’
+instance GHC.Classes.Ord Sel.Hashing.Password.PasswordHash -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Classes.Ord Sel.Hashing.Password.Salt -- Defined in ‘Sel.Hashing.Password’
+instance GHC.Classes.Ord Sel.Hashing.SHA256.Hash -- Defined in ‘Sel.Hashing.SHA256’
+instance GHC.Classes.Ord Sel.Hashing.SHA512.Hash -- Defined in ‘Sel.Hashing.SHA512’
+instance GHC.Classes.Ord Sel.Hashing.Short.ShortHash -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Classes.Ord Sel.Hashing.Short.ShortHashKey -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Classes.Ord Sel.Hashing.Short.ShortHashingException -- Defined in ‘Sel.Hashing.Short’
+instance GHC.Classes.Ord Sel.PublicKey.Cipher.CipherText -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Ord Sel.PublicKey.Cipher.EncryptionError -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Ord Sel.PublicKey.Cipher.KeyPairGenerationException -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Ord Sel.PublicKey.Cipher.Nonce -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Ord Sel.PublicKey.Cipher.PublicKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Ord Sel.PublicKey.Cipher.SecretKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance GHC.Classes.Ord sel-0.0.3.0:Sel.PublicKey.Internal.Signature.KeyPair -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Ord sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Ord sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKeyExtractionException -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Ord sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SecretKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance forall a. GHC.Classes.Ord a => GHC.Classes.Ord (sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification a) -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Ord sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignedMessage -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance GHC.Classes.Ord Sel.Scrypt.ScryptHash -- Defined in ‘Sel.Scrypt’
+instance GHC.Classes.Ord Sel.SecretKey.Authentication.AuthenticationKey -- Defined in ‘Sel.SecretKey.Authentication’
+instance GHC.Classes.Ord Sel.SecretKey.Authentication.AuthenticationTag -- Defined in ‘Sel.SecretKey.Authentication’
+instance GHC.Classes.Ord Sel.SecretKey.Cipher.Hash -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Ord Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Ord Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Ord Sel.SecretKey.Stream.CipherText -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Ord Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Ord Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Ord Sel.SecretKey.Stream.StreamDecryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Ord Sel.SecretKey.Stream.StreamEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Ord Sel.SecretKey.Stream.StreamInitEncryptionException -- Defined in ‘Sel.SecretKey.Stream’
+instance Data.Text.Display.Core.Display Sel.HMAC.SHA256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA256’
+instance Data.Text.Display.Core.Display Sel.HMAC.SHA256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA256’
+instance Data.Text.Display.Core.Display Sel.HMAC.SHA512.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512’
+instance Data.Text.Display.Core.Display Sel.HMAC.SHA512.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512’
+instance Data.Text.Display.Core.Display Sel.HMAC.SHA512_256.AuthenticationKey -- Defined in ‘Sel.HMAC.SHA512_256’
+instance Data.Text.Display.Core.Display Sel.HMAC.SHA512_256.AuthenticationTag -- Defined in ‘Sel.HMAC.SHA512_256’
+instance Data.Text.Display.Core.Display Sel.Hashing.Hash -- Defined in ‘Sel.Hashing’
+instance Data.Text.Display.Core.Display Sel.Hashing.Password.PasswordHash -- Defined in ‘Sel.Hashing.Password’
+instance Data.Text.Display.Core.Display Sel.Hashing.Password.Salt -- Defined in ‘Sel.Hashing.Password’
+instance Data.Text.Display.Core.Display Sel.Hashing.SHA256.Hash -- Defined in ‘Sel.Hashing.SHA256’
+instance Data.Text.Display.Core.Display Sel.Hashing.SHA512.Hash -- Defined in ‘Sel.Hashing.SHA512’
+instance Data.Text.Display.Core.Display Sel.Hashing.Short.ShortHash -- Defined in ‘Sel.Hashing.Short’
+instance Data.Text.Display.Core.Display Sel.Hashing.Short.ShortHashKey -- Defined in ‘Sel.Hashing.Short’
+instance Data.Text.Display.Core.Display Sel.Hashing.Short.ShortHashingException -- Defined in ‘Sel.Hashing.Short’
+instance Data.Text.Display.Core.Display Sel.KeyMaterialDecodeError.KeyMaterialDecodeError -- Defined in ‘Sel.KeyMaterialDecodeError’
+instance Data.Text.Display.Core.Display Sel.PublicKey.Cipher.CipherText -- Defined in ‘Sel.PublicKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.PublicKey.Cipher.Nonce -- Defined in ‘Sel.PublicKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.PublicKey.Cipher.PublicKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.PublicKey.Cipher.SecretKey -- Defined in ‘Sel.PublicKey.Cipher’
+instance Data.Text.Display.Core.Display sel-0.0.3.0:Sel.PublicKey.Internal.Signature.KeyPair -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance Data.Text.Display.Core.Display sel-0.0.3.0:Sel.PublicKey.Internal.Signature.PublicKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance Data.Text.Display.Core.Display sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SecretKey -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance forall a. GHC.Internal.Show.Show a => Data.Text.Display.Core.Display (sel-0.0.3.0:Sel.PublicKey.Internal.Signature.SignatureVerification a) -- Defined in ‘sel-0.0.3.0:Sel.PublicKey.Internal.Signature’
+instance Data.Text.Display.Core.Display Sel.Scrypt.ScryptHash -- Defined in ‘Sel.Scrypt’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Authentication.AuthenticationKey -- Defined in ‘Sel.SecretKey.Authentication’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Authentication.AuthenticationTag -- Defined in ‘Sel.SecretKey.Authentication’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Cipher.Hash -- Defined in ‘Sel.SecretKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.CipherText -- Defined in ‘Sel.SecretKey.Stream’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’

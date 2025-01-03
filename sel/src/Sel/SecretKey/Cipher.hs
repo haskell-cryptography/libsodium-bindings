@@ -57,7 +57,6 @@ import Data.Word (Word8)
 import Foreign (ForeignPtr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
-import GHC.IO.Handle.Text (memcpy)
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import LibSodium.Bindings.Random (randombytesBuf)
@@ -417,7 +416,7 @@ decrypt Hash{messageLength, hashForeignPtr} (SecretKey secretKeyForeignPtr) (Non
           (-1) -> pure Nothing
           _ -> do
             bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
-            memcpy bsPtr (Foreign.castPtr messagePtr) (fromIntegral messageLength)
+            Foreign.copyBytes bsPtr messagePtr (fromIntegral messageLength)
             Just
               <$> BS.unsafePackMallocCStringLen
-                (Foreign.castPtr @CChar bsPtr, fromIntegral messageLength)
+                (Foreign.castPtr @CUChar @CChar bsPtr, fromIntegral messageLength)

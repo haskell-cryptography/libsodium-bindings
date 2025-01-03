@@ -152,7 +152,7 @@ instance Eq AuthenticationKey where
 -- @since 0.0.1.0
 instance Ord AuthenticationKey where
   compare (AuthenticationKey hk1) (AuthenticationKey hk2) =
-    foreignPtrOrd hk1 hk2 cryptoAuthKeyBytes
+    foreignPtrOrdConstantTime hk1 hk2 cryptoAuthKeyBytes
 
 -- | > show authenticationKey == "[REDACTED]"
 --
@@ -238,7 +238,7 @@ instance Eq AuthenticationTag where
 -- @since 0.0.1.0
 instance Ord AuthenticationTag where
   compare (AuthenticationTag hk1) (AuthenticationTag hk2) =
-    foreignPtrOrd hk1 hk2 cryptoAuthBytes
+    foreignPtrOrdConstantTime hk1 hk2 cryptoAuthBytes
 
 -- |
 --

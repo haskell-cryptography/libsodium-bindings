@@ -42,8 +42,8 @@ import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display
-import qualified Data.Text.Lazy.Builder as Builder
 import Foreign (Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CInt, CSize, CUChar, CULLong)

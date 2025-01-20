@@ -78,8 +78,8 @@ import Data.Kind (Type)
 import qualified Data.List as List
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display (Display (..), OpaqueInstance (..))
-import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
 import Foreign (ForeignPtr, Ptr)
 import qualified Foreign

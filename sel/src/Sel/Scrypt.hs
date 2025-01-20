@@ -31,9 +31,9 @@ import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import Data.Text as Text
+import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display
 import qualified Data.Text.Encoding as Text
-import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.Scrypt

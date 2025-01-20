@@ -57,8 +57,8 @@ import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display (Display (displayBuilder), OpaqueInstance (..), ShowInstance (..))
-import qualified Data.Text.Lazy.Builder as Builder
 import Data.Word (Word8)
 import Foreign (ForeignPtr, Ptr)
 import qualified Foreign

@@ -50,8 +50,8 @@ import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Text.Builder.Linear as Builder
 import qualified Data.Text.Encoding as Text
-import qualified Data.Text.Lazy.Builder as Builder
 import Foreign hiding (void)
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import GHC.Exception (Exception)

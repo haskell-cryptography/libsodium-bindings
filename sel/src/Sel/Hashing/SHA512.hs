@@ -38,9 +38,9 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
+import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display (Display (..))
 import qualified Data.Text.Encoding as Text
-import qualified Data.Text.Internal.Builder as Builder
 import Foreign (ForeignPtr, Ptr, Storable)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)

@@ -1,7 +1,7 @@
-
 pull_request_rules:
   # rebase+merge strategy
   - name: refactored queue action rule
+    conditions: []
     actions:
       queue:
 queue_rules:

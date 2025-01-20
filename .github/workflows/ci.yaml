@@ -91,7 +91,7 @@ jobs:
         id: setup-haskell
         uses: haskell-actions/setup@v2
         with:
-          ghc-version: '9.8.2'
+          ghc-version: '9.10.1'
           cabal-version: 'latest'
 
       - name: Freeze

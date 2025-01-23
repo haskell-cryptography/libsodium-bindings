@@ -72,6 +72,7 @@ import LibSodium.Bindings.Random
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
+import Sel.Internal.Sodium (binaryToHex)
 
 -- $introduction
 --

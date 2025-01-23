@@ -9,6 +9,7 @@
 * (Internal) Add constant-time Eq, use Scoped for internals [#169](https://github.com/haskell-cryptography/libsodium-bindings/pull/169)
 * Cleanup, allow more versions of `tasty` [#168](https://github.com/haskell-cryptography/libsodium-bindings/pull/168)
 * (Internal) Add `Scoped` for better readability of nested continuations [#167](https://github.com/haskell-cryptography/libsodium-bindings/pull/167)
+* Update hedgehog [#180](https://github.com/haskell-cryptography/libsodium-bindings/pull/180)
 
 ## sel-0.0.2.0
 

@@ -114,7 +114,7 @@ test-suite sel-tests
     base,
     base16,
     bytestring,
-    hedgehog ^>=1.4,
+    hedgehog >=1.4,
     libsodium-bindings,
     sel,
     tasty >=1.4 && <1.6,

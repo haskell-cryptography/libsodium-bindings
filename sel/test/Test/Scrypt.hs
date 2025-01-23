@@ -4,9 +4,10 @@
 module Test.Scrypt where
 
 import Data.ByteString
-import Sel.Scrypt
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import Sel.Scrypt
 
 spec :: TestTree
 spec =

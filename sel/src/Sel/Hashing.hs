@@ -36,11 +36,14 @@ module Sel.Hashing
 where
 
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import qualified Data.ByteString.Unsafe as BS
+import Data.Kind (Type)
 import Data.Text (Text)
 import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display
@@ -49,10 +52,6 @@ import qualified Foreign
 import Foreign.C (CChar, CInt, CSize, CUChar, CULLong)
 import Foreign.ForeignPtr
 import Foreign.Storable
-
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import qualified Data.Base16.Types as Base16
-import Data.Kind (Type)
 import LibSodium.Bindings.GenericHashing
   ( CryptoGenericHashState
   , cryptoGenericHash
@@ -64,6 +63,7 @@ import LibSodium.Bindings.GenericHashing
   , cryptoGenericHashStateBytes
   , cryptoGenericHashUpdate
   )
+
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 

@@ -43,6 +43,7 @@ where
 
 import Control.Exception (throw)
 import Control.Monad (void, when)
+import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -51,20 +52,19 @@ import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Builder.Linear as Builder
+import Data.Text.Display
 import qualified Data.Text.Encoding as Text
 import Foreign hiding (void)
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import GHC.Exception (Exception)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
-import qualified Data.Base16.Types as Base16
-import Data.Text.Display
 import LibSodium.Bindings.ShortHashing
   ( cryptoShortHashSipHashX24Bytes
   , cryptoShortHashSipHashX24KeyBytes
   , cryptoShortHashX24
   , cryptoShortHashX24KeyGen
   )
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 
@@ -283,11 +283,11 @@ hexByteStringToShortHashKey hexByteString =
 -- @since 0.0.1.0
 data ShortHashingException = ShortHashingException
   deriving stock
-    ( Show
-      -- ^ @since 0.0.1.0
-    , Eq
+    ( Eq
       -- ^ @since 0.0.1.0
     , Ord
+      -- ^ @since 0.0.1.0
+    , Show
       -- ^ @since 0.0.1.0
     )
   deriving anyclass

@@ -38,13 +38,13 @@ import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Unsafe as BS
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import LibSodium.Bindings.SealedBoxes
   ( cryptoBoxSeal
   , cryptoBoxSealOpen
   , cryptoBoxSealbytes
   )
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.PublicKey.Cipher
   ( CipherText (CipherText)
   , EncryptionError (..)

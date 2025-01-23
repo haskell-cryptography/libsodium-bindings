@@ -65,8 +65,6 @@ import Foreign (ForeignPtr, Ptr, Word8)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import Foreign.C.Error (throwErrno)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import LibSodium.Bindings.SHA2
   ( CryptoAuthHMACSHA512State
   , cryptoAuthHMACSHA512
@@ -80,6 +78,8 @@ import LibSodium.Bindings.SHA2
   , cryptoAuthHMACSHA512Verify
   )
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumMalloc)
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal (allocateWith, foreignPtrEqConstantTime, foreignPtrOrdConstantTime)
 import Sel.Internal.Sodium (binaryToHex)
 

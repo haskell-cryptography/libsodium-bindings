@@ -48,8 +48,6 @@ import Foreign.C (CChar, CSize, CUChar, CULLong)
 import qualified Foreign.Marshal.Array as Foreign
 import qualified Foreign.Ptr as Foreign
 import GHC.IO.Handle.Text (memcpy)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import LibSodium.Bindings.CryptoSign
   ( cryptoSignBytes
   , cryptoSignDetached
@@ -58,6 +56,8 @@ import LibSodium.Bindings.CryptoSign
   , cryptoSignSecretKeyBytes
   , cryptoSignVerifyDetached
   )
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal
 
 -- $introduction

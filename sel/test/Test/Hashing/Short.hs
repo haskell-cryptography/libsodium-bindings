@@ -4,9 +4,10 @@ module Test.Hashing.Short where
 
 import Data.Maybe (fromJust)
 import Data.Text (Text)
-import qualified Sel.Hashing.Short as Short
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import qualified Sel.Hashing.Short as Short
 
 spec :: TestTree
 spec =

@@ -2,9 +2,10 @@
 
 module Test.PublicKey.Cipher where
 
-import Sel.PublicKey.Cipher
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import Sel.PublicKey.Cipher
 import TestUtils
 
 spec :: TestTree

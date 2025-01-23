@@ -8,9 +8,10 @@ import Data.ByteString qualified as ByteString
 import Foreign (ForeignPtr)
 import Foreign.C (CSize, CUChar)
 import LibSodium.Bindings.Utils
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal.Scoped
 import Sel.Internal.Scoped.Foreign
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- | Convert a byte array to a hexadecimal-encoded 'StrictByteString' in constant time.
 --

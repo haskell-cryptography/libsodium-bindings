@@ -2,10 +2,11 @@
 
 module Test.PublicKey.Seal where
 
-import Sel.PublicKey.Cipher
-import Sel.PublicKey.Seal
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import Sel.PublicKey.Cipher
+import Sel.PublicKey.Seal
 
 spec :: TestTree
 spec =

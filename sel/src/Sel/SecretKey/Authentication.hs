@@ -44,8 +44,6 @@ import Data.Text.Display (Display, OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr)
 import qualified Foreign
 import Foreign.C (CChar, CUChar, CULLong, throwErrno)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import LibSodium.Bindings.CryptoAuth
   ( cryptoAuth
   , cryptoAuthBytes
@@ -54,6 +52,8 @@ import LibSodium.Bindings.CryptoAuth
   , cryptoAuthVerify
   )
 import LibSodium.Bindings.SecureMemory
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 

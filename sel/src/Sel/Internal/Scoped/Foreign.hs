@@ -19,6 +19,7 @@ import Data.ByteString.Unsafe qualified as ByteString
 import Foreign (ForeignPtr, Ptr, Storable)
 import Foreign qualified
 import Foreign.C (CString, CStringLen)
+
 import Sel.Internal.Scoped
 
 -- | @since 0.0.3.0

@@ -3,10 +3,11 @@
 module Test.Hashing.SHA2 where
 
 import Data.Text (Text)
-import qualified Sel.Hashing.SHA256 as SHA256
-import qualified Sel.Hashing.SHA512 as SHA512
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import qualified Sel.Hashing.SHA256 as SHA256
+import qualified Sel.Hashing.SHA512 as SHA512
 
 spec :: TestTree
 spec =

@@ -23,7 +23,8 @@ lint: ## Run the code linter (HLint)
 	@find sel libsodium-bindings -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code formatter (fourmolu, cabal-fmt)
-	@cabal-fmt -i **/**.cabal
+	@cabal-gild --mode=format --io=libsodium-bindings/libsodium-bindings.cabal
+	@cabal-gild --mode=format --io=sel/sel.cabal
 	@fourmolu -q --mode inplace sel libsodium-bindings
 
 help: ## Display this help message

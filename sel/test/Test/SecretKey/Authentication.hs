@@ -2,9 +2,10 @@
 
 module Test.SecretKey.Authentication where
 
-import Sel.SecretKey.Authentication
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import Sel.SecretKey.Authentication
 import TestUtils (assertRight)
 
 spec :: TestTree

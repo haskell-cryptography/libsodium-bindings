@@ -1,59 +1,70 @@
-cabal-version:      3.0
-name:               sel
-version:            0.0.3.0
-category:           Cryptography
-synopsis:           Cryptography for the casual user
+cabal-version: 3.0
+name: sel
+version: 0.0.3.0
+category: Cryptography
+synopsis: Cryptography for the casual user
 description:
   The high-level library aimed at casual users of cryptography, by the Haskell Cryptography Group
 
-homepage:           https://github.com/haskell-cryptography/libsodium-bindings
+homepage: https://github.com/haskell-cryptography/libsodium-bindings
 bug-reports:
   https://github.com/haskell-cryptography/libsodium-bindings/issues
 
-author:             Hécate Moonlight, Koz Ross
-maintainer:         The Haskell Cryptography contributors
-license:            BSD-3-Clause
-build-type:         Simple
+author: Hécate Moonlight, Koz Ross
+maintainer: The Haskell Cryptography contributors
+license: BSD-3-Clause
+build-type: Simple
 tested-with:
-  GHC ==9.2.8 || ==9.4.8 || ==9.6.6 || ==9.8.2 || ==9.10.1
+  ghc ==9.2.8 || ==9.4.8 || ==9.6.6 || ==9.8.2 || ==9.10.1
 
 extra-source-files:
   LICENSE
   README.md
 
-extra-doc-files:    CHANGELOG.md
+extra-doc-files: CHANGELOG.md
 
 source-repository head
-  type:     git
+  type: git
   location: https://github.com/haskell-cryptography/libsodium-bindings
 
 common common
   ghc-options:
-    -Wall -Wcompat -Widentities -Wincomplete-record-updates
-    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
-    -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
-    -fprint-potential-instances -Wno-unticked-promoted-constructors
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wpartial-fields
+    -Wredundant-constraints
+    -fhide-source-paths
+    -Wno-unused-do-bind
+    -fshow-hole-constraints
+    -fprint-potential-instances
+    -Wno-unticked-promoted-constructors
     -Werror=unused-imports
 
   default-language: Haskell2010
 
 common test-options
-  ghc-options: -rtsopts -threaded -with-rtsopts=-N
+  ghc-options:
+    -rtsopts
+    -threaded
+    -with-rtsopts=-N
 
 library
-  import:          common
-  hs-source-dirs:  src
+  import: common
+  hs-source-dirs: src
   exposed-modules:
     Sel
+    Sel.HMAC
+    Sel.HMAC.SHA256
+    Sel.HMAC.SHA512
+    Sel.HMAC.SHA512_256
     Sel.Hashing
     Sel.Hashing.Password
     Sel.Hashing.SHA256
     Sel.Hashing.SHA512
     Sel.Hashing.Short
-    Sel.HMAC
-    Sel.HMAC.SHA256
-    Sel.HMAC.SHA512
-    Sel.HMAC.SHA512_256
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
@@ -69,26 +80,26 @@ library
     Sel.Internal.Sodium
 
   build-depends:
-    , base                 >=4.14   && <5
-    , base16               ^>=1.0
-    , bytestring           >=0.10   && <0.13
-    , libsodium-bindings   ^>=0.0.2
-    , text                 >=1.2    && <2.2
-    , text-builder-linear  ^>=0.1
-    , text-display         ^>=1.0
-    , transformers         ^>=0.6.0
+    base >=4.14 && <5,
+    base16 ^>=1.0,
+    bytestring >=0.10 && <0.13,
+    libsodium-bindings ^>=0.0.2,
+    text >=1.2 && <2.2,
+    text-builder-linear ^>=0.1,
+    text-display ^>=1.0,
+    transformers ^>=0.6.0,
 
 test-suite sel-tests
-  import:         common
-  import:         test-options
-  type:           exitcode-stdio-1.0
-  main-is:        Main.hs
+  import: common
+  import: test-options
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
   other-modules:
+    Test.HMAC
     Test.Hashing
     Test.Hashing.Password
     Test.Hashing.SHA2
     Test.Hashing.Short
-    Test.HMAC
     Test.PublicKey.Cipher
     Test.PublicKey.Seal
     Test.PublicKey.Signature
@@ -100,13 +111,13 @@ test-suite sel-tests
 
   hs-source-dirs: test
   build-depends:
-    , base
-    , base16
-    , bytestring
-    , hedgehog            ^>=1.4
-    , libsodium-bindings
-    , sel
-    , tasty               >=1.4   && <1.6
-    , tasty-hunit         ^>=0.10
-    , text
-    , text-display
+    base,
+    base16,
+    bytestring,
+    hedgehog ^>=1.4,
+    libsodium-bindings,
+    sel,
+    tasty >=1.4 && <1.6,
+    tasty-hunit ^>=0.10,
+    text,
+    text-display,

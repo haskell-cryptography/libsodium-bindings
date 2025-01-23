@@ -84,8 +84,6 @@ import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import Foreign.C.Error (throwErrno)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import LibSodium.Bindings.SecretStream
   ( CryptoSecretStreamXChaCha20Poly1305State
   , cryptoSecretStreamXChaCha20Poly1305ABytes
@@ -103,6 +101,8 @@ import LibSodium.Bindings.SecretStream
   , cryptoSecretStreamXChaCha20Poly1305TagRekey
   )
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumMalloc)
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal (allocateWith, foreignPtrEq, foreignPtrOrd)
 import Sel.Internal.Sodium (binaryToHex)
 

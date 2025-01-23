@@ -35,6 +35,7 @@ module LibSodium.Bindings.ShortHashing
 import Data.Word (Word8)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
 import Foreign.Ptr (Ptr, castPtr)
+
 import LibSodium.Bindings.Random (randombytesBuf)
 
 -- | Create a secret key of size 'cryptoShortHashKeyBytes'.

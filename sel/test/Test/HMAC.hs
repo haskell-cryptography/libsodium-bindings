@@ -2,11 +2,12 @@
 
 module Test.HMAC where
 
+import Test.Tasty
+import Test.Tasty.HUnit
+
 import qualified Sel.HMAC.SHA256 as SHA256
 import qualified Sel.HMAC.SHA256 as SHA512
 import qualified Sel.HMAC.SHA256 as SHA512_256
-import Test.Tasty
-import Test.Tasty.HUnit
 import TestUtils (assertRight)
 
 spec :: TestTree

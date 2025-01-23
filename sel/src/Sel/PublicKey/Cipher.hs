@@ -49,7 +49,9 @@ module Sel.PublicKey.Cipher
   , EncryptionError (..)
   ) where
 
+import Control.Exception
 import Control.Monad (when)
+import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -64,10 +66,6 @@ import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
 import qualified Foreign.C as Foreign
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
-import Control.Exception
-import qualified Data.Base16.Types as Base16
 import LibSodium.Bindings.CryptoBox
   ( cryptoBoxEasy
   , cryptoBoxKeyPair
@@ -79,6 +77,8 @@ import LibSodium.Bindings.CryptoBox
   )
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumFree, sodiumMalloc)
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 

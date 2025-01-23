@@ -23,6 +23,7 @@ module LibSodium.Bindings.SealedBoxes
 
 import Foreign (Ptr)
 import Foreign.C (CInt (CInt), CSize (CSize), CUChar, CULLong (CULLong))
+
 import LibSodium.Bindings.CryptoBox (cryptoBoxKeyPair, cryptoBoxSeedKeyPair)
 
 -- $introduction

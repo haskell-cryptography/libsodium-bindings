@@ -23,9 +23,10 @@ import Foreign.C (CSize, CUChar, throwErrno)
 import Foreign.C.Types (CChar)
 import LibSodium.Bindings.Comparison (sodiumCompare, sodiumMemcmp)
 import LibSodium.Bindings.SecureMemory (finalizerSodiumFree, sodiumFree, sodiumMalloc)
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal.Scoped
 import Sel.Internal.Scoped.Foreign
-import System.IO.Unsafe (unsafeDupablePerformIO)
 
 -- | Compare the contents of two byte arrays for equality in constant time.
 --

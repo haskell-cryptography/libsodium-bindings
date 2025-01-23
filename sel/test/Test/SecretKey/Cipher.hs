@@ -2,9 +2,10 @@
 
 module Test.SecretKey.Cipher where
 
-import Sel.SecretKey.Cipher
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import Sel.SecretKey.Cipher
 import TestUtils (assertRight)
 
 spec :: TestTree

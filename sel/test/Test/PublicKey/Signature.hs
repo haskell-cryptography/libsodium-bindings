@@ -2,9 +2,10 @@
 
 module Test.PublicKey.Signature where
 
-import Sel.PublicKey.Signature
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import Sel.PublicKey.Signature
 
 spec :: TestTree
 spec =

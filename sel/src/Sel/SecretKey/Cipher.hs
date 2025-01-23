@@ -57,8 +57,6 @@ import Data.Word (Word8)
 import Foreign (ForeignPtr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
 import LibSodium.Bindings.Random (randombytesBuf)
 import LibSodium.Bindings.Secretbox
   ( cryptoSecretboxEasy
@@ -69,6 +67,8 @@ import LibSodium.Bindings.Secretbox
   , cryptoSecretboxOpenEasy
   )
 import LibSodium.Bindings.SecureMemory
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 

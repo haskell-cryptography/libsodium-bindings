@@ -33,10 +33,13 @@ module Sel.Hashing.SHA512
   ) where
 
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
+import Data.Kind (Type)
 import Data.Text (Text)
 import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display (Display (..))
@@ -54,9 +57,6 @@ import LibSodium.Bindings.SHA2
   , cryptoHashSHA512Update
   )
 
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import qualified Data.Base16.Types as Base16
-import Data.Kind (Type)
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 

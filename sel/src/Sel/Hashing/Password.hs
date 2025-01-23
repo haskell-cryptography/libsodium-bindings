@@ -53,6 +53,7 @@ module Sel.Hashing.Password
 where
 
 import Control.Monad (void)
+import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
@@ -65,14 +66,12 @@ import Data.Text.Display
 import qualified Data.Text.Encoding as Text
 import Foreign hiding (void)
 import Foreign.C
-import System.IO.Unsafe (unsafeDupablePerformIO)
-
-import Sel.Internal
-
-import qualified Data.Base16.Types as Base16
 import GHC.Generics
 import LibSodium.Bindings.PasswordHashing
 import LibSodium.Bindings.Random
+import System.IO.Unsafe (unsafeDupablePerformIO)
+
+import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 
 -- $introduction

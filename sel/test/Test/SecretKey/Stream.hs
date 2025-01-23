@@ -3,9 +3,10 @@
 module Test.SecretKey.Stream where
 
 import Data.ByteString (StrictByteString)
-import qualified Sel.SecretKey.Stream as Stream
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import qualified Sel.SecretKey.Stream as Stream
 import TestUtils
 
 spec :: TestTree

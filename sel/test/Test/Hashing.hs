@@ -4,14 +4,14 @@
 module Test.Hashing where
 
 import Control.Monad (void)
-
 import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.GenericHashing (cryptoGenericHash, cryptoGenericHashBytes)
-import qualified Sel.Hashing as Hashing
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import qualified Sel.Hashing as Hashing
 
 spec :: TestTree
 spec =

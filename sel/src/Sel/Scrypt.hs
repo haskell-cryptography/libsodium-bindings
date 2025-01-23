@@ -37,6 +37,7 @@ import qualified Data.Text.Encoding as Text
 import Foreign hiding (void)
 import Foreign.C
 import LibSodium.Bindings.Scrypt
+
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
 

@@ -6,9 +6,10 @@ import Data.Function (on)
 import Data.Maybe (isNothing)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Sel.Hashing.Password as Sel
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import qualified Sel.Hashing.Password as Sel
 
 spec :: TestTree
 spec =

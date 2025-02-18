@@ -20,7 +20,7 @@ spec =
 testAuthenticateMessage :: Assertion
 testAuthenticateMessage = do
   key <- newAuthenticationKey
-  tag <- authenticate "hello, world" key
+  let tag = authenticate "hello, world" key
   assertBool
     "Tag verified"
     (verify tag key "hello, world")
@@ -38,8 +38,8 @@ testAuthKeySerdeRoundtrip = do
 testAuthTagSerdeRoundtrip :: Assertion
 testAuthTagSerdeRoundtrip = do
   key <- newAuthenticationKey
-  expectedTag <- authenticate "hello, world" key
-  let hexTag = authenticationTagToHexByteString expectedTag
+  let expectedTag = authenticate "hello, world" key
+      hexTag = authenticationTagToHexByteString expectedTag
   actualTag <- assertRight $ authenticationTagFromHexByteString hexTag
   assertEqual
     "Tag is expected"

@@ -76,7 +76,7 @@ import Sel.Internal.Sodium (binaryToHex)
 -- >   authKey <- Auth.newAuthenticationKey
 -- >   -- An authentication tag is computed for the message by the server
 -- >   let message = "Hello, world!"
--- >   tag <- Auth.authenticate message
+-- >       tag = Auth.authenticate message
 -- >   -- The server sends the message and its authentication tag
 -- >   -- […]
 -- >   -- The recipient of the message uses the shared secret to validate the message's tag
@@ -91,9 +91,9 @@ authenticate
   -- ^ Message to authenticate
   -> AuthenticationKey
   -- ^ Secret key for authentication
-  -> IO AuthenticationTag
+  -> AuthenticationTag
   -- ^ Cryptographic tag for authentication
-authenticate message (AuthenticationKey authenticationKeyForeignPtr) =
+authenticate message (AuthenticationKey authenticationKeyForeignPtr) = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     authenticationTagForeignPtr <-
       Foreign.mallocForeignPtrBytes

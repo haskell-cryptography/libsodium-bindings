@@ -253,6 +253,10 @@ module Sel.SecretKey.Cipher where
   unsafeSecretKeyToHexByteString :: SecretKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
 
 module Sel.SecretKey.Stream where
+  type AdditionalData :: *
+  newtype AdditionalData = AdditionalData bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  type AdditionalDataHexDecodingError :: *
+  newtype AdditionalDataHexDecodingError = AdditionalDataHexDecodingError Data.Text.Internal.Text
   type Ciphertext :: *
   data Ciphertext = Sel.SecretKey.Stream.Ciphertext {Sel.SecretKey.Stream.messageLength :: Foreign.C.Types.CULLong, Sel.SecretKey.Stream.ciphertextForeignPtr :: GHC.ForeignPtr.ForeignPtr Foreign.C.Types.CUChar}
   type Header :: *
@@ -270,15 +274,19 @@ module Sel.SecretKey.Stream where
   data StreamEncryptionException = Sel.SecretKey.Stream.StreamEncryptionException
   type StreamInitEncryptionException :: *
   data StreamInitEncryptionException = Sel.SecretKey.Stream.StreamInitEncryptionException
+  additionalDataFromHexByteString :: base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either AdditionalDataHexDecodingError AdditionalData
+  additionalDataToBinary :: AdditionalData -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  additionalDataToHexByteString :: AdditionalData -> base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  additionalDataToHexText :: AdditionalData -> base16-1.0:Data.Base16.Types.Internal.Base16 Data.Text.Internal.Text
   ciphertextFromHexByteString :: base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text Ciphertext
   ciphertextToBinary :: Ciphertext -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   ciphertextToHexByteString :: Ciphertext -> base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   ciphertextToHexText :: Ciphertext -> base16-1.0:Data.Base16.Types.Internal.Base16 Data.Text.Internal.Text
-  decryptChunk :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> Ciphertext -> m bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
-  decryptList :: forall (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> Header -> [Ciphertext] -> m (GHC.Maybe.Maybe [bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString])
+  decryptChunk :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> GHC.Maybe.Maybe AdditionalData -> Ciphertext -> m bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
+  decryptList :: forall (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> Header -> [(GHC.Maybe.Maybe AdditionalData, Ciphertext)] -> m (GHC.Maybe.Maybe [bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString])
   decryptStream :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> Header -> (forall s. Multipart s -> m a) -> m (GHC.Maybe.Maybe a)
-  encryptChunk :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> MessageTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> m Ciphertext
-  encryptList :: forall (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> [bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString] -> m (Header, [Ciphertext])
+  encryptChunk :: forall (m :: * -> *) s. Control.Monad.IO.Class.MonadIO m => Multipart s -> MessageTag -> GHC.Maybe.Maybe AdditionalData -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> m Ciphertext
+  encryptList :: forall (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> [(GHC.Maybe.Maybe AdditionalData, bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString)] -> m (Header, [Ciphertext])
   encryptStream :: forall a (m :: * -> *). Control.Monad.IO.Class.MonadIO m => SecretKey -> (forall s. Multipart s -> m a) -> m (Header, a)
   headerFromHexByteString :: base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text Header
   headerToHexByteString :: Header -> base16-1.0:Data.Base16.Types.Internal.Base16 bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
@@ -324,6 +332,8 @@ instance GHC.Show.Show Sel.SecretKey.Authentication.AuthenticationTag -- Defined
 instance GHC.Show.Show Sel.SecretKey.Cipher.Ciphertext -- Defined in ‘Sel.SecretKey.Cipher’
 instance GHC.Show.Show Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
 instance GHC.Show.Show Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Show.Show Sel.SecretKey.Stream.AdditionalData -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Show.Show Sel.SecretKey.Stream.AdditionalDataHexDecodingError -- Defined in ‘Sel.SecretKey.Stream’
 instance GHC.Show.Show Sel.SecretKey.Stream.Ciphertext -- Defined in ‘Sel.SecretKey.Stream’
 instance GHC.Show.Show Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
 instance GHC.Show.Show Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’
@@ -360,6 +370,8 @@ instance GHC.Classes.Eq Sel.SecretKey.Authentication.AuthenticationTag -- Define
 instance GHC.Classes.Eq Sel.SecretKey.Cipher.Ciphertext -- Defined in ‘Sel.SecretKey.Cipher’
 instance GHC.Classes.Eq Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
 instance GHC.Classes.Eq Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.AdditionalData -- Defined in ‘Sel.SecretKey.Stream’
+instance GHC.Classes.Eq Sel.SecretKey.Stream.AdditionalDataHexDecodingError -- Defined in ‘Sel.SecretKey.Stream’
 instance GHC.Classes.Eq Sel.SecretKey.Stream.Ciphertext -- Defined in ‘Sel.SecretKey.Stream’
 instance GHC.Classes.Eq Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
 instance GHC.Classes.Eq Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’
@@ -426,6 +438,7 @@ instance Data.Text.Display.Core.Display Sel.SecretKey.Authentication.Authenticat
 instance Data.Text.Display.Core.Display Sel.SecretKey.Cipher.Ciphertext -- Defined in ‘Sel.SecretKey.Cipher’
 instance Data.Text.Display.Core.Display Sel.SecretKey.Cipher.Nonce -- Defined in ‘Sel.SecretKey.Cipher’
 instance Data.Text.Display.Core.Display Sel.SecretKey.Cipher.SecretKey -- Defined in ‘Sel.SecretKey.Cipher’
+instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.AdditionalData -- Defined in ‘Sel.SecretKey.Stream’
 instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.Ciphertext -- Defined in ‘Sel.SecretKey.Stream’
 instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.Header -- Defined in ‘Sel.SecretKey.Stream’
 instance Data.Text.Display.Core.Display Sel.SecretKey.Stream.SecretKey -- Defined in ‘Sel.SecretKey.Stream’

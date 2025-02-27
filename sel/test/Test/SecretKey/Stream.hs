@@ -15,7 +15,7 @@ spec =
     "Secret Key Encrypted Stream tests"
     [ testCase "Encrypt a stream with a secret key" testEncryptStream
     , testCase "Round-trip secret key serialisation" testSecretKeySerdeRoundtrip
-    , testCase "Round-trip ciphertext serialisation" testCipherTextSerdeRoundtrip
+    , testCase "Round-trip ciphertext serialisation" testCiphertextSerdeRoundtrip
     -- , testCase "Round-trip header serialisation" testHeaderSerdeRoundtrip
     ]
 
@@ -23,8 +23,8 @@ testEncryptStream :: Assertion
 testEncryptStream = do
   secretKey <- Stream.newSecretKey
   let messages = ["Hello", "abcdf", "world"]
-  (header, cipherTexts) <- Stream.encryptList secretKey messages
-  mResult <- Stream.decryptList secretKey header cipherTexts
+  (header, ciphertexts) <- Stream.encryptList secretKey messages
+  mResult <- Stream.decryptList secretKey header ciphertexts
   result <- assertJust mResult
 
   assertEqual
@@ -43,15 +43,15 @@ testSecretKeySerdeRoundtrip = do
     secretKey1
     secretKey2
 
-testCipherTextSerdeRoundtrip :: Assertion
-testCipherTextSerdeRoundtrip = do
+testCiphertextSerdeRoundtrip :: Assertion
+testCiphertextSerdeRoundtrip = do
   secretKey <- Stream.newSecretKey
   let message = "hello" :: StrictByteString
   (_, encryptedPayload1) <- Stream.encryptStream secretKey $ \multipart -> do
     Stream.encryptChunk multipart Stream.Final message
 
-  let hexCipherText = Stream.ciphertextToHexByteString encryptedPayload1
-  encryptedPayload2 <- assertRight $ Stream.ciphertextFromHexByteString hexCipherText
+  let hexCiphertext = Stream.ciphertextToHexByteString encryptedPayload1
+  encryptedPayload2 <- assertRight $ Stream.ciphertextFromHexByteString hexCiphertext
 
   assertEqual
     "The ciphertexts remain equal"

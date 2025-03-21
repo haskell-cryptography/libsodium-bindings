@@ -98,7 +98,7 @@ jobs:
         run: cabal freeze --project-file=cabal.pkg-config.project
 
       - name: Cache
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key: ${{ runner.os }}-ghc-${{ steps.setup-haskell.outputs.ghc-version }}-cabal-${{ hashFiles('**/plan.json') }}

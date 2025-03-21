@@ -23,8 +23,11 @@ testEncryptStream :: Assertion
 testEncryptStream = do
   secretKey <- Stream.newSecretKey
   let messages = ["Hello", "abcdf", "world"]
-  (header, ciphertexts) <- Stream.encryptList secretKey messages
-  mResult <- Stream.decryptList secretKey header ciphertexts
+      ad = map Just [Stream.AdditionalData "Goodbye", Stream.AdditionalData "31337", Stream.AdditionalData "planet"]
+      messagesAndAd = zip ad messages
+  (header, ciphertexts) <- Stream.encryptList secretKey messagesAndAd
+  let ciphertextsAndAd = zip ad ciphertexts
+  mResult <- Stream.decryptList secretKey header ciphertextsAndAd
   result <- assertJust mResult
 
   assertEqual
@@ -47,8 +50,9 @@ testCiphertextSerdeRoundtrip :: Assertion
 testCiphertextSerdeRoundtrip = do
   secretKey <- Stream.newSecretKey
   let message = "hello" :: StrictByteString
+      additionalData = Stream.AdditionalData "this is additional data"
   (_, encryptedPayload1) <- Stream.encryptStream secretKey $ \multipart -> do
-    Stream.encryptChunk multipart Stream.Final message
+    Stream.encryptChunk multipart Stream.Final (Just additionalData) message
 
   let hexCiphertext = Stream.ciphertextToHexByteString encryptedPayload1
   encryptedPayload2 <- assertRight $ Stream.ciphertextFromHexByteString hexCiphertext

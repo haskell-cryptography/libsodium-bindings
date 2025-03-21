@@ -12,7 +12,7 @@
 -- |
 --
 -- Module: Sel.SecretKey.Stream
--- Description: Encrypted Streams with ChaCha20Poly1305
+-- Description: Encrypted Streams with XChaCha20-Poly1305
 -- Copyright: (C) Hécate Moonlight 2024
 -- License: BSD-3-Clause
 -- Maintainer: The Haskell Cryptography Group
@@ -51,6 +51,14 @@ module Sel.SecretKey.Stream
     -- ** Message Tags
   , MessageTag (..)
 
+    -- ** Additional data (AD)
+  , AdditionalData (..)
+  , AdditionalDataHexDecodingError (..)
+  , additionalDataFromHexByteString
+  , additionalDataToBinary
+  , additionalDataToHexByteString
+  , additionalDataToHexText
+
     -- ** Ciphertext
   , Ciphertext
   , ciphertextFromHexByteString
@@ -79,7 +87,7 @@ import qualified Data.List as List
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Builder.Linear as Builder
-import Data.Text.Display (Display (..), OpaqueInstance (..))
+import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
 import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
@@ -184,41 +192,47 @@ encryptChunk
   -- ^ Cryptographic context
   -> MessageTag
   -- ^ Tag that will be associated with the message. See the documentation of 'MessageTag' to know which to choose when.
+  -> Maybe AdditionalData
+  -- ^ Additional data (AD) to be authenticated.
   -> StrictByteString
   -- ^ Message to encrypt.
   -> m Ciphertext
-encryptChunk (Multipart statePtr) messageTag message = liftIO $ BSU.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
-  let messagePtr = Foreign.castPtr @CChar @CUChar cString
-  let messageLen = fromIntegral @Int @CULLong cStringLen
-  ciphertextFPtr <- Foreign.mallocForeignPtrBytes (cStringLen + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
-  Foreign.withForeignPtr ciphertextFPtr $ \ciphertextBuffer -> do
-    result <-
-      cryptoSecretStreamXChaCha20Poly1305Push
-        statePtr
-        ciphertextBuffer
-        Foreign.nullPtr -- default size of messageLen + 'cryptoSecretStreamXChaCha20Poly1305ABytes'
-        messagePtr
-        messageLen
-        Foreign.nullPtr -- No additional data
-        0 -- No additional data size
-        (messageTagToConstant messageTag)
-    when (result /= 0) $ throw StreamEncryptionException
-  pure $ Ciphertext (fromIntegral cStringLen) ciphertextFPtr
+encryptChunk (Multipart statePtr) messageTag mbAd message = liftIO $
+  BSU.unsafeUseAsCStringLen message $ \(messageCString, messageCStringLen) ->
+    BSU.unsafeUseAsCStringLen (maybe BS.empty additionalDataToBinary mbAd) $ \(adCString, adCStringLen) -> do
+      let messagePtr = Foreign.castPtr @CChar @CUChar messageCString
+          messageLen = fromIntegral @Int @CULLong messageCStringLen
+          adPtr = Foreign.castPtr @CChar @CUChar adCString
+          adLen = fromIntegral @Int @CULLong adCStringLen
+      ciphertextFPtr <- Foreign.mallocForeignPtrBytes (messageCStringLen + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes)
+      Foreign.withForeignPtr ciphertextFPtr $ \ciphertextBuffer -> do
+        result <-
+          cryptoSecretStreamXChaCha20Poly1305Push
+            statePtr
+            ciphertextBuffer
+            Foreign.nullPtr -- default size of messageLen + 'cryptoSecretStreamXChaCha20Poly1305ABytes'
+            messagePtr
+            messageLen
+            adPtr
+            adLen
+            (messageTagToConstant messageTag)
+        when (result /= 0) $ throw StreamEncryptionException
+      pure $ Ciphertext (fromIntegral messageCStringLen) ciphertextFPtr
 
 -- | Perform streaming encryption of a finite list.
 --
 -- This function can throw 'StreamEncryptionException' upon an error in the underlying implementation.
 --
 -- @since 0.0.1.0
-encryptList :: forall m. MonadIO m => SecretKey -> [StrictByteString] -> m (Header, [Ciphertext])
+encryptList :: forall m. MonadIO m => SecretKey -> [(Maybe AdditionalData, StrictByteString)] -> m (Header, [Ciphertext])
 encryptList secretKey messages = encryptStream secretKey $ \multipart -> go multipart messages []
   where
-    go :: Multipart s -> [StrictByteString] -> [Ciphertext] -> m [Ciphertext]
-    go multipart [lastMsg] acc = do
-      encryptedChunk <- encryptChunk multipart Final lastMsg
+    go :: Multipart s -> [(Maybe AdditionalData, StrictByteString)] -> [Ciphertext] -> m [Ciphertext]
+    go multipart [(mbLastAd, lastMsg)] acc = do
+      encryptedChunk <- encryptChunk multipart Final mbLastAd lastMsg
       pure $ List.reverse $ encryptedChunk : acc
-    go multipart (msg : rest) acc = do
-      encryptedChunk <- encryptChunk multipart Message msg
+    go multipart ((mbAd, msg) : rest) acc = do
+      encryptedChunk <- encryptChunk multipart Message mbAd msg
       go multipart rest (encryptedChunk : acc)
     go _ [] acc = pure acc
 
@@ -264,41 +278,46 @@ decryptChunk
    . MonadIO m
   => Multipart s
   -- ^ Cryptographic context
+  -> Maybe AdditionalData
+  -- ^ Additional data (AD) to be authenticated.
   -> Ciphertext
   -- ^ Encrypted message portion to decrypt
   -> m StrictByteString
   -- ^ Decrypted message portion
-decryptChunk (Multipart statePtr) Ciphertext{messageLength, ciphertextForeignPtr} = do
+decryptChunk (Multipart statePtr) mbAd Ciphertext{messageLength, ciphertextForeignPtr} = do
   clearTextForeignPtr <- liftIO $ Foreign.mallocForeignPtrBytes (fromIntegral messageLength)
   let ciphertextLen = messageLength + fromIntegral cryptoSecretStreamXChaCha20Poly1305ABytes
   liftIO $ Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextBuffer -> do
-    liftIO $ Foreign.withForeignPtr clearTextForeignPtr $ \clearTextBuffer -> do
-      tagBuffer <- sodiumMalloc 1
-      result <-
-        cryptoSecretStreamXChaCha20Poly1305Pull
-          statePtr
-          clearTextBuffer
-          Foreign.nullPtr
-          tagBuffer
-          ciphertextBuffer
-          ciphertextLen
-          Foreign.nullPtr
-          0
-      when (result /= 0) $ throw StreamDecryptionException
-      bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
-      Foreign.copyBytes bsPtr (Foreign.castPtr clearTextBuffer) (fromIntegral messageLength)
-      BSU.unsafePackMallocCStringLen (bsPtr, fromIntegral messageLength)
+    BSU.unsafeUseAsCStringLen (maybe BS.empty additionalDataToBinary mbAd) $ \(adCString, adCStringLen) -> do
+      let adPtr = Foreign.castPtr @CChar @CUChar adCString
+          adLen = fromIntegral @Int @CULLong adCStringLen
+      liftIO $ Foreign.withForeignPtr clearTextForeignPtr $ \clearTextBuffer -> do
+        tagBuffer <- sodiumMalloc 1
+        result <-
+          cryptoSecretStreamXChaCha20Poly1305Pull
+            statePtr
+            clearTextBuffer
+            Foreign.nullPtr
+            tagBuffer
+            ciphertextBuffer
+            ciphertextLen
+            adPtr
+            adLen
+        when (result /= 0) $ throw StreamDecryptionException
+        bsPtr <- Foreign.mallocBytes (fromIntegral messageLength)
+        Foreign.copyBytes bsPtr (Foreign.castPtr clearTextBuffer) (fromIntegral messageLength)
+        BSU.unsafePackMallocCStringLen (bsPtr, fromIntegral messageLength)
 
 -- | Perform streaming decryption of a finite Linked List.
 --
 -- This function can throw 'StreamDecryptionException' if the chunk is invalid, incomplete, or corrupted.
 --
 -- @since 0.0.1.0
-decryptList :: forall m. MonadIO m => SecretKey -> Header -> [Ciphertext] -> m (Maybe [StrictByteString])
+decryptList :: forall m. MonadIO m => SecretKey -> Header -> [(Maybe AdditionalData, Ciphertext)] -> m (Maybe [StrictByteString])
 decryptList secretKey header encryptedMessages =
   decryptStream secretKey header $ \multipart -> do
-    forM encryptedMessages $ \ciphertext -> do
-      decryptChunk multipart ciphertext
+    forM encryptedMessages $ \(mbAd, ciphertext) -> do
+      decryptChunk multipart mbAd ciphertext
 
 -- | A secret key of size 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
 --
@@ -460,6 +479,47 @@ messageTagToConstant = \case
   Final -> fromIntegral cryptoSecretStreamXChaCha20Poly1305TagFinal
   Push -> fromIntegral cryptoSecretStreamXChaCha20Poly1305TagPush
   Rekey -> fromIntegral cryptoSecretStreamXChaCha20Poly1305TagRekey
+
+-- | Additional data (AD). Also known as \"additional authenticated data\"
+-- (AAD).
+--
+-- This refers to non-confidential data which is authenticated along with the
+-- message, but not encrypted (i.e. its integrity is protected, but it is not
+-- made confidential).
+--
+-- A typical use case for additional data is to authenticate protocol-specific
+-- metadata about a message, such as its length and encoding.
+newtype AdditionalData = AdditionalData StrictByteString
+  deriving stock (Eq, Show)
+  deriving (Display) via (ShowInstance AdditionalData)
+
+-- | Convert an 'AdditionalData' value to hexadecimal-encoded 'Text'.
+additionalDataToHexText :: AdditionalData -> Base16 Text
+additionalDataToHexText = Base16.encodeBase16 . additionalDataToBinary
+
+-- | Convert an 'AdditionalData' value to a hexadecimal-encoded
+-- 'StrictByteString'.
+additionalDataToHexByteString :: AdditionalData -> Base16 StrictByteString
+additionalDataToHexByteString = Base16.encodeBase16' . additionalDataToBinary
+
+-- | Convert an 'AdditionalData' value to a raw binary 'StrictByteString'.
+additionalDataToBinary :: AdditionalData -> StrictByteString
+additionalDataToBinary (AdditionalData bs) = bs
+
+-- | Error decoding 'AdditionalData' from hexadecimal-encoded bytes.
+newtype AdditionalDataHexDecodingError = AdditionalDataHexDecodingError Text
+  deriving stock (Eq, Show)
+
+-- | Construct an 'AdditionalData' value from a hexadecimal-encoded
+-- 'StrictByteString' that you have obtained on your own, usually from the
+-- network or disk.
+additionalDataFromHexByteString
+  :: Base16 StrictByteString
+  -> Either AdditionalDataHexDecodingError AdditionalData
+additionalDataFromHexByteString hexBs =
+  case Base16.decodeBase16Untyped (Base16.extractBase16 hexBs) of
+    Left err -> Left (AdditionalDataHexDecodingError err)
+    Right bs -> Right (AdditionalData bs)
 
 -- | An encrypted message. It is guaranteed to be of size:
 --  @original_message_length + 'cryptoSecretStreamXChaCha20Poly1305ABytes'@

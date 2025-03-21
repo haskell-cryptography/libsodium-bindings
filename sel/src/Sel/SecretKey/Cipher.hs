@@ -34,12 +34,12 @@ module Sel.SecretKey.Cipher
   , nonceFromHexByteString
   , nonceToHexByteString
 
-    -- ** Hash
-  , Hash
-  , hashFromHexByteString
-  , hashToBinary
-  , hashToHexByteString
-  , hashToHexText
+    -- ** Ciphertext
+  , Ciphertext
+  , ciphertextFromHexByteString
+  , ciphertextToBinary
+  , ciphertextToHexByteString
+  , ciphertextToHexText
   ) where
 
 import Control.Monad (void, when)
@@ -75,7 +75,7 @@ import Sel.Internal.Sodium (binaryToHex)
 -- $introduction
 -- "Authenticated Encryption" uses a secret key along with a single-use number
 -- called a "nonce" to encrypt a message.
--- The resulting hash is accompanied by an authentication tag.
+-- The resulting ciphertext is accompanied by an authentication tag.
 --
 -- Encryption is done with the XSalsa20 stream cipher and authentication is done with the
 -- Poly1305 MAC hash.
@@ -213,7 +213,7 @@ instance Show Nonce where
 -- | Generate a new random nonce.
 -- Only use it once per exchanged message.
 --
--- Do not use this outside of hash creation!
+-- Do not use this outside of ciphertext creation!
 newNonce :: IO Nonce
 newNonce = do
   (fPtr :: ForeignPtr CUChar) <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoSecretboxNonceBytes)
@@ -255,16 +255,16 @@ nonceToHexByteString (Nonce nonceForeignPtr) =
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --
 -- @since 0.0.1.0
-data Hash = Hash
+data Ciphertext = Ciphertext
   { messageLength :: CULLong
-  , hashForeignPtr :: ForeignPtr CUChar
+  , ciphertextForeignPtr :: ForeignPtr CUChar
   }
 
 -- |
 --
 -- @since 0.0.1.0
-instance Eq Hash where
-  (Hash messageLength1 hk1) == (Hash messageLength2 hk2) =
+instance Eq Ciphertext where
+  (Ciphertext messageLength1 hk1) == (Ciphertext messageLength2 hk2) =
     let
       messageLength = messageLength1 == messageLength2
       content =
@@ -278,8 +278,8 @@ instance Eq Hash where
 -- |
 --
 -- @since 0.0.1.0
-instance Ord Hash where
-  compare (Hash messageLength1 hk1) (Hash messageLength2 hk2) =
+instance Ord Ciphertext where
+  compare (Ciphertext messageLength1 hk1) (Ciphertext messageLength2 hk2) =
     let
       messageLength = compare messageLength1 messageLength2
       content =
@@ -293,69 +293,70 @@ instance Ord Hash where
 -- | ⚠️  Be prudent as to what you do with it!
 --
 -- @since 0.0.1.0
-instance Display Hash where
-  displayBuilder = Builder.fromText . hashToHexText
+instance Display Ciphertext where
+  displayBuilder = Builder.fromText . ciphertextToHexText
 
 -- | ⚠️  Be prudent as to what you do with it!
 --
 -- @since 0.0.1.0
-instance Show Hash where
-  show = BS.unpackChars . hashToHexByteString
+instance Show Ciphertext where
+  show = BS.unpackChars . ciphertextToHexByteString
 
--- | Create a 'Hash' from a binary 'StrictByteString' that you have obtained on your own,
--- usually from the network or disk. It must be a valid hash built from the concatenation
--- of the encrypted message and the authentication tag.
+-- | Create a 'Ciphertext' from a hexadecimal-encoded 'StrictByteString' that
+-- you have obtained on your own, usually from the network or disk. It must be
+-- a valid ciphertext built from the concatenation of the encrypted message and
+-- the authentication tag.
 --
--- The input hash must at least of length 'cryptoSecretboxMACBytes'
+-- The input ciphertext must at least of length 'cryptoSecretboxMACBytes'.
 --
 -- @since 0.0.1.0
-hashFromHexByteString :: StrictByteString -> Either Text Hash
-hashFromHexByteString hexHash = unsafeDupablePerformIO $
-  case Base16.decodeBase16Untyped hexHash of
+ciphertextFromHexByteString :: StrictByteString -> Either Text Ciphertext
+ciphertextFromHexByteString hexCiphertext = unsafeDupablePerformIO $
+  case Base16.decodeBase16Untyped hexCiphertext of
     Right bytestring ->
       if BS.length bytestring >= fromIntegral cryptoSecretboxMACBytes
-        then BS.unsafeUseAsCStringLen bytestring $ \(outsideHashPtr, outsideHashLength) -> do
-          hashForeignPtr <- BS.mallocByteString @CChar outsideHashLength -- The foreign pointer that will receive the hash data.
-          Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
-            -- We copy bytes from 'outsideHashPtr' to 'hashPtr'.
-            Foreign.copyArray hashPtr outsideHashPtr outsideHashLength
+        then BS.unsafeUseAsCStringLen bytestring $ \(outsideCiphertextPtr, outsideCiphertextLength) -> do
+          ciphertextForeignPtr <- BS.mallocByteString @CChar outsideCiphertextLength -- The foreign pointer that will receive the ciphertext data.
+          Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextPtr ->
+            -- We copy bytes from 'outsideCiphertextPtr' to 'ciphertextPtr'.
+            Foreign.copyArray ciphertextPtr outsideCiphertextPtr outsideCiphertextLength
           pure $
             Right $
-              Hash
-                (fromIntegral @Int @CULLong outsideHashLength - fromIntegral @CSize @CULLong cryptoSecretboxMACBytes)
-                (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
-        else pure $ Left $ Text.pack "Hash is too short"
+              Ciphertext
+                (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoSecretboxMACBytes)
+                (Foreign.castForeignPtr @CChar @CUChar ciphertextForeignPtr)
+        else pure $ Left $ Text.pack "Ciphertext is too short"
     Left msg -> pure $ Left msg
 
--- | Convert a 'Hash' to a hexadecimal-encoded 'Text'.
+-- | Convert a 'Ciphertext' to a hexadecimal-encoded 'Text'.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-hashToHexText :: Hash -> Text
-hashToHexText = Base16.extractBase16 . Base16.encodeBase16 . hashToBinary
+ciphertextToHexText :: Ciphertext -> Text
+ciphertextToHexText = Base16.extractBase16 . Base16.encodeBase16 . ciphertextToBinary
 
--- | Convert a 'Hash' to a hexadecimal-encoded 'StrictByteString' in constant time.
+-- | Convert a 'Ciphertext' to a hexadecimal-encoded 'StrictByteString' in constant time.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-hashToHexByteString :: Hash -> StrictByteString
-hashToHexByteString (Hash messageLength fPtr) =
+ciphertextToHexByteString :: Ciphertext -> StrictByteString
+ciphertextToHexByteString (Ciphertext messageLength fPtr) =
   binaryToHex fPtr (cryptoSecretboxMACBytes + fromIntegral messageLength)
 
--- | Convert a 'Hash' to a binary 'StrictByteString'.
+-- | Convert a 'Ciphertext' to a binary 'StrictByteString'.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
-hashToBinary :: Hash -> StrictByteString
-hashToBinary (Hash messageLength fPtr) =
+ciphertextToBinary :: Ciphertext -> StrictByteString
+ciphertextToBinary (Ciphertext messageLength fPtr) =
   BS.fromForeignPtr0
     (Foreign.castForeignPtr fPtr)
     (fromIntegral messageLength + fromIntegral cryptoSecretboxMACBytes)
 
--- | Create an authenticated hash from a message, a secret key,
+-- | Create an authenticated ciphertext from a message, a secret key,
 -- and a one-time cryptographic nonce that must never be re-used with the same
 -- secret key to encrypt another message.
 --
@@ -365,46 +366,46 @@ encrypt
   -- ^ Message to encrypt.
   -> SecretKey
   -- ^ Secret key generated with 'newSecretKey'.
-  -> IO (Nonce, Hash)
+  -> IO (Nonce, Ciphertext)
 encrypt message (SecretKey secretKeyForeignPtr) =
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     (Nonce nonceForeignPtr) <- newNonce
-    hashForeignPtr <-
+    ciphertextForeignPtr <-
       Foreign.mallocForeignPtrBytes
         (cStringLen + fromIntegral cryptoSecretboxMACBytes)
-    Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
+    Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextPtr ->
       Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
         Foreign.withForeignPtr nonceForeignPtr $ \noncePtr -> do
           void $
             cryptoSecretboxEasy
-              hashPtr
+              ciphertextPtr
               (Foreign.castPtr @CChar @CUChar cString)
               (fromIntegral @Int @CULLong cStringLen)
               noncePtr
               secretKeyPtr
-    let hash = Hash (fromIntegral @Int @CULLong cStringLen) hashForeignPtr
-    pure (Nonce nonceForeignPtr, hash)
+    let ciphertext = Ciphertext (fromIntegral @Int @CULLong cStringLen) ciphertextForeignPtr
+    pure (Nonce nonceForeignPtr, ciphertext)
 
--- | Decrypt a hashed and authenticated message with the shared secret key and the one-time cryptographic nonce.
+-- | Decrypt an encrypted and authenticated message with the shared secret key and the one-time cryptographic nonce.
 --
 -- @since 0.0.1.0
 decrypt
-  :: Hash
+  :: Ciphertext
   -- ^ Encrypted message you want to decrypt.
   -> SecretKey
   -- ^ Secret key used for encrypting the original message.
   -> Nonce
   -- ^ Nonce used for encrypting the original message.
   -> Maybe StrictByteString
-decrypt Hash{messageLength, hashForeignPtr} (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) = unsafeDupablePerformIO $ do
+decrypt Ciphertext{messageLength, ciphertextForeignPtr} (SecretKey secretKeyForeignPtr) (Nonce nonceForeignPtr) = unsafeDupablePerformIO $ do
   messagePtr <- Foreign.mallocBytes (fromIntegral @CULLong @Int messageLength)
-  Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
+  Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextPtr ->
     Foreign.withForeignPtr secretKeyForeignPtr $ \secretKeyPtr ->
       Foreign.withForeignPtr nonceForeignPtr $ \noncePtr -> do
         result <-
           cryptoSecretboxOpenEasy
             messagePtr
-            hashPtr
+            ciphertextPtr
             (messageLength + fromIntegral cryptoSecretboxMACBytes)
             noncePtr
             secretKeyPtr

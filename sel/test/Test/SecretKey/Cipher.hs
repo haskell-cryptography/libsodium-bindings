@@ -15,7 +15,7 @@ spec =
     [ testCase "Encrypt a message with a secret key and a nonce" testEncryptMessage
     , testCase "Round-trip nonce serialisation" testNonceSerdeRoundtrip
     , testCase "Round-trip secret key serialisation" testSecretKeySerdeRoundtrip
-    , testCase "Round-trip hash serialisation" testHashSerdeRoundtrip
+    , testCase "Round-trip ciphertext serialisation" testCiphertextSerdeRoundtrip
     ]
 
 testEncryptMessage :: Assertion
@@ -41,9 +41,9 @@ testSecretKeySerdeRoundtrip = do
   secretKey2 <- assertRight $ secretKeyFromHexByteString . unsafeSecretKeyToHexByteString $ secretKey
   assertEqual "Roundtripping secret key" secretKey secretKey2
 
-testHashSerdeRoundtrip :: Assertion
-testHashSerdeRoundtrip = do
+testCiphertextSerdeRoundtrip :: Assertion
+testCiphertextSerdeRoundtrip = do
   secretKey <- newSecretKey
-  (_, hash) <- encrypt "" secretKey
-  hash2 <- assertRight $ hashFromHexByteString . hashToHexByteString $ hash
-  assertEqual "Roundtripping hash" hash hash2
+  (_, ciphertext) <- encrypt "" secretKey
+  ciphertext2 <- assertRight $ ciphertextFromHexByteString . ciphertextToHexByteString $ ciphertext
+  assertEqual "Roundtripping ciphertext" ciphertext ciphertext2

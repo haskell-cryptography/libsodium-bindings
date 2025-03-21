@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## sel-0.1.0.0
+
+* Consistently rename ciphertext-related types and functions [#182](https://github.com/haskell-cryptography/libsodium-bindings/pull/182)
+
 ## sel-0.0.3.0
 
 * Add constant time hex encoding [#176](https://github.com/haskell-cryptography/libsodium-bindings/pull/176)

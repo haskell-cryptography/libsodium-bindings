@@ -15,7 +15,7 @@ spec =
     [ testCase "Encrypt a message with public-key encryption" testEncryptMessage
     , testCase "Round-trip nonce serialisation" testNonceSerdeRoundtrip
     , testCase "Round-trip keys serialisation" testKeysSerdeRoundtrip
-    , testCase "Round-trip cipher text serialisation" testCipherTextSerdeRoundtrip
+    , testCase "Round-trip cipher text serialisation" testCiphertextSerdeRoundtrip
     ]
 
 testEncryptMessage :: Assertion
@@ -46,10 +46,10 @@ testKeysSerdeRoundtrip = do
   (pk2, sk2) <- assertRight $ keyPairFromHexByteStrings hexPk hexSk
   assertEqual "Roundtripping keys serialisation" (pk1, sk1) (pk2, sk2)
 
-testCipherTextSerdeRoundtrip :: Assertion
-testCipherTextSerdeRoundtrip = do
+testCiphertextSerdeRoundtrip :: Assertion
+testCiphertextSerdeRoundtrip = do
   (publicKey, secretKey) <- newKeyPair
-  (_, cipherText) <- encrypt "hello hello" publicKey secretKey
-  let hexCipherText = cipherTextToHexByteString cipherText
-  cipherText2 <- assertRight $ cipherTextFromHexByteString hexCipherText
-  assertEqual "Roundtripping cipher text serialisation" cipherText cipherText2
+  (_, ciphertext) <- encrypt "hello hello" publicKey secretKey
+  let hexCiphertext = ciphertextToHexByteString ciphertext
+  ciphertext2 <- assertRight $ ciphertextFromHexByteString hexCiphertext
+  assertEqual "Roundtripping cipher text serialisation" ciphertext ciphertext2

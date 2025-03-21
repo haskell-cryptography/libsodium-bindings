@@ -46,7 +46,7 @@ import LibSodium.Bindings.SealedBoxes
 import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.PublicKey.Cipher
-  ( CipherText (CipherText)
+  ( Ciphertext (Ciphertext)
   , EncryptionError (..)
   , KeyPairGenerationException
   , PublicKey (PublicKey)
@@ -92,32 +92,32 @@ seal
   -- ^ Message to encrypt
   -> PublicKey
   -- ^ Public key of the recipient
-  -> IO CipherText
+  -> IO Ciphertext
 seal messageByteString (PublicKey publicKeyFptr) = do
   BS.unsafeUseAsCStringLen messageByteString $ \(messagePtr, messageLen) -> do
-    cipherTextForeignPtr <-
+    ciphertextForeignPtr <-
       Foreign.mallocForeignPtrBytes
         (messageLen + fromIntegral cryptoBoxSealbytes)
     Foreign.withForeignPtr publicKeyFptr $ \publicKeyPtr ->
-      Foreign.withForeignPtr cipherTextForeignPtr $ \cipherTextPtr -> do
+      Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextPtr -> do
         result <-
           cryptoBoxSeal
-            cipherTextPtr
+            ciphertextPtr
             (Foreign.castPtr @CChar @CUChar messagePtr)
             (fromIntegral @Int @CULLong messageLen)
             publicKeyPtr
         when (result /= 0) $ throw EncryptionError
         pure $
-          CipherText
+          Ciphertext
             (fromIntegral @Int @CULLong messageLen)
-            cipherTextForeignPtr
+            ciphertextForeignPtr
 
 -- | Open a sealed message from an unknown sender.
 -- You need your public and secret keys.
 --
 -- @since 0.0.1.0
 open
-  :: CipherText
+  :: Ciphertext
   -- ^ Cipher to decrypt
   -> PublicKey
   -- ^ Public key of the recipient
@@ -125,17 +125,17 @@ open
   -- ^ Secret key of the recipient
   -> Maybe StrictByteString
 open
-  (CipherText messageLen cipherForeignPtr)
+  (Ciphertext messageLen cipherForeignPtr)
   (PublicKey publicKeyFPtr)
   (SecretKey secretKeyFPtr) = unsafeDupablePerformIO $ do
     messagePtr <- Foreign.mallocBytes (fromIntegral @CULLong @Int messageLen)
-    Foreign.withForeignPtr cipherForeignPtr $ \cipherTextPtr ->
+    Foreign.withForeignPtr cipherForeignPtr $ \ciphertextPtr ->
       Foreign.withForeignPtr publicKeyFPtr $ \publicKeyPtr ->
         Foreign.withForeignPtr secretKeyFPtr $ \secretKeyPtr -> do
           result <-
             cryptoBoxSealOpen
               messagePtr
-              cipherTextPtr
+              ciphertextPtr
               (messageLen + fromIntegral @CSize @CULLong cryptoBoxSealbytes)
               publicKeyPtr
               secretKeyPtr

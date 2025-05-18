@@ -6,8 +6,8 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import qualified Sel.HMAC.SHA256 as SHA256
-import qualified Sel.HMAC.SHA256 as SHA512
-import qualified Sel.HMAC.SHA256 as SHA512_256
+import qualified Sel.HMAC.SHA512 as SHA512
+import qualified Sel.HMAC.SHA512_256 as SHA512_256
 import TestUtils (assertRight)
 
 spec :: TestTree

@@ -63,6 +63,7 @@ import LibSodium.Bindings.GenericHashing
   , cryptoGenericHashStateBytes
   , cryptoGenericHashUpdate
   )
+import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
@@ -174,8 +175,8 @@ instance Show Hash where
 -- Without a 'HashKey', hashing the same data twice will give the same result.
 --
 -- @since 0.0.1.0
-hashByteString :: Maybe HashKey -> StrictByteString -> IO Hash
-hashByteString mHashKey bytestring =
+hashByteString :: Maybe HashKey -> StrictByteString -> Hash
+hashByteString mHashKey bytestring = unsafeDupablePerformIO $
   case mHashKey of
     Just (HashKey fPtr) ->
       Foreign.withForeignPtr fPtr $ \keyPtr ->

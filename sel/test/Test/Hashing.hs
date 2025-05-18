@@ -24,7 +24,7 @@ spec =
 
 testCryptoGenericHashWithoutKey :: Assertion
 testCryptoGenericHashWithoutKey = do
-  expected <- Hashing.hashToHexByteString <$> Hashing.hashByteString Nothing "test test"
+  let expected = Hashing.hashToHexByteString $ Hashing.hashByteString Nothing "test test"
   assertEqual
     "Hashed test string is consistent without key"
     expected
@@ -54,7 +54,7 @@ testCryptoGenericHashWithKey =
 testMultipartHahsing :: Assertion
 testMultipartHahsing = do
   hashKey <- Hashing.newHashKey
-  expectedHash <- Hashing.hashByteString (Just hashKey) "test test"
+  let expectedHash = Hashing.hashByteString (Just hashKey) "test test"
   actualHash <- Hashing.withMultipart (Just hashKey) $ \multipartState -> do
     let message1 = "test "
     Hashing.updateMultipart multipartState message1

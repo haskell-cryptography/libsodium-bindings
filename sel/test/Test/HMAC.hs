@@ -42,7 +42,7 @@ spec =
 testSingleHMACSHA256Hashing :: Assertion
 testSingleHMACSHA256Hashing = do
   key <- SHA256.newAuthenticationKey
-  tag <- SHA256.authenticate "Hello, world!" key
+  let tag = SHA256.authenticate "Hello, world!" key
   assertBool "message is verified" $
     SHA256.verify tag key "Hello, world!"
 
@@ -67,7 +67,7 @@ testHMAC256AuthenticationKeySerialisation = do
 testHMAC256AuthenticationTagSerialisation :: Assertion
 testHMAC256AuthenticationTagSerialisation = do
   key <- SHA256.newAuthenticationKey
-  tag1 <- SHA256.authenticate "Hello, world!" key
+  let tag1 = SHA256.authenticate "Hello, world!" key
   let hexTag = SHA256.authenticationTagToHexByteString tag1
   tag2 <- assertRight $ SHA256.authenticationTagFromHexByteString hexTag
   assertEqual "Roundtripping authentication key" tag1 tag2
@@ -77,7 +77,7 @@ testHMAC256AuthenticationTagSerialisation = do
 testSingleHMACSHA512Hashing :: Assertion
 testSingleHMACSHA512Hashing = do
   key <- SHA512.newAuthenticationKey
-  tag <- SHA512.authenticate "Hello, world!" key
+  let tag = SHA512.authenticate "Hello, world!" key
   assertBool "message is verified" $
     SHA512.verify tag key "Hello, world!"
 
@@ -102,7 +102,7 @@ testHMAC512AuthenticationKeySerialisation = do
 testHMAC512AuthenticationTagSerialisation :: Assertion
 testHMAC512AuthenticationTagSerialisation = do
   key <- SHA512.newAuthenticationKey
-  tag1 <- SHA512.authenticate "Hello, world!" key
+  let tag1 = SHA512.authenticate "Hello, world!" key
   let hexTag = SHA512.authenticationTagToHexByteString tag1
   tag2 <- assertRight $ SHA512.authenticationTagFromHexByteString hexTag
   assertEqual "Roundtripping authentication key" tag1 tag2
@@ -112,7 +112,7 @@ testHMAC512AuthenticationTagSerialisation = do
 testSingleHMACSHA512_256Hashing :: Assertion
 testSingleHMACSHA512_256Hashing = do
   key <- SHA512_256.newAuthenticationKey
-  tag <- SHA512_256.authenticate "Hello, world!" key
+  let tag = SHA512_256.authenticate "Hello, world!" key
   assertBool "message is verified" $
     SHA512_256.verify tag key "Hello, world!"
 
@@ -137,7 +137,7 @@ testHMAC512_256AuthenticationKeySerialisation = do
 testHMAC512_256AuthenticationTagSerialisation :: Assertion
 testHMAC512_256AuthenticationTagSerialisation = do
   key <- SHA512_256.newAuthenticationKey
-  tag1 <- SHA512_256.authenticate "Hello, world!" key
+  let tag1 = SHA512_256.authenticate "Hello, world!" key
   let hexTag = SHA512_256.authenticationTagToHexByteString tag1
   tag2 <- assertRight $ SHA512_256.authenticationTagFromHexByteString hexTag
   assertEqual "Roundtripping authentication key" tag1 tag2

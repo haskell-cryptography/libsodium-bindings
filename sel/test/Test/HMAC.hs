@@ -89,7 +89,7 @@ testMultipleHMAC512Hashing = do
     SHA512.updateMultipart multipart "2"
   assertEqual
     "HMAC-SHA512 tag is consistent"
-    "be884a372976dd92e819d55ea7090d0b87377b3ac0773a97a5fdc12523104c35"
+    "7aad3ea0ca427425ba2fc3cf8078d31e94a62483b7ead624825f9a3fe36bbf5aaf8276e8876faef1a84226e439466774ebc7062495b19a6811cc376bfcccede0"
     (SHA512.authenticationTagToHexByteString actual)
 
 testHMAC512AuthenticationKeySerialisation :: Assertion
@@ -124,7 +124,7 @@ testMultipleHMAC512_256Hashing = do
     SHA512_256.updateMultipart multipart "2"
   assertEqual
     "HMAC-SHA512_256 tag is consistent"
-    "be884a372976dd92e819d55ea7090d0b87377b3ac0773a97a5fdc12523104c35"
+    "7aad3ea0ca427425ba2fc3cf8078d31e94a62483b7ead624825f9a3fe36bbf5a"
     (SHA512_256.authenticationTagToHexByteString actual)
 
 testHMAC512_256AuthenticationKeySerialisation :: Assertion

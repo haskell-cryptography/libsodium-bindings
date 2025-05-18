@@ -14,7 +14,7 @@ module Sel.HMAC.SHA256 where
   type role Multipart nominal
   type Multipart :: * -> *
   newtype Multipart s = Sel.HMAC.SHA256.Multipart (GHC.Ptr.Ptr LibSodium.Bindings.SHA2.CryptoAuthHMACSHA256State)
-  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> AuthenticationTag
   authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationKey
   authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationTag
   authenticationTagToBinary :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
@@ -34,7 +34,7 @@ module Sel.HMAC.SHA512 where
   type role Multipart nominal
   type Multipart :: * -> *
   newtype Multipart s = Sel.HMAC.SHA512.Multipart (GHC.Ptr.Ptr LibSodium.Bindings.SHA2.CryptoAuthHMACSHA512State)
-  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> AuthenticationTag
   authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationKey
   authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationTag
   authenticationTagToBinary :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
@@ -54,7 +54,7 @@ module Sel.HMAC.SHA512_256 where
   type role Multipart nominal
   type Multipart :: * -> *
   newtype Multipart s = Sel.HMAC.SHA512_256.Multipart (GHC.Ptr.Ptr LibSodium.Bindings.SHA2.CryptoAuthHMACSHA512256State)
-  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> AuthenticationTag
   authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationKey
   authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationTag
   authenticationTagToBinary :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
@@ -74,7 +74,7 @@ module Sel.Hashing where
   type role Multipart nominal
   type Multipart :: * -> *
   newtype Multipart s = Sel.Hashing.Multipart (GHC.Ptr.Ptr LibSodium.Bindings.GenericHashing.CryptoGenericHashState)
-  hashByteString :: GHC.Maybe.Maybe HashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO Hash
+  hashByteString :: GHC.Maybe.Maybe HashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Hash
   hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   hashToHexText :: Hash -> Data.Text.Internal.Text
@@ -95,7 +95,7 @@ module Sel.Hashing.Password where
   defaultArgon2Params :: Argon2Params
   genSalt :: GHC.Types.IO Salt
   hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO PasswordHash
-  hashByteStringWithParams :: Argon2Params -> Salt -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO PasswordHash
+  hashByteStringWithParams :: Argon2Params -> Salt -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> PasswordHash
   hashText :: Data.Text.Internal.Text -> GHC.Types.IO PasswordHash
   hexByteStringToSalt :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Maybe.Maybe Salt
   hexTextToSalt :: Data.Text.Internal.Text -> GHC.Maybe.Maybe Salt
@@ -115,8 +115,8 @@ module Sel.Hashing.SHA256 where
   type role Multipart nominal
   type Multipart :: * -> *
   newtype Multipart s = Sel.Hashing.SHA256.Multipart (GHC.Ptr.Ptr LibSodium.Bindings.SHA2.CryptoHashSHA256State)
-  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO Hash
-  hashText :: Data.Text.Internal.Text -> GHC.Types.IO Hash
+  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Hash
+  hashText :: Data.Text.Internal.Text -> Hash
   hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   hashToHexText :: Hash -> Data.Text.Internal.Text
@@ -129,8 +129,8 @@ module Sel.Hashing.SHA512 where
   type role Multipart nominal
   type Multipart :: * -> *
   newtype Multipart s = Sel.Hashing.SHA512.Multipart (GHC.Ptr.Ptr LibSodium.Bindings.SHA2.CryptoHashSHA512State)
-  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO Hash
-  hashText :: Data.Text.Internal.Text -> GHC.Types.IO Hash
+  hashByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Hash
+  hashText :: Data.Text.Internal.Text -> Hash
   hashToBinary :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   hashToHexByteString :: Hash -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString
   hashToHexText :: Hash -> Data.Text.Internal.Text
@@ -145,8 +145,8 @@ module Sel.Hashing.Short where
   type ShortHashingException :: *
   data ShortHashingException = ShortHashingException
   binaryToShortHashKey :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Maybe.Maybe ShortHashKey
-  hashByteString :: ShortHashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Types.IO ShortHash
-  hashText :: ShortHashKey -> Data.Text.Internal.Text -> GHC.Types.IO ShortHash
+  hashByteString :: ShortHashKey -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> ShortHash
+  hashText :: ShortHashKey -> Data.Text.Internal.Text -> ShortHash
   hexByteStringToShortHashKey :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> GHC.Maybe.Maybe ShortHashKey
   hexTextToShortHashKey :: Data.Text.Internal.Text -> GHC.Maybe.Maybe ShortHashKey
   newKey :: GHC.Types.IO ShortHashKey
@@ -225,7 +225,7 @@ module Sel.SecretKey.Authentication where
   newtype AuthenticationKey = Sel.SecretKey.Authentication.AuthenticationKey (GHC.ForeignPtr.ForeignPtr Foreign.C.Types.CUChar)
   type AuthenticationTag :: *
   newtype AuthenticationTag = Sel.SecretKey.Authentication.AuthenticationTag (GHC.ForeignPtr.ForeignPtr Foreign.C.Types.CUChar)
-  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> GHC.Types.IO AuthenticationTag
+  authenticate :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> AuthenticationKey -> AuthenticationTag
   authenticationKeyFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationKey
   authenticationTagFromHexByteString :: bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString -> Data.Either.Either Data.Text.Internal.Text AuthenticationTag
   authenticationTagToHexByteString :: AuthenticationTag -> bytestring-0.12.1.0:Data.ByteString.Internal.Type.StrictByteString

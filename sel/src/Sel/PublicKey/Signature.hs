@@ -162,6 +162,15 @@ generateKeyPair = do
 
 -- | Sign a message.
 --
+-- Note that, if @libsodium@ is compiled with the @ED25519_NONDETERMINISTIC@
+-- macro defined, this function will produce non-deterministic (but also
+-- non-standard) Ed25519 signatures. If @libsodium@ hasn't been compiled with
+-- the @ED25519_NONDETERMINISTIC@ macro defined, it's safe to call this
+-- function in a pure context with 'unsafeDupablePerformIO'.
+--
+-- For more information, see the
+-- [@libsodium@ docs](https://doc.libsodium.org/public-key_cryptography/public-key_signatures#notes).
+--
 -- @since 0.0.1.0
 signMessage :: StrictByteString -> SecretKey -> IO SignedMessage
 signMessage message (SecretKey skFPtr) =

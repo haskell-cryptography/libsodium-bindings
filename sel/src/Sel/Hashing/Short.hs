@@ -122,8 +122,8 @@ hashByteString
   -- ^ Random key produced by 'newKey'
   -> StrictByteString
   -- ^ Data to hash
-  -> IO ShortHash
-hashByteString (ShortHashKey keyFPtr) message =
+  -> ShortHash
+hashByteString (ShortHashKey keyFPtr) message = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     shortHashFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoShortHashSipHashX24Bytes)
     Foreign.withForeignPtr keyFPtr $ \keyPtr ->
@@ -149,7 +149,7 @@ hashText
   -- ^ Random key produced by 'newKey'
   -> Text
   -- ^ UTF-8 encoded data to hash
-  -> IO ShortHash
+  -> ShortHash
 hashText key message = hashByteString key (Text.encodeUtf8 message)
 
 -- | Convert a 'ShortHash' to a strict binary 'StrictByteString'.

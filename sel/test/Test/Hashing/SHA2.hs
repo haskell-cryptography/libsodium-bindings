@@ -47,7 +47,7 @@ testMultipartHashSH512 = do
 testSingleHashSHA256 :: Assertion
 testSingleHashSHA256 = do
   let password = "hunter2" :: Text
-  actual <- SHA256.hashText password
+      actual = SHA256.hashText password
   assertEqual
     "SHA-256 hashing is consistent"
     (SHA256.hashToHexByteString actual)

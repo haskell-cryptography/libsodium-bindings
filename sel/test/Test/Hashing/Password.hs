@@ -46,8 +46,8 @@ testHashPasswordWSalt = do
       cmpPWHashes = on (==) Sel.passwordHashToByteString
 
   salt1 <- Sel.genSalt
-  hashOrig <- hashWSalt salt1 password
-  hashOrig' <- hashWSalt salt1 password
+  let hashOrig = hashWSalt salt1 password
+      hashOrig' = hashWSalt salt1 password
   assertBool
     "Password hashing with salt is consistent"
     (cmpPWHashes hashOrig hashOrig')
@@ -58,7 +58,7 @@ testHashPasswordWSalt = do
     (not $ cmpPWHashes hashOrig hashWoSalt)
 
   salt2 <- Sel.genSalt
-  hashWNewSalt <- hashWSalt salt2 password
+  let hashWNewSalt = hashWSalt salt2 password
   assertBool
     "Password hashing differs with a new salt"
     (not $ cmpPWHashes hashOrig hashWNewSalt)

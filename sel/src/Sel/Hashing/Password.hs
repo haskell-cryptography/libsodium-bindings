@@ -152,8 +152,8 @@ hashText text = hashByteString (Text.encodeUtf8 text)
 -- The hash is __not__ encoded in human-readable format.
 --
 -- @since 0.0.1.0
-hashByteStringWithParams :: Argon2Params -> Salt -> StrictByteString -> IO PasswordHash
-hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytestring =
+hashByteStringWithParams :: Argon2Params -> Salt -> StrictByteString -> PasswordHash
+hashByteStringWithParams Argon2Params{opsLimit, memLimit} (Salt argonSalt) bytestring = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
     BS.unsafeUseAsCStringLen argonSalt $ \(saltString, _) -> do
       hashForeignPtr <- mallocForeignPtrBytes (fromIntegral cryptoPWHashStrBytes)

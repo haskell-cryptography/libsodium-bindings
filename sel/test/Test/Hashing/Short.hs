@@ -20,7 +20,7 @@ testHashPassword :: Assertion
 testHashPassword = do
   let key = fromJust $ Short.hexTextToShortHashKey "9301a3c5eedf2d783b72dc41fb907964"
   let input = "kwak kwak" :: Text
-  hash <- Short.hashText key input
+  let hash = Short.hashText key input
   assertEqual
     "input hashing is consistent"
     (Short.shortHashToHexText hash)

@@ -56,6 +56,7 @@ import LibSodium.Bindings.SHA2
   , cryptoHashSHA512StateBytes
   , cryptoHashSHA512Update
   )
+import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
@@ -155,8 +156,8 @@ hashToBinary (Hash fPtr) =
 -- | Hash a 'StrictByteString' with the SHA-512 algorithm.
 --
 -- @since 0.0.1.0
-hashByteString :: StrictByteString -> IO Hash
-hashByteString bytestring =
+hashByteString :: StrictByteString -> Hash
+hashByteString bytestring = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
     hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA512Bytes)
     Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
@@ -170,7 +171,7 @@ hashByteString bytestring =
 -- | Hash a UTF8-encoded strict 'Text' with the SHA-512 algorithm.
 --
 -- @since 0.0.1.0
-hashText :: Text -> IO Hash
+hashText :: Text -> Hash
 hashText text = hashByteString (Text.encodeUtf8 text)
 
 -- ** Hashing a multi-parts message

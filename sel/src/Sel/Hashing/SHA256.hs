@@ -56,6 +56,7 @@ import LibSodium.Bindings.SHA2
   , cryptoHashSHA256StateBytes
   , cryptoHashSHA256Update
   )
+import System.IO.Unsafe (unsafeDupablePerformIO)
 
 import Sel.Internal
 import Sel.Internal.Sodium (binaryToHex)
@@ -130,8 +131,8 @@ instance Show Hash where
 -- | Hash a 'StrictByteString' with the SHA-256 algorithm.
 --
 -- @since 0.0.1.0
-hashByteString :: StrictByteString -> IO Hash
-hashByteString bytestring =
+hashByteString :: StrictByteString -> Hash
+hashByteString bytestring = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen bytestring $ \(cString, cStringLen) -> do
     hashForeignPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA256Bytes)
     Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
@@ -145,7 +146,7 @@ hashByteString bytestring =
 -- | Hash a UTF8-encoded strict 'Text' with the SHA-256 algorithm.
 --
 -- @since 0.0.1.0
-hashText :: Text -> IO Hash
+hashText :: Text -> Hash
 hashText text = hashByteString (Text.encodeUtf8 text)
 
 -- == Displaying

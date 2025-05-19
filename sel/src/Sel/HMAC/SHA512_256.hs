@@ -116,9 +116,9 @@ authenticate
   -- ^ Message to authenticate
   -> AuthenticationKey
   -- ^ Secret key for authentication
-  -> IO AuthenticationTag
+  -> AuthenticationTag
   -- ^ Cryptographic tag for authentication
-authenticate message (AuthenticationKey authenticationKeyForeignPtr) =
+authenticate message (AuthenticationKey authenticationKeyForeignPtr) = unsafeDupablePerformIO $
   BS.unsafeUseAsCStringLen message $ \(cString, cStringLen) -> do
     authenticationTagForeignPtr <-
       Foreign.mallocForeignPtrBytes

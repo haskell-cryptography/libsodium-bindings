@@ -28,7 +28,7 @@ spec =
 testSingleHashSHA512 :: Assertion
 testSingleHashSHA512 = do
   let password = "hunter2" :: Text
-  actual <- SHA512.hashText password
+      actual = SHA512.hashText password
   assertEqual
     "SHA-512 hashing is consistent"
     (SHA512.hashToHexByteString actual)
@@ -47,7 +47,7 @@ testMultipartHashSH512 = do
 testSingleHashSHA256 :: Assertion
 testSingleHashSHA256 = do
   let password = "hunter2" :: Text
-  actual <- SHA256.hashText password
+      actual = SHA256.hashText password
   assertEqual
     "SHA-256 hashing is consistent"
     (SHA256.hashToHexByteString actual)

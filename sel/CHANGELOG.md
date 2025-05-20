@@ -4,6 +4,7 @@
 
 * Consistently rename ciphertext-related types and functions [#182](https://github.com/haskell-cryptography/libsodium-bindings/pull/182)
 * Add support for additional data (AD) in `Sel.SecretKey.Stream` [#183](https://github.com/haskell-cryptography/libsodium-bindings/pull/183)
+* Define some cryptographic functions in sel as pure [#189](https://github.com/haskell-cryptography/libsodium-bindings/pull/189)
 
 ## sel-0.0.3.0
 

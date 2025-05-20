@@ -84,7 +84,7 @@ library
     base >=4.14 && <5,
     base16 ^>=1.0,
     bytestring >=0.10 && <0.13,
-    libsodium-bindings ^>=0.0.2,
+    libsodium-bindings ^>=0.0.3,
     text >=1.2 && <2.2,
     text-builder-linear ^>=0.1,
     text-display ^>=1.0,

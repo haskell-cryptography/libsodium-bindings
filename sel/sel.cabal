@@ -26,6 +26,7 @@ extra-doc-files: CHANGELOG.md
 source-repository head
   type: git
   location: https://github.com/haskell-cryptography/libsodium-bindings
+  subdir: sel
 
 common common
   ghc-options:

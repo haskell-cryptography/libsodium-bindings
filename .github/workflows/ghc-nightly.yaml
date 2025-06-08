@@ -1,0 +1,37 @@
+name: GHC Nightly
+
+# Trigger the workflow on push or pull request, but only for the main branch
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+jobs:
+  tests:
+    name: Tests on GHC Nightly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: haskell/ghcup-setup@v1
+
+      - name: Setup GHC Nightly
+        run: |
+          ghcup config add-release-channel https://ghc.gitlab.haskell.org/ghcup-metadata/ghcup-nightlies-2025-0.0.7.yaml
+          ghcup install ghc latest-nightly
+          ghcup install cabal -f -u https://github.com/haskell/cabal/releases/download/cabal-head/cabal-head-Linux-x86_64.tar.gz head
+          ghcup set cabal head
+          cabal update
+
+      - name: Install libsodium-dev on ubuntu
+        run: |
+          sudo apt install libsodium-dev
+
+      - name: Build libsodium-bindings with pkg-config
+        run: |
+          cabal build --allow-newer --project-file=cabal.pkg-config.project -v2 libsodium-bindings
+
+      - name: Build sel with pkg-config
+        run: |
+          cabal build --allow-newer --project-file=cabal.pkg-config.project -v2 sel
+          cabal test --project-file=cabal.pkg-config.project sel

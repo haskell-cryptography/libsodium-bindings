@@ -11,6 +11,6 @@ queue_rules:
       - '#approved-reviews-by>=1'
       - label=squash+merge me
       - '#approved-reviews-by>=1'
-    conditions: []
+    merge_conditions: []
     merge_method: squash
     update_method: merge

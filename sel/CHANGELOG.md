@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## sel-0.2.0.0
+
+* Add binary conversion pairs (`xToBinary` / `binaryToX`) for every key, hash, nonce, authentication tag and secret-stream header in the `sel` package [#205](https://github.com/haskell-cryptography/libsodium-bindings/issues/205)
+* Deprecate `unsafeAuthenticationKeyToBinary` in favour of `authenticationKeyToBinary`; this also fixes `Sel.HMAC.SHA512_256.unsafeAuthenticationKeyToBinary` erroneously returning hex-encoded bytes
+* Attach the custom warning category `x-unsafe-serialization` to the binary serialization helpers; consumers must silence it with `-Wno-x-unsafe-serialization` (GHC ≥ 9.8)
+
 ## sel-0.1.0.0
 
 * Consistently rename ciphertext-related types and functions [#182](https://github.com/haskell-cryptography/libsodium-bindings/pull/182)

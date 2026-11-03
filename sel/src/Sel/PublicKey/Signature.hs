@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -29,16 +30,26 @@ module Sel.PublicKey.Signature
   , getSignature
   , unsafeGetMessage
   , mkSignature
+
+    -- *** Conversion
+  , publicKeyToBinary
+  , binaryToPublicKey
+  , secretKeyToBinary
+  , binaryToSecretKey
   )
 where
 
 import Control.Monad (void)
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
 import qualified Data.ByteString.Unsafe as ByteString
 import Foreign
   ( ForeignPtr
   , Ptr
+  , Word8
+  , castForeignPtr
   , castPtr
   , mallocBytes
   , mallocForeignPtrBytes
@@ -159,6 +170,72 @@ generateKeyPair = do
           pkPtr
           skPtr
   pure (PublicKey publicKeyForeignPtr, SecretKey secretKeyForeignPtr)
+
+-- | Convert a 'PublicKey' to a strict binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" publicKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+publicKeyToBinary :: PublicKey -> StrictByteString
+publicKeyToBinary (PublicKey pkFPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 pkFPtr)
+    (fromIntegral @CSize @Int cryptoSignPublicKeyBytes)
+
+-- | Convert a binary 'StrictByteString' to a 'PublicKey'.
+--
+-- The input must be of length 'cryptoSignPublicKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToPublicKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToPublicKey :: StrictByteString -> Maybe PublicKey
+binaryToPublicKey bs
+  | BS.length bs /= fromIntegral cryptoSignPublicKeyBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      ByteString.unsafeUseAsCString bs $ \cString -> do
+        (pkFPtr :: ForeignPtr CUChar) <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignPublicKeyBytes)
+        withForeignPtr pkFPtr $ \pkPtr ->
+          Foreign.copyArray
+            pkPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoSignPublicKeyBytes)
+        pure (PublicKey pkFPtr)
+
+-- | Convert a 'SecretKey' to a strict binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" secretKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+secretKeyToBinary :: SecretKey -> StrictByteString
+secretKeyToBinary (SecretKey skFPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 skFPtr)
+    (fromIntegral @CSize @Int cryptoSignSecretKeyBytes)
+
+-- | Convert a binary 'StrictByteString' to a 'SecretKey'.
+--
+-- The input must be of length 'cryptoSignSecretKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToSecretKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToSecretKey :: StrictByteString -> Maybe SecretKey
+binaryToSecretKey bs
+  | BS.length bs /= fromIntegral cryptoSignSecretKeyBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      ByteString.unsafeUseAsCString bs $ \cString -> do
+        (skFPtr :: ForeignPtr CUChar) <- mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSignSecretKeyBytes)
+        withForeignPtr skFPtr $ \skPtr ->
+          Foreign.copyArray
+            skPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoSignSecretKeyBytes)
+        pure (SecretKey skFPtr)
 
 -- | Sign a message.
 --

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE KindSignatures #-}
@@ -38,11 +39,14 @@ module Sel.HMAC.SHA256
   , AuthenticationKey
   , newAuthenticationKey
   , authenticationKeyFromHexByteString
+  , authenticationKeyToBinary
+  , binaryToAuthenticationKey
   , unsafeAuthenticationKeyToBinary
   , unsafeAuthenticationKeyToHexByteString
 
     -- ** Authentication tag
   , AuthenticationTag
+  , binaryToAuthenticationTag
   , authenticationTagToHexByteString
   , authenticationTagToBinary
   , authenticationTagFromHexByteString
@@ -303,18 +307,51 @@ authenticationKeyFromHexByteString hexKey = unsafeDupablePerformIO $
         else pure $ Left $ Text.pack "Authentication Key is too short"
     Left msg -> pure $ Left msg
 
--- | Convert a 'AuthenticationKey to a hexadecimal-encoded 'StrictByteString'.
+-- | Convert an 'AuthenticationKey' to a binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" authenticationKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+authenticationKeyToBinary :: AuthenticationKey -> StrictByteString
+authenticationKeyToBinary (AuthenticationKey authenticationKeyForeignPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 authenticationKeyForeignPtr)
+    (fromIntegral @CSize @Int cryptoAuthHMACSHA256KeyBytes)
+
+-- | Convert a binary 'StrictByteString' to an 'AuthenticationKey'.
+--
+-- The input key must be of length 'cryptoAuthHMACSHA256KeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToAuthenticationKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToAuthenticationKey :: StrictByteString -> Maybe AuthenticationKey
+binaryToAuthenticationKey binaryKey
+  | BS.length binaryKey /= fromIntegral cryptoAuthHMACSHA256KeyBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString binaryKey $ \cString ->
+        newAuthenticationKeyWith $ \authenticationKeyPtr -> do
+          Foreign.copyArray
+            (Foreign.castPtr @CUChar @CChar authenticationKeyPtr)
+            cString
+            (fromIntegral cryptoAuthHMACSHA256KeyBytes)
+
+{-# DEPRECATED unsafeAuthenticationKeyToBinary "Use authenticationKeyToBinary instead." #-}
+
+-- | Convert an 'AuthenticationKey' to a binary 'StrictByteString'.
 --
 -- This format is useful if you need conversion to base32 or base64.
 --
 -- ⚠️  Be prudent as to where you store it!
 --
 -- @since 0.0.1.0
+-- Deprecated: use 'authenticationKeyToBinary' instead.
 unsafeAuthenticationKeyToBinary :: AuthenticationKey -> StrictByteString
-unsafeAuthenticationKeyToBinary (AuthenticationKey authenticationKeyForeignPtr) =
-  BS.fromForeignPtr0
-    (Foreign.castForeignPtr @CUChar @Word8 authenticationKeyForeignPtr)
-    (fromIntegral @CSize @Int cryptoAuthHMACSHA256KeyBytes)
+unsafeAuthenticationKeyToBinary = authenticationKeyToBinary
 
 -- | Convert a 'AuthenticationKey to a hexadecimal-encoded 'StrictByteString' in constant time.
 --
@@ -370,6 +407,30 @@ authenticationTagToBinary (AuthenticationTag fPtr) =
   BS.fromForeignPtr0
     (Foreign.castForeignPtr fPtr)
     (fromIntegral cryptoAuthHMACSHA256Bytes)
+
+-- | Create an 'AuthenticationTag' from a binary 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk.
+--
+-- The input tag must be of length 'cryptoAuthHMACSHA256Bytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToAuthenticationTag "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToAuthenticationTag :: StrictByteString -> Maybe AuthenticationTag
+binaryToAuthenticationTag binaryTag
+  | BS.length binaryTag /= fromIntegral cryptoAuthHMACSHA256Bytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString binaryTag $ \cString -> do
+        authenticationTagForeignPtr <-
+          Foreign.mallocForeignPtrBytes
+            (fromIntegral cryptoAuthHMACSHA256Bytes)
+        Foreign.withForeignPtr authenticationTagForeignPtr $ \authenticationTagPtr ->
+          Foreign.copyArray
+            authenticationTagPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoAuthHMACSHA256Bytes)
+        pure $ AuthenticationTag authenticationTagForeignPtr
 
 -- | Create an 'AuthenticationTag' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.

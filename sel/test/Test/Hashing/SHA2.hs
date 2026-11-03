@@ -2,12 +2,14 @@
 
 module Test.Hashing.SHA2 where
 
+import qualified Data.ByteString as BS
 import Data.Text (Text)
 import Test.Tasty
 import Test.Tasty.HUnit
 
 import qualified Sel.Hashing.SHA256 as SHA256
 import qualified Sel.Hashing.SHA512 as SHA512
+import TestUtils (assertJust)
 
 spec :: TestTree
 spec =
@@ -17,11 +19,13 @@ spec =
         "SHA-256"
         [ testCase "SHA-256 single-message hashing" testSingleHashSHA256
         , testCase "SHA-256 multi-part message hashing" testMultipartHashSH256
+        , testCase "SHA-256 binary round-trip serialisation" testBinaryRoundtripSHA256
         ]
     , testGroup
         "SHA-512"
         [ testCase "SHA-512 single-message hashing" testSingleHashSHA512
         , testCase "SHA-512 multi-part message hashing" testMultipartHashSH512
+        , testCase "SHA-512 binary round-trip serialisation" testBinaryRoundtripSHA512
         ]
     ]
 
@@ -62,3 +66,29 @@ testMultipartHashSH256 = do
     "SHA-256 hashing is consistent"
     (SHA256.hashToHexByteString actual)
     "f52fbd32b2b3b86ff88ef6c490628285f482af15ddcb29541f94bcf526a3f6c7"
+
+testBinaryRoundtripSHA256 :: Assertion
+testBinaryRoundtripSHA256 = do
+  let hash = SHA256.hashText "hunter2"
+  hash2 <- assertJust (SHA256.binaryToHash (SHA256.hashToBinary hash))
+  assertEqual
+    "SHA-256 hash remains the same when binary-serialised"
+    hash
+    hash2
+  assertEqual
+    "A 16-byte input is rejected for a SHA-256 hash"
+    Nothing
+    (SHA256.binaryToHash (BS.replicate 16 0))
+
+testBinaryRoundtripSHA512 :: Assertion
+testBinaryRoundtripSHA512 = do
+  let hash = SHA512.hashText "hunter2"
+  hash2 <- assertJust (SHA512.binaryToHash (SHA512.hashToBinary hash))
+  assertEqual
+    "SHA-512 hash remains the same when binary-serialised"
+    hash
+    hash2
+  assertEqual
+    "A 16-byte input is rejected for a SHA-512 hash"
+    Nothing
+    (SHA512.binaryToHash (BS.replicate 16 0))

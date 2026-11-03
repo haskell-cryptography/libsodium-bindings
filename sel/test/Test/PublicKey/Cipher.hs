@@ -2,6 +2,7 @@
 
 module Test.PublicKey.Cipher where
 
+import qualified Data.ByteString as BS
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -16,6 +17,8 @@ spec =
     , testCase "Round-trip nonce serialisation" testNonceSerdeRoundtrip
     , testCase "Round-trip keys serialisation" testKeysSerdeRoundtrip
     , testCase "Round-trip cipher text serialisation" testCiphertextSerdeRoundtrip
+    , testCase "Round-trip keys and nonce binary serialisation" testBinarySerdeRoundtrip
+    , testCase "Wrong-length binary input is rejected" testBinaryWrongLength
     ]
 
 testEncryptMessage :: Assertion
@@ -53,3 +56,29 @@ testCiphertextSerdeRoundtrip = do
   let hexCiphertext = ciphertextToHexByteString ciphertext
   ciphertext2 <- assertRight $ ciphertextFromHexByteString hexCiphertext
   assertEqual "Roundtripping cipher text serialisation" ciphertext ciphertext2
+
+testBinarySerdeRoundtrip :: Assertion
+testBinarySerdeRoundtrip = do
+  (publicKey, secretKey) <- newKeyPair
+  (nonce, _) <- encrypt "hello hello" publicKey secretKey
+  publicKey2 <- assertJust (binaryToPublicKey (publicKeyToBinary publicKey))
+  secretKey2 <- assertJust (binaryToSecretKey (secretKeyToBinary secretKey))
+  nonce2 <- assertJust (binaryToNonce (nonceToBinary nonce))
+  assertEqual "Roundtripping public key binary serialisation" publicKey publicKey2
+  assertEqual "Roundtripping secret key binary serialisation" secretKey secretKey2
+  assertEqual "Roundtripping nonce binary serialisation" nonce nonce2
+
+testBinaryWrongLength :: Assertion
+testBinaryWrongLength = do
+  assertEqual
+    "A 16-byte input is rejected for a public key"
+    Nothing
+    (binaryToPublicKey (BS.replicate 16 0))
+  assertEqual
+    "A 16-byte input is rejected for a secret key"
+    Nothing
+    (binaryToSecretKey (BS.replicate 16 0))
+  assertEqual
+    "A 16-byte input is rejected for a nonce"
+    Nothing
+    (binaryToNonce (BS.replicate 16 0))

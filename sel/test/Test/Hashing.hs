@@ -4,6 +4,7 @@
 module Test.Hashing where
 
 import Control.Monad (void)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Unsafe as BS
 import Foreign hiding (void)
 import Foreign.C
@@ -12,6 +13,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import qualified Sel.Hashing as Hashing
+import TestUtils (assertJust)
 
 spec :: TestTree
 spec =
@@ -20,6 +22,9 @@ spec =
     [ testCase "cryptoGenericHash without key" testCryptoGenericHashWithoutKey
     , testCase "cryptoGenericHash with key" testCryptoGenericHashWithKey
     , testCase "Multi-part hashing" testMultipartHahsing
+    , testCase "Round-trip hash key binary serialisation" testHashKeyBinaryRoundtrip
+    , testCase "Round-trip hash binary serialisation" testHashBinaryRoundtrip
+    , testCase "Wrong-length binary input is rejected" testBinaryWrongLength
     ]
 
 testCryptoGenericHashWithoutKey :: Assertion
@@ -64,3 +69,31 @@ testMultipartHahsing = do
     "Hash remains the same when using multipart"
     (Hashing.hashToHexByteString expectedHash)
     (Hashing.hashToHexByteString actualHash)
+
+testHashKeyBinaryRoundtrip :: Assertion
+testHashKeyBinaryRoundtrip = do
+  hashKey <- Hashing.newHashKey
+  let hashKey2 = Hashing.binaryToHashKey (Hashing.hashKeyToBinary hashKey)
+  assertBool
+    "Hash key remains the same when binary-serialised"
+    (hashKey2 == Just hashKey)
+
+testHashBinaryRoundtrip :: Assertion
+testHashBinaryRoundtrip = do
+  hashKey <- Hashing.newHashKey
+  let hash = Hashing.hashByteString (Just hashKey) "test test"
+  hash2 <- assertJust (Hashing.binaryToHash (Hashing.hashToBinary hash))
+  assertEqual
+    "Hash remains the same when binary-serialised"
+    hash
+    hash2
+
+testBinaryWrongLength :: Assertion
+testBinaryWrongLength = do
+  assertBool
+    "A 16-byte input is rejected for a hash key"
+    (Hashing.binaryToHashKey (BS.replicate 16 0) == Nothing)
+  assertEqual
+    "A 16-byte input is rejected for a hash"
+    Nothing
+    (Hashing.binaryToHash (BS.replicate 16 0))

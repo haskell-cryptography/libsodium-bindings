@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
@@ -28,10 +29,20 @@ module Sel.PublicKey.Cipher
   , publicKeyToHexByteString
   , keyPairFromHexByteStrings
 
+    -- *** Conversion
+  , secretKeyToBinary
+  , binaryToSecretKey
+  , publicKeyToBinary
+  , binaryToPublicKey
+
     -- ** Nonce
   , Nonce (..)
   , nonceFromHexByteString
   , nonceToHexByteString
+
+    -- *** Conversion
+  , nonceToBinary
+  , binaryToNonce
 
     -- ** Ciphertext
   , Ciphertext (..)
@@ -256,6 +267,74 @@ unsafeSecretKeyToHexByteString :: SecretKey -> StrictByteString
 unsafeSecretKeyToHexByteString (SecretKey secretKeyForeignPtr) =
   binaryToHex secretKeyForeignPtr cryptoBoxSecretKeyBytes
 
+-- | Convert a 'SecretKey' to a raw binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" secretKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+secretKeyToBinary :: SecretKey -> StrictByteString
+secretKeyToBinary (SecretKey fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoBoxSecretKeyBytes)
+
+-- | Create a 'SecretKey' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoBoxSecretKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToSecretKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToSecretKey :: StrictByteString -> Maybe SecretKey
+binaryToSecretKey bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoBoxSecretKeyBytes = Nothing
+  | otherwise =
+      Just . unsafeDupablePerformIO . fmap SecretKey $
+        BS.unsafeUseAsCString bs $ \srcPtr ->
+          sodiumPointer cryptoBoxSecretKeyBytes $ \secretKeyPtr ->
+            Foreign.copyArray
+              (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+              srcPtr
+              (fromIntegral cryptoBoxSecretKeyBytes)
+
+-- | Convert a 'PublicKey' to a raw binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" publicKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+publicKeyToBinary :: PublicKey -> StrictByteString
+publicKeyToBinary (PublicKey fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoBoxPublicKeyBytes)
+
+-- | Create a 'PublicKey' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoBoxPublicKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToPublicKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToPublicKey :: StrictByteString -> Maybe PublicKey
+binaryToPublicKey bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoBoxPublicKeyBytes = Nothing
+  | otherwise =
+      Just . unsafeDupablePerformIO . fmap PublicKey $
+        BS.unsafeUseAsCString bs $ \srcPtr ->
+          sodiumPointer cryptoBoxPublicKeyBytes $ \publicKeyPtr ->
+            Foreign.copyArray
+              (Foreign.castPtr @CUChar @CChar publicKeyPtr)
+              srcPtr
+              (fromIntegral cryptoBoxPublicKeyBytes)
+
 -- | A random number that must only be used once per exchanged message.
 -- It does not have to be confidential.
 -- It is of size 'cryptoBoxNonceBytes'.
@@ -326,6 +405,41 @@ nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
 nonceToHexByteString :: Nonce -> StrictByteString
 nonceToHexByteString (Nonce nonceForeignPtr) =
   binaryToHex nonceForeignPtr cryptoBoxNonceBytes
+
+-- | Convert a 'Nonce' to a raw binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" nonceToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+nonceToBinary :: Nonce -> StrictByteString
+nonceToBinary (Nonce fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoBoxNonceBytes)
+
+-- | Create a 'Nonce' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoBoxNonceBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToNonce "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToNonce :: StrictByteString -> Maybe Nonce
+binaryToNonce bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoBoxNonceBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString bs $ \srcPtr -> do
+        (fPtr :: ForeignPtr CUChar) <-
+          Foreign.mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoBoxNonceBytes)
+        Foreign.withForeignPtr fPtr $ \dstPtr ->
+          Foreign.copyArray
+            dstPtr
+            (Foreign.castPtr @CChar @CUChar srcPtr)
+            (fromIntegral @CSize @Int cryptoBoxNonceBytes)
+        pure $ Nonce fPtr
 
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --

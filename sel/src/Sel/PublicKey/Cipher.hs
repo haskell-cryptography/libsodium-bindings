@@ -500,11 +500,11 @@ ciphertextFromHexByteString hexByteString = unsafeDupablePerformIO $
           ciphertextForeignPtr <- BS.mallocByteString @CChar outsideCiphertextLength
           Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextPtr ->
             Foreign.copyArray ciphertextPtr outsideCiphertextPtr outsideCiphertextLength
-          pure $
-            Right $
-              Ciphertext
-                (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoBoxMACBytes)
-                (Foreign.castForeignPtr @CChar @CUChar ciphertextForeignPtr)
+          pure
+            $ Right
+            $ Ciphertext
+              (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoBoxMACBytes)
+              (Foreign.castForeignPtr @CChar @CUChar ciphertextForeignPtr)
         else pure $ Left $ Text.pack "Cipher text is too short"
     Left msg -> error (Text.unpack msg)
 

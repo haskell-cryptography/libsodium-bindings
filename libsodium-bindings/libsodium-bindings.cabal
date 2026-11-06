@@ -16,7 +16,7 @@ maintainer: The Haskell Cryptography contributors
 license: BSD-3-Clause
 build-type: Simple
 tested-with:
-  GHC ==9.2.8 || ==9.4.8 || ==9.6.6 || ==9.8.2 || ==9.10.1 || ==9.12.1
+  ghc ==9.2.8 || ==9.4.8 || ==9.6.6 || ==9.8.2 || ==9.10.1 || ==9.12.1
 
 extra-source-files:
   LICENSE
@@ -91,12 +91,12 @@ library
     LibSodium.Bindings.Main
     LibSodium.Bindings.PasswordHashing
     LibSodium.Bindings.Random
-    LibSodium.Bindings.SHA2
     LibSodium.Bindings.Scrypt
     LibSodium.Bindings.SealedBoxes
-    LibSodium.Bindings.SecretStream
     LibSodium.Bindings.Secretbox
+    LibSodium.Bindings.SecretStream
     LibSodium.Bindings.SecureMemory
+    LibSodium.Bindings.SHA2
     LibSodium.Bindings.ShortHashing
     LibSodium.Bindings.Utils
     LibSodium.Bindings.XChaCha20

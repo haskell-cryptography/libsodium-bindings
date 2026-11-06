@@ -340,9 +340,9 @@ authenticationTagFromHexByteString hexTag = unsafeDupablePerformIO $
           Foreign.withForeignPtr hashForeignPtr $ \hashPtr ->
             -- We copy bytes from 'outsideTagPtr' to 'hashPtr'.
             Foreign.copyArray hashPtr outsideTagPtr outsideTagLength
-          pure $
-            Right $
-              AuthenticationTag
-                (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
+          pure
+            $ Right
+            $ AuthenticationTag
+              (Foreign.castForeignPtr @CChar @CUChar hashForeignPtr)
         else pure $ Left $ Text.pack "Hash is too short"
     Left msg -> pure $ Left msg

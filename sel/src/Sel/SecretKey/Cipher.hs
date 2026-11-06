@@ -398,11 +398,11 @@ ciphertextFromHexByteString hexCiphertext = unsafeDupablePerformIO $
           Foreign.withForeignPtr ciphertextForeignPtr $ \ciphertextPtr ->
             -- We copy bytes from 'outsideCiphertextPtr' to 'ciphertextPtr'.
             Foreign.copyArray ciphertextPtr outsideCiphertextPtr outsideCiphertextLength
-          pure $
-            Right $
-              Ciphertext
-                (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoSecretboxMACBytes)
-                (Foreign.castForeignPtr @CChar @CUChar ciphertextForeignPtr)
+          pure
+            $ Right
+            $ Ciphertext
+              (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoSecretboxMACBytes)
+              (Foreign.castForeignPtr @CChar @CUChar ciphertextForeignPtr)
         else pure $ Left $ Text.pack "Ciphertext is too short"
     Left msg -> pure $ Left msg
 

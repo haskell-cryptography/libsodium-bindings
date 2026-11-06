@@ -60,15 +60,15 @@ library
   hs-source-dirs: src
   exposed-modules:
     Sel
-    Sel.HMAC
-    Sel.HMAC.SHA256
-    Sel.HMAC.SHA512
-    Sel.HMAC.SHA512_256
     Sel.Hashing
     Sel.Hashing.Password
     Sel.Hashing.SHA256
     Sel.Hashing.SHA512
     Sel.Hashing.Short
+    Sel.HMAC
+    Sel.HMAC.SHA256
+    Sel.HMAC.SHA512
+    Sel.HMAC.SHA512_256
     Sel.PublicKey.Cipher
     Sel.PublicKey.Seal
     Sel.PublicKey.Signature
@@ -99,11 +99,11 @@ test-suite sel-tests
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-    Test.HMAC
     Test.Hashing
     Test.Hashing.Password
     Test.Hashing.SHA2
     Test.Hashing.Short
+    Test.HMAC
     Test.PublicKey.Cipher
     Test.PublicKey.Seal
     Test.PublicKey.Signature

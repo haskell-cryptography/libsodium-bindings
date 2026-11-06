@@ -662,11 +662,11 @@ ciphertextFromHexByteString hexCiphertext = unsafeDupablePerformIO $
           Foreign.withForeignPtr ciphertextFPtr $ \ciphertextPtr ->
             -- We copy bytes from 'outsideCiphertextPtr' to 'ciphertextPtr.
             Foreign.copyArray ciphertextPtr outsideCiphertextPtr outsideCiphertextLength
-          pure $
-            Right $
-              Ciphertext
-                (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoSecretStreamXChaCha20Poly1305ABytes)
-                (Foreign.castForeignPtr @CChar @CUChar ciphertextFPtr)
+          pure
+            $ Right
+            $ Ciphertext
+              (fromIntegral @Int @CULLong outsideCiphertextLength - fromIntegral @CSize @CULLong cryptoSecretStreamXChaCha20Poly1305ABytes)
+              (Foreign.castForeignPtr @CChar @CUChar ciphertextFPtr)
         else pure $ Left $ Text.pack "Ciphertext is too short"
     Left msg -> pure $ Left msg
 

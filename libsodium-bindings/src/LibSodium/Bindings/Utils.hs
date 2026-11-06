@@ -84,7 +84,7 @@ https://gitlab.haskell.org/ghc/ghc/-/commit/4f70a8a0b5db49ff249271faefec14bf1421
 -}
 
 {-
--- | Decode a hexadecimal string to bytes. Constant-time.
+-- \| Decode a hexadecimal string to bytes. Constant-time.
 foreign import capi "sodium.h sodium_hex2bin"
   sodiumHex2Bin
     :: Ptr CUChar

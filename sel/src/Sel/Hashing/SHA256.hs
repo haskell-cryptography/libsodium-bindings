@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE RankNTypes #-}
@@ -30,12 +31,14 @@ module Sel.Hashing.SHA256
   , hashToBinary
   , hashToHexText
   , hashToHexByteString
+  , binaryToHash
   ) where
 
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Unsafe as BS
@@ -173,6 +176,28 @@ hashToBinary (Hash fPtr) =
     (Foreign.castForeignPtr fPtr)
     0
     (fromIntegral @CSize @Int cryptoHashSHA256Bytes)
+
+-- | Convert a binary 'StrictByteString' to a 'Hash'.
+--
+-- The input must be of length 'cryptoHashSHA256Bytes'
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToHash "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToHash :: StrictByteString -> Maybe Hash
+binaryToHash binaryHash =
+  if BS.length binaryHash /= fromIntegral cryptoHashSHA256Bytes
+    then Nothing
+    else unsafeDupablePerformIO $ do
+      BS.unsafeUseAsCString binaryHash $ \cString -> do
+        hashFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoHashSHA256Bytes)
+        Foreign.withForeignPtr hashFPtr $ \hashPtr ->
+          Foreign.copyBytes
+            hashPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoHashSHA256Bytes)
+        pure $ Just $ Hash hashFPtr
 
 -- ** Hashing a multi-part message
 

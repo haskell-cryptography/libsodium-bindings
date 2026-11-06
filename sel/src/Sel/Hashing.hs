@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE RankNTypes #-}
@@ -32,6 +33,9 @@ module Sel.Hashing
   , hashToHexText
   , hashToHexByteString
   , hashToBinary
+  , hashKeyToBinary
+  , binaryToHashKey
+  , binaryToHash
   )
 where
 
@@ -39,6 +43,7 @@ import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Base16.Types as Base16
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Internal as BS
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
@@ -47,6 +52,7 @@ import Data.Kind (Type)
 import Data.Text (Text)
 import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display
+import Data.Word (Word8)
 import Foreign (Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CInt, CSize, CUChar, CULLong)
@@ -110,6 +116,39 @@ newHashKey = do
   Foreign.withForeignPtr fPtr $ \ptr ->
     cryptoGenericHashKeyGen ptr
   pure $ HashKey fPtr
+
+-- | Convert a 'HashKey' to a strict binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" hashKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+hashKeyToBinary :: HashKey -> StrictByteString
+hashKeyToBinary (HashKey fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoGenericHashKeyBytes)
+
+-- | Convert a binary 'StrictByteString' to a 'HashKey'.
+--
+-- The input key must be of length 'cryptoGenericHashKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToHashKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToHashKey :: StrictByteString -> Maybe HashKey
+binaryToHashKey binaryKey
+  | BS.length binaryKey /= fromIntegral cryptoGenericHashKeyBytes = Nothing
+  | otherwise = unsafeDupablePerformIO $ do
+      BS.unsafeUseAsCString binaryKey $ \cString -> do
+        hashKeyFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoGenericHashKeyBytes)
+        Foreign.withForeignPtr hashKeyFPtr $ \hashKeyPtr ->
+          Foreign.copyBytes
+            hashKeyPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoGenericHashKeyBytes)
+        pure $ Just $ HashKey hashKeyFPtr
 
 -- | The fingerprint computed by @hashByteString@.
 -- It is produced by the BLAKE2b algorithm, and is
@@ -219,6 +258,27 @@ hashToBinary (Hash fPtr) =
   BS.fromForeignPtr (Foreign.castForeignPtr fPtr) 0 hashBytesSize
   where
     hashBytesSize = fromIntegral cryptoGenericHashBytes
+
+-- | Convert a binary 'StrictByteString' to a 'Hash'.
+--
+-- The input must be of length 'cryptoGenericHashBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToHash "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToHash :: StrictByteString -> Maybe Hash
+binaryToHash binaryHash
+  | BS.length binaryHash /= fromIntegral cryptoGenericHashBytes = Nothing
+  | otherwise = unsafeDupablePerformIO $ do
+      BS.unsafeUseAsCString binaryHash $ \cString -> do
+        hashFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoGenericHashBytes)
+        Foreign.withForeignPtr hashFPtr $ \hashPtr ->
+          Foreign.copyBytes
+            hashPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoGenericHashBytes)
+        pure $ Just $ Hash hashFPtr
 
 -- ** Hashing a multi-part message
 

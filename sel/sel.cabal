@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: sel
-version: 0.1.0.0
+version: 0.2.0.0
 category: Cryptography
 synopsis: Cryptography for the casual user
 description:
@@ -51,6 +51,9 @@ common test-options
     -rtsopts
     -threaded
     -with-rtsopts=-N
+
+  if impl(ghc >=9.8)
+    ghc-options: -Wno-x-unsafe-serialization
 
 library
   import: common

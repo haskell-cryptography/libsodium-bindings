@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -24,10 +25,14 @@ module Sel.SecretKey.Authentication
   , AuthenticationKey
   , newAuthenticationKey
   , authenticationKeyFromHexByteString
+  , authenticationKeyToBinary
+  , binaryToAuthenticationKey
   , unsafeAuthenticationKeyToHexByteString
 
     -- ** Authentication tag
   , AuthenticationTag
+  , authenticationTagToBinary
+  , binaryToAuthenticationTag
   , authenticationTagToHexByteString
   , authenticationTagFromHexByteString
   ) where
@@ -41,9 +46,9 @@ import qualified Data.ByteString.Unsafe as BS
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Display (Display, OpaqueInstance (..), ShowInstance (..))
-import Foreign (ForeignPtr)
+import Foreign (ForeignPtr, Word8)
 import qualified Foreign
-import Foreign.C (CChar, CUChar, CULLong, throwErrno)
+import Foreign.C (CChar, CSize, CUChar, CULLong, throwErrno)
 import LibSodium.Bindings.CryptoAuth
   ( cryptoAuth
   , cryptoAuthBytes
@@ -212,6 +217,39 @@ unsafeAuthenticationKeyToHexByteString :: AuthenticationKey -> StrictByteString
 unsafeAuthenticationKeyToHexByteString (AuthenticationKey authenticationKeyForeignPtr) =
   binaryToHex authenticationKeyForeignPtr cryptoAuthKeyBytes
 
+-- | Convert an 'AuthenticationKey' to a binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" authenticationKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+authenticationKeyToBinary :: AuthenticationKey -> StrictByteString
+authenticationKeyToBinary (AuthenticationKey authenticationKeyForeignPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 authenticationKeyForeignPtr)
+    (fromIntegral @CSize @Int cryptoAuthKeyBytes)
+
+-- | Convert a binary 'StrictByteString' to an 'AuthenticationKey'.
+--
+-- The input key must be of length 'cryptoAuthKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToAuthenticationKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToAuthenticationKey :: StrictByteString -> Maybe AuthenticationKey
+binaryToAuthenticationKey binaryKey
+  | BS.length binaryKey /= fromIntegral cryptoAuthKeyBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString binaryKey $ \cString ->
+        newAuthenticationKeyWith $ \authenticationKeyPtr -> do
+          Foreign.copyArray
+            (Foreign.castPtr @CUChar @CChar authenticationKeyPtr)
+            cString
+            (fromIntegral cryptoAuthKeyBytes)
+
 -- | A secret authentication key of size 'cryptoAuthBytes'.
 --
 -- @since 0.0.1.0
@@ -248,6 +286,42 @@ instance Show AuthenticationTag where
 authenticationTagToHexByteString :: AuthenticationTag -> StrictByteString
 authenticationTagToHexByteString (AuthenticationTag fPtr) =
   binaryToHex fPtr cryptoAuthBytes
+
+-- | Convert an 'AuthenticationTag' to a binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" authenticationTagToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+authenticationTagToBinary :: AuthenticationTag -> StrictByteString
+authenticationTagToBinary (AuthenticationTag fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoAuthBytes)
+
+-- | Create an 'AuthenticationTag' from a binary 'StrictByteString' that you have obtained on your own,
+-- usually from the network or disk.
+--
+-- The input tag must be of length 'cryptoAuthBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToAuthenticationTag "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToAuthenticationTag :: StrictByteString -> Maybe AuthenticationTag
+binaryToAuthenticationTag binaryTag
+  | BS.length binaryTag /= fromIntegral cryptoAuthBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString binaryTag $ \cString -> do
+        authenticationTagForeignPtr <-
+          Foreign.mallocForeignPtrBytes
+            (fromIntegral cryptoAuthBytes)
+        Foreign.withForeignPtr authenticationTagForeignPtr $ \authenticationTagPtr ->
+          Foreign.copyArray
+            authenticationTagPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoAuthBytes)
+        pure $ AuthenticationTag authenticationTagForeignPtr
 
 -- | Create an 'AuthenticationTag' from a binary 'StrictByteString' that you have obtained on your own,
 -- usually from the network or disk.

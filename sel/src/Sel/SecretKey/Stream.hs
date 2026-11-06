@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
@@ -43,10 +44,18 @@ module Sel.SecretKey.Stream
   , secretKeyFromHexByteString
   , unsafeSecretKeyToHexByteString
 
+    -- *** Conversion
+  , secretKeyToBinary
+  , binaryToSecretKey
+
     -- ** Header
   , Header
   , headerToHexByteString
   , headerFromHexByteString
+
+    -- *** Conversion
+  , headerToBinary
+  , binaryToHeader
 
     -- ** Message Tags
   , MessageTag (..)
@@ -88,6 +97,7 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Builder.Linear as Builder
 import Data.Text.Display (Display (..), OpaqueInstance (..), ShowInstance (..))
+import Data.Word (Word8)
 import Foreign (ForeignPtr, Ptr)
 import qualified Foreign
 import Foreign.C (CChar, CSize, CUChar, CULLong)
@@ -397,6 +407,40 @@ newSecretKeyWith action = do
   action ptr
   pure $ SecretKey fPtr
 
+-- | Convert a 'SecretKey' to a raw binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" secretKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+secretKeyToBinary :: SecretKey -> StrictByteString
+secretKeyToBinary (SecretKey fPtr) =
+  BSI.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305KeyBytes)
+
+-- | Create a 'SecretKey' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoSecretStreamXChaCha20Poly1305KeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToSecretKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToSecretKey :: StrictByteString -> Maybe SecretKey
+binaryToSecretKey bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305KeyBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BSU.unsafeUseAsCString bs $ \srcPtr ->
+        newSecretKeyWith $ \secretKeyPtr ->
+          Foreign.copyArray
+            (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+            srcPtr
+            (fromIntegral cryptoSecretStreamXChaCha20Poly1305KeyBytes)
+
 -- | An encrypted stream starts with a 'Header' of size 'cryptoSecretStreamXChaCha20Poly1305HeaderBytes'.
 --
 -- That header must be sent/stored before the sequence of encrypted messages, as it is required to decrypt the stream.
@@ -430,6 +474,41 @@ instance Ord Header where
 headerToHexByteString :: Header -> Base16 StrictByteString
 headerToHexByteString (Header headerForeignPtr) =
   Base16.assertBase16 $ binaryToHex headerForeignPtr cryptoSecretStreamXChaCha20Poly1305HeaderBytes
+
+-- | Convert a 'Header' to a raw binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" headerToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+headerToBinary :: Header -> StrictByteString
+headerToBinary (Header fPtr) =
+  BSI.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+
+-- | Create a 'Header' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoSecretStreamXChaCha20Poly1305HeaderBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToHeader "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToHeader :: StrictByteString -> Maybe Header
+binaryToHeader bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BSU.unsafeUseAsCString bs $ \srcPtr -> do
+        headerForeignPtr <-
+          Foreign.mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+        Foreign.withForeignPtr headerForeignPtr $ \headerPtr ->
+          Foreign.copyBytes
+            headerPtr
+            (Foreign.castPtr @CChar @CUChar srcPtr)
+            (fromIntegral @CSize @Int cryptoSecretStreamXChaCha20Poly1305HeaderBytes)
+        pure $ Header headerForeignPtr
 
 -- | Build a 'Header' from a base16-encoded 'StrictByteString'
 --

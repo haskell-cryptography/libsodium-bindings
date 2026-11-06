@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -29,10 +30,18 @@ module Sel.SecretKey.Cipher
   , secretKeyFromHexByteString
   , unsafeSecretKeyToHexByteString
 
+    -- *** Conversion
+  , secretKeyToBinary
+  , binaryToSecretKey
+
     -- ** Nonce
   , Nonce
   , nonceFromHexByteString
   , nonceToHexByteString
+
+    -- *** Conversion
+  , nonceToBinary
+  , binaryToNonce
 
     -- ** Ciphertext
   , Ciphertext
@@ -169,6 +178,40 @@ newSecretKeyWith action = do
   action ptr
   pure $ SecretKey fPtr
 
+-- | Convert a 'SecretKey' to a raw binary 'StrictByteString'.
+--
+-- ⚠️  Be prudent as to where you store it!
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" secretKeyToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+secretKeyToBinary :: SecretKey -> StrictByteString
+secretKeyToBinary (SecretKey fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoSecretboxKeyBytes)
+
+-- | Create a 'SecretKey' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoSecretboxKeyBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToSecretKey "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToSecretKey :: StrictByteString -> Maybe SecretKey
+binaryToSecretKey bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoSecretboxKeyBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString bs $ \srcPtr ->
+        newSecretKeyWith $ \secretKeyPtr ->
+          Foreign.copyArray
+            (Foreign.castPtr @CUChar @CChar secretKeyPtr)
+            srcPtr
+            (fromIntegral cryptoSecretboxKeyBytes)
+
 -- | Convert a 'SecretKey' to a hexadecimal-encoded 'StrictByteString' in constant time.
 --
 -- ⚠️  Be prudent as to where you store it!
@@ -251,6 +294,41 @@ nonceFromHexByteString hexNonce = unsafeDupablePerformIO $
 nonceToHexByteString :: Nonce -> StrictByteString
 nonceToHexByteString (Nonce nonceForeignPtr) =
   binaryToHex nonceForeignPtr cryptoSecretboxNonceBytes
+
+-- | Convert a 'Nonce' to a raw binary 'StrictByteString'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" nonceToBinary "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+nonceToBinary :: Nonce -> StrictByteString
+nonceToBinary (Nonce fPtr) =
+  BS.fromForeignPtr0
+    (Foreign.castForeignPtr @CUChar @Word8 fPtr)
+    (fromIntegral @CSize @Int cryptoSecretboxNonceBytes)
+
+-- | Create a 'Nonce' from a raw binary 'StrictByteString' that you have
+-- obtained on your own, usually from the network or disk.
+--
+-- It must be of length 'cryptoSecretboxNonceBytes'.
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToNonce "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToNonce :: StrictByteString -> Maybe Nonce
+binaryToNonce bs
+  | BS.length bs /= fromIntegral @CSize @Int cryptoSecretboxNonceBytes = Nothing
+  | otherwise = Just . unsafeDupablePerformIO $
+      BS.unsafeUseAsCString bs $ \srcPtr -> do
+        (fPtr :: ForeignPtr CUChar) <-
+          Foreign.mallocForeignPtrBytes (fromIntegral @CSize @Int cryptoSecretboxNonceBytes)
+        Foreign.withForeignPtr fPtr $ \dstPtr ->
+          Foreign.copyArray
+            dstPtr
+            (Foreign.castPtr @CChar @CUChar srcPtr)
+            (fromIntegral @CSize @Int cryptoSecretboxNonceBytes)
+        pure $ Nonce fPtr
 
 -- | A ciphertext consisting of an encrypted message and an authentication tag.
 --

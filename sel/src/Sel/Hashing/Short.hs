@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE TypeApplications #-}
@@ -21,6 +22,7 @@ module Sel.Hashing.Short
 
     -- *** Conversion
   , shortHashToBinary
+  , binaryToShortHash
   , shortHashToHexText
   , shortHashToHexByteString
 
@@ -161,6 +163,28 @@ shortHashToBinary (ShortHash hashFPtr) =
     (Foreign.castForeignPtr hashFPtr)
     0
     (fromIntegral @CSize @Int cryptoShortHashSipHashX24Bytes)
+
+-- | Convert a binary 'StrictByteString' to a 'ShortHash'.
+--
+-- The input must be of length 'cryptoShortHashSipHashX24Bytes'
+--
+-- @since 0.2.0.0
+#if __GLASGOW_HASKELL__ >= 908
+{-# WARNING in "x-unsafe-serialization" binaryToShortHash "This function serializes raw cryptographic key material. Only use it if you know what you are doing. Silence this warning with -Wno-x-unsafe-serialization." #-}
+#endif
+binaryToShortHash :: StrictByteString -> Maybe ShortHash
+binaryToShortHash binaryHash =
+  if BS.length binaryHash /= fromIntegral cryptoShortHashSipHashX24Bytes
+    then Nothing
+    else unsafeDupablePerformIO $ do
+      BS.unsafeUseAsCString binaryHash $ \cString -> do
+        shortHashFPtr <- Foreign.mallocForeignPtrBytes (fromIntegral cryptoShortHashSipHashX24Bytes)
+        Foreign.withForeignPtr shortHashFPtr $ \shortHashPtr ->
+          Foreign.copyBytes
+            shortHashPtr
+            (Foreign.castPtr @CChar @CUChar cString)
+            (fromIntegral cryptoShortHashSipHashX24Bytes)
+        pure $ Just $ ShortHash shortHashFPtr
 
 -- | Convert a 'ShortHash' to a hexadecimal-encoded 'StrictByteString' in constant time.
 --

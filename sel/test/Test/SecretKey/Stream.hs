@@ -3,6 +3,7 @@
 module Test.SecretKey.Stream where
 
 import Data.ByteString (StrictByteString)
+import qualified Data.ByteString as BS
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -16,7 +17,9 @@ spec =
     [ testCase "Encrypt a stream with a secret key" testEncryptStream
     , testCase "Round-trip secret key serialisation" testSecretKeySerdeRoundtrip
     , testCase "Round-trip ciphertext serialisation" testCiphertextSerdeRoundtrip
-    -- , testCase "Round-trip header serialisation" testHeaderSerdeRoundtrip
+    , -- , testCase "Round-trip header serialisation" testHeaderSerdeRoundtrip
+      testCase "Round-trip secret key and header binary serialisation" testBinarySerdeRoundtrip
+    , testCase "Wrong-length binary input is rejected" testBinaryWrongLength
     ]
 
 testEncryptStream :: Assertion
@@ -61,3 +64,31 @@ testCiphertextSerdeRoundtrip = do
     "The ciphertexts remain equal"
     encryptedPayload1
     encryptedPayload2
+
+testBinarySerdeRoundtrip :: Assertion
+testBinarySerdeRoundtrip = do
+  secretKey <- Stream.newSecretKey
+  let message = "hello" :: StrictByteString
+  (header, _) <- Stream.encryptStream secretKey $ \multipart -> do
+    Stream.encryptChunk multipart Stream.Final Nothing message
+  secretKey2 <- assertJust (Stream.binaryToSecretKey (Stream.secretKeyToBinary secretKey))
+  header2 <- assertJust (Stream.binaryToHeader (Stream.headerToBinary header))
+  assertEqual
+    "The secret key remains equal"
+    secretKey
+    secretKey2
+  assertEqual
+    "The header remains equal"
+    header
+    header2
+
+testBinaryWrongLength :: Assertion
+testBinaryWrongLength = do
+  assertEqual
+    "A 16-byte input is rejected for a secret key"
+    Nothing
+    (Stream.binaryToSecretKey (BS.replicate 16 0))
+  assertEqual
+    "A 16-byte input is rejected for a header"
+    Nothing
+    (Stream.binaryToHeader (BS.replicate 16 0))
